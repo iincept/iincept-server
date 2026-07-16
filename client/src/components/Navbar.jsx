@@ -1,0 +1,1629 @@
+import { useState, useRef, useEffect } from 'react';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  ShoppingBag, Heart, User, Search, Menu, X, LogOut, 
+  ChevronDown, Package, ShieldCheck, Gift, Settings
+} from 'lucide-react';
+import { logout } from '../redux/authSlice';
+import { fetchProducts } from '../redux/productSlice';
+import { openCart, fetchCart } from '../redux/cartSlice';
+import { fetchWishlist } from '../redux/wishlistSlice';
+
+const AppleIcon = (props) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.58 2.95-1.39z"/>
+  </svg>
+);
+
+export default function Navbar() {
+  const location = useLocation();
+  const pathParts = location.pathname.split('/product/');
+  const productId = pathParts[1] ? pathParts[1] : null;
+  const isAppleProductId = productId && (
+    productId.startsWith('ip') || 
+    productId.startsWith('mb') || 
+    productId.startsWith('aw') || 
+    productId.startsWith('ap') || 
+    productId.startsWith('tv')
+  );
+  const isIphonePage = true;
+
+  const getNavBtnClass = (isOpen) => {
+    return `transition-colors duration-200 uppercase font-bold text-[11px] cursor-pointer bg-transparent border-0 focus:outline-none ${
+      isOpen 
+        ? (isIphonePage ? 'text-black font-extrabold font-sans' : 'text-white font-extrabold') 
+        : (isIphonePage ? 'text-zinc-500 hover:text-black font-sans' : 'text-zinc-400 hover:text-white')
+    }`;
+  };
+
+  const dropdownClass = `absolute left-0 w-full shadow-lg z-20 pt-6 pb-8 px-6 sm:px-12 md:px-16 animate-in fade-in slide-in-from-top-2 duration-200 text-left select-text ${
+    isIphonePage ? 'bg-white text-zinc-900 border-b border-zinc-200 iphone-dropdown-theme' : 'bg-zinc-950 text-[#f5f5f7]'
+  }`;
+
+  const styleTag = (
+    <style>{`
+      .iphone-dropdown-theme {
+        background-color: #ffffff !important;
+        color: #1d1d1f !important;
+        border: 1px solid rgba(0,0,0,0.08) !important;
+        top: calc(100% + 10px) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.12) !important;
+      }
+      .iphone-dropdown-theme a, 
+      .iphone-dropdown-theme button {
+        color: #3f3f46 !important;
+      }
+      .iphone-dropdown-theme a:hover, 
+      .iphone-dropdown-theme button:hover {
+        color: #000000 !important;
+      }
+      .iphone-dropdown-theme span {
+        color: #71717a !important;
+      }
+
+      .pill-nav-container > div[class*="absolute"][class*="z-50"] {
+        border-radius: 999px !important;
+        overflow: hidden !important;
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+      }
+
+      /* FLOATING PILL NAV */
+      .pill-nav-stage {
+        position: sticky;
+        top: 20px;
+        z-index: 100;
+        display: flex;
+        justify-content: center;
+        padding: 0 20px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 100%;
+        pointer-events: none;
+      }
+      .pill-nav-container {
+        width: 100%;
+        max-width: 1240px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 12px 26px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.72) !important;
+        backdrop-filter: blur(14px) saturate(160%) !important;
+        -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+        box-shadow: 0 8px 30px rgba(20, 20, 20, 0.08), 0 1px 0 rgba(20, 20, 20, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 60px;
+        pointer-events: auto;
+      }
+      .pill-nav-stage.shrink {
+        top: 12px;
+      }
+      .pill-nav-stage.shrink .pill-nav-container {
+        padding: 8px 22px;
+        height: 52px;
+        box-shadow: 0 6px 20px rgba(20, 20, 20, 0.12);
+        background: rgba(255, 255, 255, 0.85) !important;
+      }
+      
+      .pill-nav-container .cta-btn-pill {
+        color: #fff !important;
+        background: #141414 !important;
+        padding: 8px 16px !important;
+        border-radius: 999px !important;
+        transition: background .15s ease !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+      }
+      .pill-nav-container .cta-btn-pill:hover {
+        background: #000000 !important;
+      }
+    `}</style>
+  );
+
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isGiftOpen, setIsGiftOpen] = useState(false);
+  const [isMacDropdownOpen, setIsMacDropdownOpen] = useState(false);
+  const [isIpadDropdownOpen, setIsIpadDropdownOpen] = useState(false);
+  const [isIphoneDropdownOpen, setIsIphoneDropdownOpen] = useState(false);
+  const [isWatchDropdownOpen, setIsWatchDropdownOpen] = useState(false);
+  const [isAirpodsDropdownOpen, setIsAirpodsDropdownOpen] = useState(false);
+  const [isTvDropdownOpen, setIsTvDropdownOpen] = useState(false);
+  const [isEntertainmentDropdownOpen, setIsEntertainmentDropdownOpen] = useState(false);
+  const [isAccessoriesDropdownOpen, setIsAccessoriesDropdownOpen] = useState(false);
+  const [isSupportDropdownOpen, setIsSupportDropdownOpen] = useState(false);
+  const [hoveredProduct, setHoveredProduct] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+  const [isShrunk, setIsShrunk] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 40) {
+        setIsShrunk(true);
+      } else {
+        setIsShrunk(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const macTimeoutRef = useRef(null);
+  const ipadTimeoutRef = useRef(null);
+  const iphoneTimeoutRef = useRef(null);
+  const watchTimeoutRef = useRef(null);
+  const airpodsTimeoutRef = useRef(null);
+  const tvTimeoutRef = useRef(null);
+  const entertainmentTimeoutRef = useRef(null);
+  const accessoriesTimeoutRef = useRef(null);
+  const supportTimeoutRef = useRef(null);
+
+  const closeAllDropdowns = () => {
+    setIsMacDropdownOpen(false);
+    setIsIpadDropdownOpen(false);
+    setIsIphoneDropdownOpen(false);
+    setIsWatchDropdownOpen(false);
+    setIsAirpodsDropdownOpen(false);
+    setIsTvDropdownOpen(false);
+    setIsEntertainmentDropdownOpen(false);
+    setIsAccessoriesDropdownOpen(false);
+    setIsSupportDropdownOpen(false);
+  };
+
+  const clearAllTimeouts = () => {
+    if (macTimeoutRef.current) clearTimeout(macTimeoutRef.current);
+    if (ipadTimeoutRef.current) clearTimeout(ipadTimeoutRef.current);
+    if (iphoneTimeoutRef.current) clearTimeout(iphoneTimeoutRef.current);
+    if (watchTimeoutRef.current) clearTimeout(watchTimeoutRef.current);
+    if (airpodsTimeoutRef.current) clearTimeout(airpodsTimeoutRef.current);
+    if (tvTimeoutRef.current) clearTimeout(tvTimeoutRef.current);
+    if (entertainmentTimeoutRef.current) clearTimeout(entertainmentTimeoutRef.current);
+    if (accessoriesTimeoutRef.current) clearTimeout(accessoriesTimeoutRef.current);
+    if (supportTimeoutRef.current) clearTimeout(supportTimeoutRef.current);
+  };
+
+  const handleMacMouseEnter = () => {
+    clearAllTimeouts();
+    closeAllDropdowns();
+    setIsMacDropdownOpen(true);
+    setIsCategoriesOpen(false);
+    setIsGiftOpen(false);
+    setIsProfileOpen(false);
+  };
+
+  const handleMacMouseLeave = () => {
+    macTimeoutRef.current = setTimeout(() => {
+      setIsMacDropdownOpen(false);
+    }, 350);
+  };
+
+  const handleIpadMouseEnter = () => {
+    clearAllTimeouts();
+    closeAllDropdowns();
+    setIsIpadDropdownOpen(true);
+    setIsCategoriesOpen(false);
+    setIsGiftOpen(false);
+    setIsProfileOpen(false);
+  };
+
+  const handleIpadMouseLeave = () => {
+    ipadTimeoutRef.current = setTimeout(() => {
+      setIsIpadDropdownOpen(false);
+    }, 350);
+  };
+
+  const handleIphoneMouseEnter = () => {
+    clearAllTimeouts();
+    closeAllDropdowns();
+    setIsIphoneDropdownOpen(true);
+    setIsCategoriesOpen(false);
+    setIsGiftOpen(false);
+    setIsProfileOpen(false);
+  };
+
+  const handleIphoneMouseLeave = () => {
+    iphoneTimeoutRef.current = setTimeout(() => {
+      setIsIphoneDropdownOpen(false);
+    }, 350);
+  };
+
+  const handleWatchMouseEnter = () => {
+    clearAllTimeouts();
+    closeAllDropdowns();
+    setIsWatchDropdownOpen(true);
+    setIsCategoriesOpen(false);
+    setIsGiftOpen(false);
+    setIsProfileOpen(false);
+  };
+
+  const handleWatchMouseLeave = () => {
+    watchTimeoutRef.current = setTimeout(() => {
+      setIsWatchDropdownOpen(false);
+    }, 350);
+  };
+
+  const handleAirpodsMouseEnter = () => {
+    clearAllTimeouts();
+    closeAllDropdowns();
+    setIsAirpodsDropdownOpen(true);
+    setIsCategoriesOpen(false);
+    setIsGiftOpen(false);
+    setIsProfileOpen(false);
+  };
+
+  const handleAirpodsMouseLeave = () => {
+    airpodsTimeoutRef.current = setTimeout(() => {
+      setIsAirpodsDropdownOpen(false);
+    }, 350);
+  };
+
+  const handleTvMouseEnter = () => {
+    clearAllTimeouts();
+    closeAllDropdowns();
+    setIsTvDropdownOpen(true);
+    setIsCategoriesOpen(false);
+    setIsGiftOpen(false);
+    setIsProfileOpen(false);
+  };
+
+  const handleTvMouseLeave = () => {
+    tvTimeoutRef.current = setTimeout(() => {
+      setIsTvDropdownOpen(false);
+    }, 350);
+  };
+
+  const handleEntertainmentMouseEnter = () => {
+    clearAllTimeouts();
+    closeAllDropdowns();
+    setIsEntertainmentDropdownOpen(true);
+    setIsCategoriesOpen(false);
+    setIsGiftOpen(false);
+    setIsProfileOpen(false);
+  };
+
+  const handleEntertainmentMouseLeave = () => {
+    entertainmentTimeoutRef.current = setTimeout(() => {
+      setIsEntertainmentDropdownOpen(false);
+    }, 350);
+  };
+
+  const handleAccessoriesMouseEnter = () => {
+    clearAllTimeouts();
+    closeAllDropdowns();
+    setIsAccessoriesDropdownOpen(true);
+    setIsCategoriesOpen(false);
+    setIsGiftOpen(false);
+    setIsProfileOpen(false);
+  };
+
+  const handleAccessoriesMouseLeave = () => {
+    accessoriesTimeoutRef.current = setTimeout(() => {
+      setIsAccessoriesDropdownOpen(false);
+    }, 350);
+  };
+
+  const handleSupportMouseEnter = () => {
+    clearAllTimeouts();
+    closeAllDropdowns();
+    setIsSupportDropdownOpen(true);
+    setIsCategoriesOpen(false);
+    setIsGiftOpen(false);
+    setIsProfileOpen(false);
+  };
+
+  const handleSupportMouseLeave = () => {
+    supportTimeoutRef.current = setTimeout(() => {
+      setIsSupportDropdownOpen(false);
+    }, 350);
+  };
+
+  const dispatch = useDispatch();
+  const { cartItems } = useSelector((state) => state.cart);
+  const { wishlistItems } = useSelector((state) => state.wishlist);
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+
+  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const wishlistCount = wishlistItems.length;
+
+  const { products } = useSelector((state) => state.products || { products: [] });
+
+  useEffect(() => {
+    dispatch(fetchProducts());
+    dispatch(fetchCart());
+    if (isAuthenticated) {
+      dispatch(fetchWishlist());
+    }
+  }, [dispatch, isAuthenticated]);
+
+  const highlightMatch = (text, query) => {
+    if (!query) return <span>{text}</span>;
+    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    return (
+      <span>
+        {parts.map((part, i) => 
+          part.toLowerCase() === query.toLowerCase() ? (
+            <strong key={i} className="font-bold text-zinc-900 dark:text-white">{part}</strong>
+          ) : (
+            <span key={i} className="font-normal text-zinc-450 dark:text-zinc-500">{part}</span>
+          )
+        )}
+      </span>
+    );
+  };
+
+  const getSuggestions = (query) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return { links: [], searches: [] };
+
+    // Common search shortcuts
+    if (q.startsWith('iph') || q.startsWith('iphone')) {
+      return {
+        links: [
+          { label: 'Explore iPhone', path: '/iphone' },
+          { label: 'Shop iPhone', path: '/iphone' },
+          { label: 'iPhone 17 Pro', path: '/iphone?search=iPhone 17 Pro' },
+          { label: 'iPhone Air', path: '/iphone?search=iPhone Air' },
+          { label: 'iPhone 17', path: '/iphone?search=iPhone 17' }
+        ],
+        searches: [
+          { label: 'iPhone Refurbished', path: `/shop?search=${encodeURIComponent('iPhone Refurbished')}` },
+          { label: 'iPhone Batteries', path: `/shop?search=${encodeURIComponent('iPhone Batteries')}` },
+          { label: 'iPhone Bumpers', path: `/shop?search=${encodeURIComponent('iPhone Bumpers')}` },
+          { label: 'iPhone Cases & Covers', path: `/accessories?search=case` },
+          { label: 'iPhone MagSafe', path: `/accessories?search=magsafe` }
+        ]
+      };
+    }
+
+    if (q.startsWith('mac') || q.startsWith('macb')) {
+      return {
+        links: [
+          { label: 'Explore Mac', path: '/macbook' },
+          { label: 'Shop Mac', path: '/macbook' },
+          { label: 'MacBook Neo', path: '/macbook?search=MacBook Neo' },
+          { label: 'MacBook Air', path: '/macbook?search=MacBook Air' },
+          { label: 'MacBook Pro', path: '/macbook?search=MacBook Pro' }
+        ],
+        searches: [
+          { label: 'MacBook Refurbished', path: `/shop?search=${encodeURIComponent('MacBook Refurbished')}` },
+          { label: 'MacBook Accessories', path: '/accessories?product=mac' },
+          { label: 'MacBook Cases', path: '/accessories?search=case' },
+          { label: 'Mac Studio', path: '/macbook?search=Mac Studio' }
+        ]
+      };
+    }
+
+    if (q.startsWith('wat') || q.startsWith('apple w')) {
+      return {
+        links: [
+          { label: 'Explore Watch', path: '/watch' },
+          { label: 'Shop Watch', path: '/watch' },
+          { label: 'Apple Watch Ultra 2', path: '/watch?search=Ultra' },
+          { label: 'Apple Watch Series 10', path: '/watch?search=Series' }
+        ],
+        searches: [
+          { label: 'Watch Bands', path: '/accessories?product=watch' },
+          { label: 'Watch Charger', path: '/accessories?search=charger' },
+          { label: 'Watch Accessories', path: '/accessories?product=watch' }
+        ]
+      };
+    }
+
+    if (q.startsWith('air') || q.startsWith('pod')) {
+      return {
+        links: [
+          { label: 'Explore AirPods', path: '/airpods' },
+          { label: 'Shop AirPods', path: '/airpods' },
+          { label: 'AirPods Pro 2', path: '/airpods?search=Pro' },
+          { label: 'AirPods 4', path: '/airpods?search=AirPods 4' }
+        ],
+        searches: [
+          { label: 'AirPods Cases', path: '/accessories?product=airpods' },
+          { label: 'AirPods Max', path: '/airpods?search=Max' },
+          { label: 'AirPods Accessories', path: '/accessories?product=airpods' }
+        ]
+      };
+    }
+
+    if (q.startsWith('ipa') || q.startsWith('tablet')) {
+      return {
+        links: [
+          { label: 'Explore iPad', path: '/ipad' },
+          { label: 'Shop iPad', path: '/ipad' },
+          { label: 'iPad Pro', path: '/ipad?search=iPad Pro' },
+          { label: 'iPad Air', path: '/ipad?search=iPad Air' }
+        ],
+        searches: [
+          { label: 'iPad Pencil', path: '/accessories?search=pencil' },
+          { label: 'iPad Cases', path: '/accessories?product=ipad' },
+          { label: 'iPad Keyboards', path: '/accessories?product=ipad' }
+        ]
+      };
+    }
+
+    // Dynamic fallback matching search input to products in state
+    const matchedProducts = products.filter(p => 
+      (p.title || p.name || '').toLowerCase().includes(q)
+    ).slice(0, 5);
+
+    return {
+      links: matchedProducts.map(p => ({
+        label: p.title || p.name,
+        path: `/product/${p._id || p.id}`
+      })),
+      searches: [
+        { label: `Search for "${query}"`, path: `/search?q=${encodeURIComponent(query)}` }
+      ]
+    };
+  };
+
+  const handleLogout = () => {
+    setIsProfileOpen(false);
+    dispatch(logout());
+    alert('Logged out successfully!');
+    navigate('/login');
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const query = searchQuery.trim().toLowerCase();
+    if (query) {
+      if (query === 'iphone' || query === 'iphones' || query === 'i phone' || query === 'i phones') {
+        navigate('/iphone');
+      } else if (query === 'mac' || query === 'macbook' || query === 'macbooks' || query === 'laptop' || query === 'laptops') {
+        navigate('/macbook');
+      } else if (query === 'ipad' || query === 'ipads' || query === 'tablet' || query === 'tablets') {
+        navigate('/ipad');
+      } else if (query === 'watch' || query === 'watches' || query === 'apple watch' || query === 'iwatch') {
+        navigate('/watch');
+      } else if (query === 'airpod' || query === 'airpods' || query === 'air pod' || query === 'air pods' || query === 'headphones' || query === 'headphone') {
+        navigate('/airpods');
+      } else if (query === 'tv' || query === 'apple tv' || query === 'homepod' || query === 'homepods' || query === 'tv-home' || query === 'tv & home') {
+        navigate('/tv-home');
+      } else if (query === 'accessories' || query === 'accessory' || query === 'case' || query === 'cases') {
+        navigate('/accessories');
+      } else {
+        navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      }
+      setIsSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
+
+  const categories = [
+    { name: 'Laptops & PCs', path: '/macbook' },
+    { name: 'Smartphones', path: '/iphone' },
+    { name: 'Premium Audio', path: '/airpods' },
+    { name: 'Wearable Devices', path: '/watch' }
+  ];
+
+  const productPreviews = {
+    // Mac
+    'Explore All Mac': { name: 'Mac Workstations', price: 'Procure M3/M4 Series', image: '/macbook_category_v3.jpg' },
+    'MacBook Neo': { name: 'MacBook Neo Concept', price: 'High Performance Laptop', image: '/mac_dark_banner.jpg' },
+    'MacBook Air': { name: 'MacBook Air', price: 'Light & Powerful. From ₹1,14,900', image: '/student_mac_banner.jpg' },
+    'MacBook Pro': { name: 'MacBook Pro', price: 'Pro Workflow Leader. From ₹1,69,900', image: '/macbook_pro_dark.jpg' },
+    'iMac': { name: 'iMac 24"', price: 'All-in-one Desktop. From ₹1,29,900', image: '/macbook_category_v3.jpg' },
+    'Mac mini': { name: 'Mac mini', price: 'Compact Powerhouse. From ₹54,900', image: '/macbook_category_v2.jpg' },
+    'Mac Studio': { name: 'Mac Studio', price: 'Creator Station. From ₹1,99,900', image: '/macbook_category_v2.jpg' },
+    'Displays': { name: 'Studio & Pro Display', price: 'Retina 5K & 6K Panels', image: '/macbook_category_v3.jpg' },
+
+    // iPad
+    'Explore All iPad': { name: 'iPad Catalogue', price: 'Compare all iPads', image: '/ipad_category_v3.png' },
+    'iPad Pro': { name: 'iPad Pro M4', price: 'Ultra Thin design. From ₹99,900', image: '/ipad_category_v2.jpg' },
+    'iPad Air': { name: 'iPad Air M2', price: 'Performance meets Value. From ₹59,900', image: '/ipad_air_banner.jpg' },
+    'iPad': { name: 'iPad (10th Gen)', price: 'Daily Workhorse. From ₹34,900', image: '/ipad_category.jpg' },
+    'iPad mini': { name: 'iPad mini', price: 'Pocket Sized Power. From ₹49,900', image: '/ipad_air_blue.jpg' },
+    'Apple Pencil': { name: 'Apple Pencil Pro', price: 'Pixel perfect precision. From ₹11,900', image: '/accessories_banner.png' },
+    'Keyboards': { name: 'Magic Keyboard', price: 'Floating cantilever design', image: '/accessories_banner.png' },
+
+    // iPhone
+    'Explore All iPhone': { name: 'iPhone Catalogue', price: 'Compare all models', image: '/iphone_category_v2.jpg' },
+    'iPhone 17 Pro Max': { name: 'iPhone 17 Pro Max', price: 'Peak Performance. From ₹1,64,900', image: '/iphone17p_orange.jpg' },
+    'iPhone 17 Pro': { name: 'iPhone 17 Pro', price: 'Titanium Build. From ₹1,34,900', image: '/iphone17p_white.jpg' },
+    'iPhone 17': { name: 'iPhone 17', price: 'Sleek & Durable. From ₹79,900', image: '/iphone17_green.jpg' },
+    'iPhone 16 Pro Max': { name: 'iPhone 16 Pro Max', price: 'Camera Control. From ₹1,44,900', image: '/iphone16_group.jpg' },
+    'iPhone 16 Pro': { name: 'iPhone 16 Pro', price: 'Studio Recording. From ₹1,19,900', image: '/iphone16_group_v2.jpg' },
+    'iPhone 16': { name: 'iPhone 16', price: 'Action Button. From ₹79,900', image: '/iphone16_green_profile.jpg' },
+    'iPhone SE': { name: 'iPhone SE', price: 'Great Value. From ₹49,900', image: '/iphone_tradein.jpg' },
+    'iPhone 17e': { name: 'iPhone 17e', price: 'Value Champion. From ₹59,900', image: '/iphone17e_purple_hand.jpg' },
+    'iPhone Air': { name: 'iPhone Air', price: 'Ultra Thin. From ₹89,900', image: '/iphone_air_blue.jpg' },
+
+    // Watch
+    'Explore All Apple Watch': { name: 'Apple Watch', price: 'Browse Apple Watches', image: '/watch_category.jpg' },
+    'Apple Watch Series 11': { name: 'Apple Watch Series 11', price: 'Advanced fitness tracking. From ₹49,900', image: '/watch_category.jpg' },
+    'Apple Watch SE 3': { name: 'Apple Watch SE 3', price: 'Essential features. From ₹29,900', image: '/apple_watch_health.jpg' },
+    'Apple Watch Ultra 3': { name: 'Apple Watch Ultra 3', price: 'Rugged capability. From ₹89,900', image: '/apple_watch_health.jpg' },
+    'Apple Watch Nike': { name: 'Apple Watch Nike', price: 'Sport bands & faces', image: '/watch_category.jpg' },
+
+    // AirPods
+    'Explore All AirPods': { name: 'AirPods Family', price: 'High fidelity audio', image: '/airpods_category.jpg' },
+    'AirPods 4': { name: 'AirPods 4', price: 'Open ear comfort. From ₹12,900', image: '/airpods_pro_3.jpg' },
+    'AirPods Pro 3': { name: 'AirPods Pro 3', price: 'Intelligent noise cancellation. From ₹24,900', image: '/airpods_category.jpg' },
+    'AirPods Max 2': { name: 'AirPods Max 2', price: 'High-fidelity acoustics. From ₹59,900', image: '/airpods_pro_3.jpg' },
+
+    // TV & Home
+    'Explore TV & Home': { name: 'TV & Home Ecosystem', price: 'Hub of smart devices', image: '/tv_home_category_uploaded.jpg' },
+    'Apple TV 4K': { name: 'Apple TV 4K', price: 'Cinematic experience. From ₹14,900', image: '/tv_banner_1.jpg' },
+    'HomePod': { name: 'HomePod (2nd Gen)', price: 'Deep acoustics. From ₹32,900', image: '/homepod_category.jpg' },
+    'HomePod mini': { name: 'HomePod mini', price: 'Room filling sound. From ₹9,900', image: '/tv_home_homepods.jpg' },
+
+    // Accessories in Shop Accessories
+    'Shop All Accessories': { name: 'Accessories', price: 'Cables, cases & chargers', image: '/accessories_banner.png' },
+    'Mac': { name: 'Mac Accessories', price: 'Mice, keyboards & stands', image: '/accessories_banner.png' },
+    'iPad': { name: 'iPad Accessories', price: 'Cases, Pencils & Keyboards', image: '/ipad_category_v3.png' },
+    'iPhone': { name: 'iPhone Accessories', price: 'Cases, MagSafe & chargers', image: '/iphone17e_cases.jpg' },
+    'Apple Watch': { name: 'Watch Bands', price: 'Premium bands & loops', image: '/accessories_banner.png' },
+    'AirPods': { name: 'AirPods Accessories', price: 'Protective cases', image: '/airpods_category.jpg' },
+    'TV & Home': { name: 'Home Accessories', price: 'Mounts & smart plugs', image: '/tv_home_category_uploaded.jpg' }
+  };
+
+  const renderProductPreview = () => {
+    return (
+      <div className="hidden md:flex md:col-span-5 pl-2 flex-col text-left shrink-0 items-start">
+        {/* Image preview box */}
+        <div 
+          className="aspect-[4/3] w-full max-w-[320px] rounded-lg bg-zinc-50 border border-dashed border-zinc-200 overflow-hidden flex items-center justify-center transition-all duration-300"
+          style={{
+            backgroundImage: hoveredProduct ? `url(${hoveredProduct.image})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
+          {!hoveredProduct && (
+            <span className="text-zinc-400 text-[10px] uppercase font-bold tracking-wider">Preview</span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const menuItems = [
+    { label: 'Mac', path: '/macbook' },
+    { label: 'iPad', path: '/ipad' },
+    { label: 'iPhone', path: '/iphone' },
+    { label: 'Watch', path: '/watch' },
+    { label: 'AirPods', path: '/airpods' },
+    { label: 'TV & Home', path: '/tv-home' },
+    { label: 'Accessories', path: '/accessories' },
+    { label: 'Compare', path: '/compare' },
+    { label: 'Bulk Orders', path: '/bulk-orders' }
+  ];
+
+  return (
+    <>
+      {styleTag}
+      <div className={`pill-nav-stage ${isShrunk ? 'shrink' : ''}`}>
+      <nav className="pill-nav-container select-none relative z-40 text-black border-none bg-transparent">
+      
+      {/* Sliding Search Overlay */}
+      {/* Sliding Search Overlay Input Pill */}
+      {isSearchOpen && (
+        <div className="absolute inset-0 z-50 animate-in fade-in duration-200 bg-white border border-zinc-200 rounded-full flex items-center px-6">
+          <form onSubmit={handleSearchSubmit} className="flex items-center w-full justify-between">
+            <Search className="h-5 w-5 mr-3 text-zinc-400 shrink-0" />
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search iincept.com" 
+              className="w-full bg-transparent border-0 text-sm font-normal py-2 focus:outline-none placeholder:text-zinc-400 text-black"
+              autoFocus
+            />
+            <div className="flex items-center gap-4 ml-4 shrink-0">
+              {searchQuery && (
+                <button type="button" onClick={() => setSearchQuery('')} className="p-1 text-zinc-400 hover:text-zinc-600 bg-transparent border-0 cursor-pointer">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+              <button type="button" onClick={() => setIsSearchOpen(false)} className="text-xs font-semibold uppercase tracking-wider py-2 px-3 rounded-lg cursor-pointer text-zinc-600 hover:text-black">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Floating Search Suggestions Dropdown below Navbar */}
+      {isSearchOpen && (
+        <div className={dropdownClass}>
+          <div className="max-w-3xl mx-auto space-y-8 font-sans">
+            {!searchQuery.trim() ? (
+              <div className="space-y-4">
+                <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest block">Quick Links</span>
+                <div className="flex flex-col gap-3">
+                  {[
+                    { label: 'Explore AirPods', path: '/airpods' },
+                    { label: 'iPhone 17 Pro Max', path: '/product/ip17pm' },
+                    { label: 'MacBook Neo 14-inch', path: '/product/mbneo' },
+                    { label: 'Apple Watch Ultra 2', path: '/product/wultra2' },
+                    { label: 'Shop Accessories', path: '/accessories' }
+                  ].map((link, idx) => (
+                    <Link 
+                      key={idx}
+                      to={link.path} 
+                      onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
+                      className="text-sm font-semibold flex items-center gap-2.5 transition-colors text-zinc-800 hover:text-[#0071e3]"
+                    >
+                      <span className="text-zinc-400 text-xs">→</span>
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
+                {/* Suggested Links */}
+                <div className="space-y-4">
+                  <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest block">Suggested Links</span>
+                  <div className="flex flex-col gap-3">
+                    {getSuggestions(searchQuery).links.length > 0 ? (
+                      getSuggestions(searchQuery).links.map((link, idx) => (
+                        <Link 
+                          key={idx}
+                          to={link.path} 
+                          onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
+                          className="text-sm font-semibold flex items-center gap-2.5 transition-colors text-zinc-800 hover:text-[#0071e3]"
+                        >
+                          <span className="text-zinc-400 text-xs">→</span>
+                          {highlightMatch(link.label, searchQuery)}
+                        </Link>
+                      ))
+                    ) : (
+                      <span className="text-sm text-zinc-500 italic">No matching suggestions</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Suggested Searches */}
+                <div className="space-y-4">
+                  <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest block">Suggested Searches</span>
+                  <div className="flex flex-col gap-3">
+                    {getSuggestions(searchQuery).searches.map((searchItem, idx) => (
+                      <Link 
+                        key={idx}
+                        to={searchItem.path} 
+                        onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
+                        className="text-sm font-semibold flex items-center gap-2.5 transition-colors text-zinc-800 hover:text-[#0071e3]"
+                      >
+                        <Search className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                        {highlightMatch(searchItem.label, searchQuery)}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        
+        {/* Left: Logo */}
+        <Link to="/" className="flex items-center gap-2 shrink-0 group">
+          <AppleIcon className={`h-5 w-5 transition-transform duration-200 group-hover:scale-110 ${isIphonePage ? 'text-black' : 'text-white'}`} />
+          <span className={`text-2xl font-black tracking-widest font-serif transition-colors duration-200 ${isIphonePage ? 'text-black' : 'text-white'}`} style={{ fontFamily: 'Georgia, serif' }}>
+            IINCEPT
+          </span>
+        </Link>
+
+        {/* Center: Navigation Menu */}
+        <div className="hidden lg:flex items-center gap-12 text-[11px] font-bold tracking-wider relative">
+          {menuItems.map((item, idx) => {
+            if (item.label === 'Mac') {
+              return (
+                <button
+                  key={idx}
+                  onMouseEnter={handleMacMouseEnter}
+                  onMouseLeave={handleMacMouseLeave}
+                  onClick={() => {
+                    closeAllDropdowns();
+                    navigate(item.path);
+                  }}
+                  className={getNavBtnClass(isMacDropdownOpen)}
+                >
+                  Mac
+                </button>
+              );
+            }
+            if (item.label === 'iPad') {
+              return (
+                <button
+                  key={idx}
+                  onMouseEnter={handleIpadMouseEnter}
+                  onMouseLeave={handleIpadMouseLeave}
+                  onClick={() => {
+                    closeAllDropdowns();
+                    navigate(item.path);
+                  }}
+                  className={getNavBtnClass(isIpadDropdownOpen)}
+                >
+                  iPad
+                </button>
+              );
+            }
+            if (item.label === 'iPhone') {
+              return (
+                <button
+                  key={idx}
+                  onMouseEnter={handleIphoneMouseEnter}
+                  onMouseLeave={handleIphoneMouseLeave}
+                  onClick={() => {
+                    closeAllDropdowns();
+                    navigate(item.path);
+                  }}
+                  className={getNavBtnClass(isIphoneDropdownOpen)}
+                >
+                  iPhone
+                </button>
+              );
+            }
+            if (item.label === 'Watch') {
+              return (
+                <button
+                  key={idx}
+                  onMouseEnter={handleWatchMouseEnter}
+                  onMouseLeave={handleWatchMouseLeave}
+                  onClick={() => {
+                    closeAllDropdowns();
+                    navigate(item.path);
+                  }}
+                  className={getNavBtnClass(isWatchDropdownOpen)}
+                >
+                  Watch
+                </button>
+              );
+            }
+            if (item.label === 'AirPods') {
+              return (
+                <button
+                  key={idx}
+                  onMouseEnter={handleAirpodsMouseEnter}
+                  onMouseLeave={handleAirpodsMouseLeave}
+                  onClick={() => {
+                    closeAllDropdowns();
+                    navigate(item.path);
+                  }}
+                  className={getNavBtnClass(isAirpodsDropdownOpen)}
+                >
+                  AirPods
+                </button>
+              );
+            }
+            if (item.label === 'TV & Home') {
+              return (
+                <button
+                  key={idx}
+                  onMouseEnter={handleTvMouseEnter}
+                  onMouseLeave={handleTvMouseLeave}
+                  onClick={() => {
+                    closeAllDropdowns();
+                    navigate(item.path);
+                  }}
+                  className={getNavBtnClass(isTvDropdownOpen)}
+                >
+                  TV & Home
+                </button>
+              );
+            }
+            if (item.label === 'Entertainment') {
+              return (
+                <button
+                  key={idx}
+                  onMouseEnter={handleEntertainmentMouseEnter}
+                  onMouseLeave={handleEntertainmentMouseLeave}
+                  onClick={() => {
+                    closeAllDropdowns();
+                    navigate(item.path);
+                  }}
+                  className={getNavBtnClass(isEntertainmentDropdownOpen)}
+                >
+                  Entertainment
+                </button>
+              );
+            }
+            if (item.label === 'Accessories') {
+              return (
+                <button
+                  key={idx}
+                  onMouseEnter={handleAccessoriesMouseEnter}
+                  onMouseLeave={handleAccessoriesMouseLeave}
+                  onClick={() => {
+                    closeAllDropdowns();
+                    navigate(item.path);
+                  }}
+                  className={getNavBtnClass(isAccessoriesDropdownOpen)}
+                >
+                  Accessories
+                </button>
+              );
+            }
+            if (item.label === 'Bulk Pricing') {
+              return (
+                <a
+                  key={idx}
+                  href="/?scroll=procurement"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    clearAllTimeouts();
+                    closeAllDropdowns();
+                    if (location.pathname === '/') {
+                      const section = document.getElementById('procurement-section');
+                      if (section) {
+                        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    } else {
+                      navigate('/?scroll=procurement');
+                    }
+                  }}
+                  className="cta-btn-pill"
+                >
+                  Bulk Pricing
+                </a>
+              );
+            }
+            if (item.label === 'Support') {
+              return (
+                <button
+                  key={idx}
+                  onMouseEnter={handleSupportMouseEnter}
+                  onMouseLeave={handleSupportMouseLeave}
+                  onClick={() => {
+                    closeAllDropdowns();
+                    navigate(item.path);
+                  }}
+                  className={getNavBtnClass(isSupportDropdownOpen)}
+                >
+                  Support
+                </button>
+              );
+            }
+            return null;
+          })}
+
+        </div>
+
+        {/* Right: Icon Group */}
+        <div className={`flex items-center gap-4 shrink-0 transition-colors duration-300 ${isIphonePage ? 'text-zinc-800' : 'text-zinc-300'}`}>
+          
+          {/* Search Trigger Icon */}
+          <button 
+            onClick={() => { setIsSearchOpen(true); closeAllDropdowns(); }}
+            onMouseEnter={() => {
+              clearAllTimeouts();
+              closeAllDropdowns();
+            }}
+            className={`p-1.5 rounded-full transition-colors cursor-pointer bg-transparent border-0 ${isIphonePage ? 'hover:text-black hover:bg-zinc-100' : 'hover:text-white hover:bg-zinc-900'}`}
+            aria-label="Search"
+          >
+            <Search className="h-5 w-5" />
+          </button>
+
+
+          {/* Profile settings dropdown / Login button */}
+          {isAuthenticated ? (
+            <div className="relative">
+              <button 
+                onClick={() => { setIsProfileOpen(!isProfileOpen); closeAllDropdowns(); }}
+                onMouseEnter={() => {
+                  clearAllTimeouts();
+                  closeAllDropdowns();
+                }}
+                className={`flex items-center gap-1 p-1 rounded-full transition-all duration-200 focus:outline-none cursor-pointer bg-transparent border-0 ${isIphonePage ? 'text-zinc-700 hover:text-black hover:bg-zinc-100' : 'text-zinc-350 hover:text-white hover:bg-zinc-900'}`}
+              >
+                <div className={`h-7 w-7 rounded-full flex items-center justify-center font-bold text-xs ${isIphonePage ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-950'}`}>
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+                <ChevronDown className={`h-3.5 w-3.5 text-zinc-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isProfileOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setIsProfileOpen(false)} />
+                  <div className="absolute right-0 mt-3 w-52 rounded-2xl bg-zinc-900 border border-zinc-800 p-2 shadow-2xl z-20 animate-in fade-in slide-in-from-top-2 duration-200 text-left">
+                    <div className="px-3 py-2 border-b border-zinc-800 text-zinc-500 text-[10px] font-extrabold uppercase tracking-wider">
+                      Settings
+                    </div>
+                    <Link 
+                      to="/profile" 
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-zinc-300 hover:text-white rounded-lg hover:bg-zinc-805/60 rounded-xl transition-colors"
+                    >
+                      <User className="h-4 w-4 text-zinc-400" />
+                      My Profile
+                    </Link>
+                    <Link 
+                      to="/profile?tab=orders" 
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-zinc-300 hover:text-white rounded-lg hover:bg-zinc-805/60 rounded-xl transition-colors"
+                    >
+                      <Package className="h-4 w-4 text-zinc-400" />
+                      Track Orders
+                    </Link>
+                    <Link 
+                      to="/checkout" 
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-zinc-300 hover:text-white rounded-lg hover:bg-zinc-805/60 rounded-xl transition-colors"
+                    >
+                      <ShieldCheck className="h-4 w-4 text-zinc-400" />
+                      Checkout
+                    </Link>
+                    {user?.role === 'admin' && (
+                      <Link 
+                        to="/admin/dashboard" 
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-amber-400 hover:text-amber-350 rounded-lg hover:bg-amber-950/20 transition-colors"
+                      >
+                        <Settings className="h-4 w-4 text-amber-400" />
+                        Admin Panel
+                      </Link>
+                    )}
+                    <hr className="my-1 border-zinc-800" />
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-rose-400 hover:text-rose-350 rounded-lg hover:bg-rose-950/20 transition-colors text-left cursor-pointer bg-transparent border-0"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout Account
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <Link 
+              to="/login"
+              onMouseEnter={() => {
+                clearAllTimeouts();
+                closeAllDropdowns();
+              }}
+              className={`p-1.5 rounded-full transition-colors ${isIphonePage ? 'hover:text-black hover:bg-zinc-150 hover:bg-zinc-100' : 'hover:text-white hover:bg-zinc-900'}`}
+              aria-label="Login"
+            >
+              <User className="h-5 w-5" />
+            </Link>
+          )}
+
+          {/* Cart Icon with count badge */}
+          <button 
+            onClick={() => {
+              dispatch(openCart());
+              closeAllDropdowns();
+            }}
+            onMouseEnter={() => {
+              clearAllTimeouts();
+              closeAllDropdowns();
+            }}
+            className={`p-1.5 rounded-full relative transition-all duration-200 shrink-0 cursor-pointer bg-transparent border-0 ${isIphonePage ? 'hover:text-black hover:bg-zinc-100 text-black' : 'hover:text-white hover:bg-zinc-900 text-zinc-300'}`}
+            aria-label="Shopping Cart"
+          >
+            <ShoppingBag className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span className={`absolute -top-0.5 -right-0.5 text-[8px] font-extrabold h-4.5 w-4.5 rounded-full flex items-center justify-center ${isIphonePage ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-950'}`}>
+                {cartCount}
+              </span>
+            )}
+          </button>
+
+          {/* Mobile Drawer Trigger */}
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className={`p-1.5 lg:hidden rounded-full focus:outline-none cursor-pointer bg-transparent border-0 ${isIphonePage ? 'hover:text-black hover:bg-zinc-100' : 'hover:text-white hover:bg-zinc-900'}`}
+            aria-label="Toggle Navigation Menu"
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+
+        </div>
+      </div>
+
+      {/* Mobile Drawer menu */}
+      {isMobileMenuOpen && (
+        <div className={`lg:hidden border-t px-4 pt-2 pb-4 space-y-3 text-left transition-colors duration-300 ${isIphonePage ? 'border-zinc-200 bg-white' : 'border-zinc-800 bg-zinc-950'}`}>
+          <div className="grid grid-cols-2 gap-2 text-center text-xs font-semibold">
+            <Link 
+              to="/" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`py-2.5 rounded-xl border transition-colors ${isIphonePage ? 'bg-zinc-100 border-zinc-200 text-black hover:bg-zinc-200' : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-850'}`}
+            >
+              Home
+            </Link>
+            <Link 
+              to="/shop" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`py-2.5 rounded-xl border transition-colors ${isIphonePage ? 'bg-zinc-100 border-zinc-200 text-black hover:bg-zinc-200' : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-850'}`}
+            >
+              Shop
+            </Link>
+            
+            <div className={`col-span-2 text-left rounded-xl p-3 space-y-2 border transition-colors ${isIphonePage ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
+              <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider block">Menu Categories</span>
+              <div className="grid grid-cols-2 gap-2">
+                {menuItems.map((item, idx) => {
+                  if (item.label === 'Bulk Pricing') {
+                    return (
+                      <a 
+                        key={idx}
+                        href="/?scroll=procurement"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsMobileMenuOpen(false);
+                          if (location.pathname === '/') {
+                            const section = document.getElementById('procurement-section');
+                            if (section) {
+                              section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                          } else {
+                            navigate('/?scroll=procurement');
+                          }
+                        }}
+                        className={`py-1.5 px-2.5 rounded-lg border text-[11px] font-bold transition-all ${isIphonePage ? 'bg-zinc-950 border-zinc-950 text-white hover:bg-zinc-900' : 'bg-white border-white text-zinc-900 hover:bg-zinc-100'}`}
+                      >
+                        {item.label}
+                      </a>
+                    );
+                  }
+                  return (
+                    <Link 
+                      key={idx}
+                      to={item.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`py-1.5 px-2.5 rounded-lg border text-[11px] font-bold transition-all ${isIphonePage ? 'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-100' : 'bg-zinc-950 border-zinc-800 text-zinc-300 hover:bg-zinc-850'}`}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            <Link 
+              to="/wishlist" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`py-2.5 rounded-xl border col-span-1 text-rose-500 font-bold transition-colors ${isIphonePage ? 'bg-zinc-100 border-zinc-200 hover:bg-zinc-200' : 'bg-zinc-900 border-zinc-800 hover:bg-zinc-850'}`}
+            >
+              Wishlist ({wishlistCount})
+            </Link>
+            <Link 
+              to="/cart" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`py-2.5 rounded-xl border col-span-1 font-bold transition-colors ${isIphonePage ? 'bg-zinc-100 border-zinc-200 text-black hover:bg-zinc-200' : 'bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-850'}`}
+            >
+              Cart ({cartCount})
+            </Link>
+          </div>
+        </div>
+      )}
+      
+      {/* Mega Dropdown for Mac */}
+      {isMacDropdownOpen && (
+        <>
+          {/* Dropdown panel */}
+          <div 
+            onMouseEnter={handleMacMouseEnter}
+            onMouseLeave={() => {
+              handleMacMouseLeave();
+              setHoveredProduct(null);
+            }}
+            className={dropdownClass}>
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
+              
+              {/* Column 1: Explore Mac */}
+              <div className="md:col-span-7 space-y-3 text-left">
+                <span className="text-[12px] font-medium text-zinc-400 block mb-1">
+                  Explore Mac
+                </span>
+                <div className="flex flex-col gap-2">
+                  {[
+                    { label: 'Explore All Mac', path: '/macbook' },
+                    { label: 'MacBook Neo', path: '/macbook?search=MacBook Neo' },
+                    { label: 'MacBook Air', path: '/macbook?search=MacBook Air' },
+                    { label: 'MacBook Pro', path: '/macbook?search=MacBook Pro' },
+                    { label: 'iMac', path: '/macbook?search=iMac' },
+                    { label: 'Mac mini', path: '/macbook?search=Mac mini' },
+                    { label: 'Mac Studio', path: '/macbook?search=Mac Studio' },
+                    { label: 'Displays', path: '/macbook?search=Display' }
+                  ].map((sub, sIdx) => (
+                    <Link 
+                      key={sIdx}
+                      to={sub.path}
+                      onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
+                      onClick={() => {
+                        setIsMacDropdownOpen(false);
+                        setHoveredProduct(null);
+                      }}
+                      className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              
+              {renderProductPreview()}
+
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Mega Dropdown for iPad */}
+      {isIpadDropdownOpen && (
+        <>
+          {/* Dropdown panel */}
+          <div 
+            onMouseEnter={handleIpadMouseEnter}
+            onMouseLeave={() => {
+              handleIpadMouseLeave();
+              setHoveredProduct(null);
+            }}
+            className={dropdownClass}>
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
+              
+              {/* Column 1: Explore iPad */}
+              <div className="md:col-span-7 space-y-3 text-left">
+                <span className="text-[12px] font-medium text-zinc-400 block mb-1">
+                  Explore iPad
+                </span>
+                <div className="flex flex-col gap-2">
+                  {[
+                    { label: 'Explore All iPad', path: '/ipad' },
+                    { label: 'iPad Pro', path: '/ipad?search=iPad Pro' },
+                    { label: 'iPad Air', path: '/ipad?search=iPad Air' },
+                    { label: 'iPad', path: '/ipad?search=iPad 10' },
+                    { label: 'iPad mini', path: '/ipad?search=iPad mini' },
+                    { label: 'Apple Pencil', path: '/accessories?search=Pencil' },
+                    { label: 'Keyboards', path: '/accessories?search=Keyboard' }
+                  ].map((sub, sIdx) => (
+                    <Link 
+                      key={sIdx}
+                      to={sub.path}
+                      onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
+                      onClick={() => {
+                        setIsIpadDropdownOpen(false);
+                        setHoveredProduct(null);
+                      }}
+                      className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              
+              {renderProductPreview()}
+
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Mega Dropdown for iPhone */}
+      {isIphoneDropdownOpen && (
+        <>
+          {/* Dropdown panel */}
+          <div 
+            onMouseEnter={handleIphoneMouseEnter}
+            onMouseLeave={() => {
+              handleIphoneMouseLeave();
+              setHoveredProduct(null);
+            }}
+            className={dropdownClass}
+          >
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
+              
+              {/* Column 1: Explore iPhone */}
+              <div className="md:col-span-7 space-y-3 text-left">
+                <span className="text-[12px] font-medium text-zinc-400 block mb-1">
+                  Explore iPhone
+                </span>
+                <div className="flex flex-col gap-2">
+                  {[
+                    { label: 'Explore All iPhone', path: '/iphone' },
+                    { label: 'iPhone 17 Pro', path: '/iphone?search=iPhone 17 Pro' },
+                    { label: 'iPhone Air', path: '/iphone?search=iPhone Air' },
+                    { label: 'iPhone 17', path: '/iphone?search=iPhone 17' },
+                    { label: 'iPhone 17e', path: '/iphone?search=iPhone 17e' },
+                    { label: 'iPhone 16', path: '/iphone?search=iPhone 16' }
+                  ].map((sub, sIdx) => (
+                    <Link 
+                      key={sIdx}
+                      to={sub.path}
+                      onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
+                      onClick={() => {
+                        setIsIphoneDropdownOpen(false);
+                        setHoveredProduct(null);
+                      }}
+                      className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              
+              {renderProductPreview()}
+
+            </div>
+          </div>
+      </>
+)}
+
+      {/* Mega Dropdown for Watch */}
+      {isWatchDropdownOpen && (
+        <>
+          {/* Dropdown panel */}
+          <div 
+            onMouseEnter={handleWatchMouseEnter}
+            onMouseLeave={() => {
+              handleWatchMouseLeave();
+              setHoveredProduct(null);
+            }}
+            className={dropdownClass}
+          >
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
+              
+              {/* Column 1: Explore Watch */}
+              <div className="md:col-span-7 space-y-3 text-left">
+                <span className="text-[12px] font-medium text-zinc-400 block mb-1">
+                  Explore Watch
+                </span>
+                <div className="flex flex-col gap-2">
+                  {[
+                    { label: 'Explore All Apple Watch', path: '/watch' },
+                    { label: 'Apple Watch Series 11', path: '/watch?search=Series 11' },
+                    { label: 'Apple Watch SE 3', path: '/watch?search=SE 3' },
+                    { label: 'Apple Watch Ultra 3', path: '/watch?search=Ultra 3' },
+                    { label: 'Apple Watch Nike', path: '/watch?search=Nike' }
+                  ].map((sub, sIdx) => (
+                    <Link 
+                      key={sIdx}
+                      to={sub.path}
+                      onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
+                      onClick={() => {
+                        setIsWatchDropdownOpen(false);
+                        setHoveredProduct(null);
+                      }}
+                      className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              
+              {renderProductPreview()}
+
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Mega Dropdown for AirPods */}
+      {isAirpodsDropdownOpen && (
+        <>
+          {/* Dropdown panel */}
+          <div 
+            onMouseEnter={handleAirpodsMouseEnter}
+            onMouseLeave={() => {
+              handleAirpodsMouseLeave();
+              setHoveredProduct(null);
+            }}
+            className={dropdownClass}
+          >
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
+              
+              {/* Column 1: Explore AirPods */}
+              <div className="md:col-span-7 space-y-3 text-left">
+                <span className="text-[12px] font-medium text-zinc-400 block mb-1">
+                  Explore AirPods
+                </span>
+                <div className="flex flex-col gap-2">
+                  {[
+                    { label: 'Explore All AirPods', path: '/airpods' },
+                    { label: 'AirPods 4', path: '/airpods?search=AirPods 4' },
+                    { label: 'AirPods Pro 3', path: '/airpods?search=Pro 3' },
+                    { label: 'AirPods Max 2', path: '/airpods?search=Max 2' }
+                  ].map((sub, sIdx) => (
+                    <Link 
+                      key={sIdx}
+                      to={sub.path}
+                      onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
+                      onClick={() => {
+                        setIsAirpodsDropdownOpen(false);
+                        setHoveredProduct(null);
+                      }}
+                      className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              
+              {renderProductPreview()}
+
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Mega Dropdown for TV & Home */}
+      {isTvDropdownOpen && (
+        <>
+          {/* Dropdown panel */}
+          <div 
+            onMouseEnter={handleTvMouseEnter}
+            onMouseLeave={() => {
+              handleTvMouseLeave();
+              setHoveredProduct(null);
+            }}
+            className={dropdownClass}
+          >
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
+              
+              {/* Column 1: Explore TV & Home */}
+              <div className="md:col-span-7 space-y-3 text-left">
+                <span className="text-[12px] font-medium text-zinc-400 block mb-1">
+                  Explore TV & Home
+                </span>
+                <div className="flex flex-col gap-2">
+                  {[
+                    { label: 'Explore TV & Home', path: '/tv-home' },
+                    { label: 'Apple TV 4K', path: '/tv-home?search=TV 4K' },
+                    { label: 'HomePod', path: '/tv-home?search=HomePod' },
+                    { label: 'HomePod mini', path: '/tv-home?search=mini' }
+                  ].map((sub, sIdx) => (
+                    <Link 
+                      key={sIdx}
+                      to={sub.path}
+                      onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
+                      onClick={() => {
+                        setIsTvDropdownOpen(false);
+                        setHoveredProduct(null);
+                      }}
+                      className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              
+              {renderProductPreview()}
+
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Mega Dropdown for Entertainment */}
+      {isEntertainmentDropdownOpen && (
+        <>
+          <div 
+            onMouseEnter={handleEntertainmentMouseEnter}
+            onMouseLeave={handleEntertainmentMouseLeave}
+            className={dropdownClass}
+          >
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 font-sans">
+              
+              {/* Column 1: Explore Entertainment */}
+              <div className="md:col-span-5 space-y-5 text-left">
+                <span className="text-[12px] font-medium text-zinc-400 block mb-1">
+                  Explore Entertainment
+                </span>
+                <div className="flex flex-col gap-2.5">
+                  {[
+                    { label: 'Explore Entertainment', path: '/shop?category=electronics' },
+                    { label: 'Apple One', path: '/shop?category=electronics' },
+                    { label: 'Apple TV', path: '/shop?category=electronics' },
+                    { label: 'Apple Music', path: '/shop?category=electronics' },
+                    { label: 'Apple Arcade', path: '/shop?category=electronics' },
+                    { label: 'Apple Fitness+', path: '/shop?category=electronics' },
+                    { label: 'Apple Podcasts', path: '/shop?category=electronics' },
+                    { label: 'Apple Books', path: '/shop?category=electronics' },
+                    { label: 'App Store', path: '/shop?category=electronics' }
+                  ].map((sub, sIdx) => (
+                    <Link 
+                      key={sIdx}
+                      to={sub.path}
+                      onClick={() => setIsEntertainmentDropdownOpen(false)}
+                      className="text-lg sm:text-[24px] font-semibold tracking-tight text-white hover:text-zinc-300 transition-colors block leading-tight py-0.5"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Column 2: Support */}
+              <div className="md:col-span-3 space-y-5 text-left">
+                <span className="text-[12px] font-medium text-zinc-400 block mb-1">
+                  Support
+                </span>
+                <div className="flex flex-col gap-3">
+                  {[
+                    { label: 'Apple TV Support', path: '/profile' },
+                    { label: 'Apple Music Support', path: '/profile' }
+                  ].map((sub, sIdx) => (
+                    <Link 
+                      key={sIdx}
+                      to={sub.path}
+                      onClick={() => setIsEntertainmentDropdownOpen(false)}
+                      className="text-[14px] font-semibold text-zinc-200 hover:text-white transition-colors block"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Mega Dropdown for Accessories */}
+      {isAccessoriesDropdownOpen && (
+        <>
+          <div 
+            onMouseEnter={handleAccessoriesMouseEnter}
+            onMouseLeave={() => {
+              handleAccessoriesMouseLeave();
+              setHoveredProduct(null);
+            }}
+            className={dropdownClass}
+          >
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
+              
+              {/* Column 1: Shop Accessories */}
+              <div className="md:col-span-7 space-y-3 text-left">
+                <span className="text-[12px] font-medium text-zinc-400 block mb-1">
+                  Shop Accessories
+                </span>
+                <div className="flex flex-col gap-2">
+                  {[
+                    { label: 'Shop All Accessories', path: '/accessories' },
+                    { label: 'Mac', path: '/accessories?product=mac' },
+                    { label: 'iPad', path: '/accessories?product=ipad' },
+                    { label: 'iPhone', path: '/accessories?product=iphone' },
+                    { label: 'Apple Watch', path: '/accessories?product=watch' },
+                    { label: 'AirPods', path: '/accessories?product=airpods' },
+                    { label: 'TV & Home', path: '/accessories?product=tv-home' }
+                  ].map((sub, sIdx) => (
+                    <Link 
+                      key={sIdx}
+                      to={sub.path}
+                      onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
+                      onClick={() => {
+                        setIsAccessoriesDropdownOpen(false);
+                        setHoveredProduct(null);
+                      }}
+                      className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              
+              {renderProductPreview()}
+
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Mega Dropdown for Support */}
+      {isSupportDropdownOpen && (
+        <>
+          <div 
+            onMouseEnter={handleSupportMouseEnter}
+            onMouseLeave={handleSupportMouseLeave}
+            className={dropdownClass}
+          >
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 font-sans">
+              
+              {/* Column 1: Explore Support */}
+              <div className="md:col-span-5 space-y-5 text-left">
+                <span className="text-[12px] font-medium text-zinc-400 block mb-1">
+                  Explore Support
+                </span>
+                <div className="flex flex-col gap-2.5">
+                  {[
+                    { label: 'iPhone', path: '/profile' },
+                    { label: 'Mac', path: '/profile' },
+                    { label: 'iPad', path: '/profile' },
+                    { label: 'Watch', path: '/profile' },
+                    { label: 'AirPods', path: '/profile' },
+                    { label: 'Music', path: '/profile' },
+                    { label: 'TV', path: '/profile' }
+                  ].map((sub, sIdx) => (
+                    <Link 
+                      key={sIdx}
+                      to={sub.path}
+                      onClick={() => setIsSupportDropdownOpen(false)}
+                      className="text-lg sm:text-[24px] font-semibold tracking-tight text-white hover:text-zinc-300 transition-colors block leading-tight py-0.5"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                  <div className="pt-5 mt-2">
+                    <Link 
+                      to="/profile"
+                      onClick={() => setIsSupportDropdownOpen(false)}
+                      className="text-[12px] font-semibold text-zinc-300 hover:text-white transition-colors block"
+                    >
+                      Explore Support
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* Column 2: Get Help */}
+              <div className="md:col-span-3 space-y-5 text-left">
+                <span className="text-[12px] font-medium text-zinc-400 block mb-1">
+                  Get Help
+                </span>
+                <div className="flex flex-col gap-3">
+                  {[
+                    { label: 'Community', path: '/profile' },
+                    { label: 'Check Coverage', path: '/profile' },
+                    { label: 'Genius Bar', path: '/profile' },
+                    { label: 'Repair', path: '/profile' }
+                  ].map((sub, sIdx) => (
+                    <Link 
+                      key={sIdx}
+                      to={sub.path}
+                      onClick={() => setIsSupportDropdownOpen(false)}
+                      className="text-[14px] font-semibold text-zinc-200 hover:text-white transition-colors block"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Column 3: Helpful Topics */}
+              <div className="md:col-span-4 space-y-5 text-left">
+                <span className="text-[12px] font-medium text-zinc-400 block mb-1">
+                  Helpful Topics
+                </span>
+                <div className="flex flex-col gap-3">
+                  {[
+                    { label: 'Get AppleCare', path: '/profile' },
+                    { label: 'Apple Account and Password', path: '/profile' },
+                    { label: 'Billing & Subscriptions', path: '/profile' },
+                    { label: 'Accessibility', path: '/profile' }
+                  ].map((sub, sIdx) => (
+                    <Link 
+                      key={sIdx}
+                      to={sub.path}
+                      onClick={() => setIsSupportDropdownOpen(false)}
+                      className="text-[14px] font-semibold text-zinc-200 hover:text-white transition-colors block"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </>
+      )}
+    </nav>
+    </div>
+    </>
+  );
+}
