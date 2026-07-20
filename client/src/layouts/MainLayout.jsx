@@ -24,7 +24,7 @@ export default function MainLayout() {
     window.scrollTo({
       top: 0,
       left: 0,
-      behavior: 'instant' // Instant scroll without delay to keep transition fast and crisp
+      behavior: 'smooth'
     });
   }, [pathname]);
 
