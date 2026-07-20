@@ -166,7 +166,7 @@ const router = createBrowserRouter([
     path: '/admin',
     element: <AdminProtectedRoute><AdminLayout /></AdminProtectedRoute>,
     children: [
-      { path: '', element: <Navigate to="dashboard" replace /> },
+      { path: '', element: <Navigate to="/admin/dashboard" replace /> },
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'products', element: <Products /> },
       { path: 'categories', element: <AdminCategories /> },
