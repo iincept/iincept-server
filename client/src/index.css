@@ -5,8 +5,23 @@
   --font-sans: "San Francisco", -apple-system, BlinkMacSystemFont, "SF Pro", "SF Pro Text", "SF Pro Display", sans-serif;
 }
 
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
 html {
-  scroll-behavior: smooth !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -16,7 +31,6 @@ body {
   font-family: var(--font-sans);
   overflow-x: hidden;
   background-color: #fafafa;
-  scroll-behavior: smooth;
 }
 
 /* Custom Ultra-Smooth Scrollbar */
