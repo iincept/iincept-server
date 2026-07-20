@@ -170,22 +170,6 @@ export default function ProductDetails() {
   const localProduct = getProductFromStore(id);
   const product = currentProduct || localProduct;
 
-  if (!product) {
-    if (loading) {
-      return <Loader message="Loading product details..." />;
-    }
-    return (
-      <div className="flex flex-col items-center justify-center p-20 text-slate-400">
-        <ShieldAlert className="h-12 w-12 text-zinc-400 mb-3 animate-bounce" />
-        <h2 className="text-xl font-bold text-zinc-800">Product Not Found</h2>
-        <p className="text-sm text-zinc-550 mt-1">The product you are looking for does not exist in our database.</p>
-        <Link to="/shop" className="mt-6 text-xs font-bold bg-zinc-950 text-white px-5 py-2.5 rounded-xl hover:bg-zinc-850 transition-colors">
-          Explore Products
-        </Link>
-      </div>
-    );
-  }
-
   const resolveColorValue = (cVal) => {
     if (!cVal) return '#cbd5e1';
     const cValStr = cVal.toString().trim();
@@ -230,6 +214,7 @@ export default function ProductDetails() {
 
   // Helper to extract color-specific images
   const getColorImages = (colorName) => {
+    if (!product) return [];
     if (!colorName) return product.images || [];
     
     // Find index and object/string of color in product.colors
@@ -271,8 +256,8 @@ export default function ProductDetails() {
   };
 
   // Variant setups
-  let rawColors = product.colors || [];
-  if (rawColors.length === 0 && product.variants && product.variants.length > 0) {
+  let rawColors = product?.colors || [];
+  if (rawColors.length === 0 && product?.variants && product.variants.length > 0) {
     const uniqueColors = [];
     product.variants.forEach(v => {
       if (v.color && !uniqueColors.includes(v.color)) {
@@ -295,8 +280,8 @@ export default function ProductDetails() {
     };
   });
 
-  let sizes = product.sizes || [];
-  if (sizes.length === 0 && product.variants && product.variants.length > 0) {
+  let sizes = product?.sizes || [];
+  if (sizes.length === 0 && product?.variants && product.variants.length > 0) {
     const uniqueSizes = [];
     product.variants.forEach(v => {
       if (v.size && !uniqueSizes.includes(v.size)) {
@@ -306,8 +291,8 @@ export default function ProductDetails() {
     sizes = uniqueSizes;
   }
 
-  let storages = product.storage || [];
-  if (storages.length === 0 && product.variants && product.variants.length > 0) {
+  let storages = product?.storage || [];
+  if (storages.length === 0 && product?.variants && product.variants.length > 0) {
     const uniqueStorage = [];
     product.variants.forEach(v => {
       if (v.storage && !uniqueStorage.includes(v.storage)) {
@@ -317,8 +302,8 @@ export default function ProductDetails() {
     storages = uniqueStorage;
   }
 
-  let rams = product.ram || product.rams || [];
-  if (rams.length === 0 && product.variants && product.variants.length > 0) {
+  let rams = product?.ram || product?.rams || [];
+  if (rams.length === 0 && product?.variants && product.variants.length > 0) {
     const uniqueRams = [];
     product.variants.forEach(v => {
       if (v.ram && !uniqueRams.includes(v.ram)) {
@@ -332,7 +317,7 @@ export default function ProductDetails() {
   const galleryImages = getColorImages(activeColorName);
 
   const getCategoryLink = () => {
-    const category = (product.category?.name || product.category || '').toString().toLowerCase();
+    const category = (product?.category?.name || product?.category || '').toString().toLowerCase();
     if (category.includes('iphone') || category.includes('smartphone')) return '/iphone';
     if (category.includes('mac') || category.includes('laptop')) return '/macbook';
     if (category.includes('ipad')) return '/ipad';
@@ -344,7 +329,7 @@ export default function ProductDetails() {
   };
 
   const getCategoryName = () => {
-    return product.category?.name || product.category || 'iPhone';
+    return product?.category?.name || product?.category || 'iPhone';
   };
 
   // Determine active configurations
@@ -397,6 +382,7 @@ export default function ProductDetails() {
 
   // Helper to dynamically match variant price based on current selectors
   const getVariantPrice = (oColor, oSize, oStorage, oRam) => {
+    if (!product) return 0;
     const defaultPrice = product.price || 0;
     if (!product.variants || product.variants.length === 0) return defaultPrice;
 
@@ -432,6 +418,22 @@ export default function ProductDetails() {
 
   const unitPrice = getVariantPrice();
   const totalPrice = unitPrice * quantity;
+
+  if (!product) {
+    if (loading) {
+      return <Loader message="Loading product details..." />;
+    }
+    return (
+      <div className="flex flex-col items-center justify-center p-20 text-slate-400">
+        <ShieldAlert className="h-12 w-12 text-zinc-400 mb-3 animate-bounce" />
+        <h2 className="text-xl font-bold text-zinc-800">Product Not Found</h2>
+        <p className="text-sm text-zinc-550 mt-1">The product you are looking for does not exist in our database.</p>
+        <Link to="/shop" className="mt-6 text-xs font-bold bg-zinc-950 text-white px-5 py-2.5 rounded-xl hover:bg-zinc-850 transition-colors">
+          Explore Products
+        </Link>
+      </div>
+    );
+  }
 
   const handleAddToCart = () => {
     const colorName = selectedColor?.name || (colors[0]?.name || 'Standard');
