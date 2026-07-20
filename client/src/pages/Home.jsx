@@ -6,6 +6,53 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const location = useLocation();
 
+  const [quoteForm, setQuoteForm] = useState({
+    companyName: '',
+    fullName: '',
+    email: '',
+    phone: '',
+    productInterest: 'Product interest',
+    quantity: ''
+  });
+  const [submittingQuote, setSubmittingQuote] = useState(false);
+  const [quoteSuccess, setQuoteSuccess] = useState('');
+
+  const handleQuoteSubmit = async (e) => {
+    e.preventDefault();
+    const { companyName, fullName, email, phone, productInterest, quantity } = quoteForm;
+
+    if (!companyName.trim() || !fullName.trim() || !email.trim() || !phone.trim() || productInterest === 'Product interest' || !quantity) {
+      alert('Please fill in all required fields (Company name, Contact person, Email, Phone, Product interest, and Quantity).');
+      return;
+    }
+
+    setSubmittingQuote(true);
+    try {
+      await axiosClient.post('/enquiries', {
+        companyName,
+        fullName,
+        email,
+        phone,
+        productInterest,
+        quantity: Number(quantity)
+      });
+      setQuoteSuccess('Quote request submitted successfully! Our B2B desk will contact you soon.');
+      setQuoteForm({
+        companyName: '',
+        fullName: '',
+        email: '',
+        phone: '',
+        productInterest: 'Product interest',
+        quantity: ''
+      });
+      setTimeout(() => setQuoteSuccess(''), 5000);
+    } catch (err) {
+      alert(err.response?.data?.message || err.message || 'Failed to submit quote request.');
+    } finally {
+      setSubmittingQuote(false);
+    }
+  };
+
   const [settings, setSettings] = useState({
     heroTitle1: "Apple devices for your business, sourced right, delivered anywhere in India.",
     heroSubtitle1: "Bulk pricing, GST invoicing, dedicated account support and consolidated billing — built for IT teams, gifting desks and resellers, not one-off retail buyers.",
@@ -37,31 +84,6 @@ export default function Home() {
     }
   };
 
-  const [recentlyViewed, setRecentlyViewed] = useState([]);
-
-  useEffect(() => {
-    fetchRecents();
-  }, []);
-
-  const fetchRecents = async () => {
-    try {
-      const stored = localStorage.getItem('iincept_recent_views');
-      if (stored) {
-        const ids = JSON.parse(stored);
-        if (ids.length > 0) {
-          const { getProducts } = await import('../services/productApi');
-          const data = await getProducts({ limit: 100 });
-          const allProds = Array.isArray(data) ? data : (data.products || []);
-          const filtered = ids
-            .map(recentId => allProds.find(p => (p._id || p.id) === recentId))
-            .filter(Boolean);
-          setRecentlyViewed(filtered.slice(0, 4));
-        }
-      }
-    } catch (err) {
-      console.error('Failed to load recents on home:', err);
-    }
-  };
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -172,11 +194,11 @@ export default function Home() {
 
         .slide-content h1 {
           font-family: 'Fraunces', serif;
-          font-size: 40px;
-          line-height: 1.18;
+          font-size: 38px;
+          line-height: 1.2;
           font-weight: 700;
-          margin-bottom: 20px;
-          min-height: 96px;
+          margin-bottom: 16px;
+          height: 96px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -186,20 +208,28 @@ export default function Home() {
           line-height: 1.55;
           max-width: 600px;
           margin: 0 auto 28px;
-          min-height: 54px;
+          height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .btn-dark {
           background: var(--paper); color: #fff;
-          padding: 15px 28px; border-radius: 10px;
+          height: 48px;
+          padding: 0 28px; border-radius: 10px;
           font-weight: 700; font-size: 14.5px;
-          display: inline-flex; align-items: center; gap: 8px;
+          display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+          box-sizing: border-box;
         }
         .btn-dark:hover { background: #000; }
         .btn-light {
           background: #fff; color: var(--paper);
-          padding: 15px 28px; border-radius: 10px;
+          height: 48px;
+          padding: 0 28px; border-radius: 10px;
           font-weight: 700; font-size: 14.5px;
-          display: inline-flex; align-items: center; gap: 8px;
+          display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+          box-sizing: border-box;
+          border: 1px solid transparent;
         }
         .btn-light:hover { background: #f2f2f2; }
 
@@ -251,20 +281,30 @@ export default function Home() {
 
         /* EMI STRIP */
         .emi-strip {
-          background: var(--paper);
-          color: #fff;
-          padding: 20px 40px;
+          background: #ffffff;
+          color: #1d1d1f;
+          padding: 24px 40px;
           display: flex; align-items: center; justify-content: center;
-          gap: 40px;
+          gap: 36px;
           flex-wrap: wrap;
-          font-size: 13.5px;
+          font-size: 14px;
+          font-weight: 500;
         }
         .emi-strip .item { display: flex; align-items: center; gap: 10px; }
+        .emi-strip .dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #1d1d1f;
+          display: inline-block;
+          flex-shrink: 0;
+        }
         .emi-strip .badge {
-          font-size: 11px; font-weight: 700;
-          border: 1px solid rgba(255,255,255,0.3);
-          padding: 4px 9px; border-radius: 999px;
-          color: #fff;
+          font-size: 11.5px; font-weight: 700;
+          border: 1px solid #1d1d1f;
+          padding: 3px 10px; border-radius: 999px;
+          color: #1d1d1f;
+          background: #f8f8fa;
         }
         .emi-strip .more {
           text-decoration: underline;
@@ -308,17 +348,17 @@ export default function Home() {
         
         .b2b-hero .category-section {
           background: #FFFFFF;
-          padding: 160px 0 80px;
+          padding: 35px 0 100px;
           text-align: left;
         }
         .b2b-hero .category-card {
           position: relative;
-          border-radius: 24px;
-          padding: 32px;
+          border-radius: 22px;
+          padding: 28px;
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
-          min-height: 380px;
+          min-height: 310px;
           transition: transform 0.3s ease, box-shadow 0.3s ease;
           text-decoration: none;
         }
@@ -420,7 +460,21 @@ export default function Home() {
               <div className="slide-content text-center">
                 <h1 className="whitespace-pre-line">{settings.heroTitle1}</h1>
                 <p>{settings.heroSubtitle1}</p>
-                <Link to="/bulk-orders" className="btn-light">{settings.heroButtonText1}</Link>
+                <a
+                  href="#procurement-section"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const section = document.getElementById('procurement-section');
+                    if (section) {
+                      const yOffset = -100;
+                      const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                      window.scrollTo({ top: y, behavior: 'smooth' });
+                    }
+                  }}
+                  className="btn-light cursor-pointer"
+                >
+                  {settings.heroButtonText1}
+                </a>
                 <div className="slide-stats">
                   <span><b>GST invoicing</b> on every order</span>
                   <span><b>Volume pricing</b> on bulk orders</span>
@@ -434,7 +488,22 @@ export default function Home() {
               <div className="slide-content text-center">
                 <h1 className="whitespace-pre-line">{settings.heroTitle2}</h1>
                 <p>{settings.heroSubtitle2}</p>
-                <Link to="/iphone" className="btn-dark">{settings.heroButtonText2}</Link>
+                <a
+                  href="#apple-categories"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const section = document.getElementById('apple-categories');
+                    if (section) {
+                      const yOffset = -60;
+                      const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                      window.scrollTo({ top: y, behavior: 'smooth' });
+                    }
+                  }}
+                  className="btn-light cursor-pointer shadow-sm"
+                  style={{ border: '1px solid #d1d5db' }}
+                >
+                  {settings.heroButtonText2}
+                </a>
                 <div className="slide-stats">
                   <span><b>New launches</b> every month</span>
                   <span><b>Curated</b> best-sellers</span>
@@ -456,16 +525,19 @@ export default function Home() {
       </div>
 
       <div className="emi-strip">
-        <div className="item"><span className="badge">Apple</span> Authorised Reseller</div>
-        <div className="item"><span className="badge">GST Invoicing</span> on every order</div>
-        <div className="item"><span className="badge">Volume Pricing</span> on bulk orders</div>
-        <div className="item"><span className="badge">Pan-India</span> delivery &amp; tracking</div>
+        <div className="item"><span className="dot"></span><span className="badge">Apple</span> Authorised Reseller</div>
+        <div className="item"><span className="dot"></span><span className="badge">GST Invoicing</span> on every order</div>
+        <div className="item"><span className="dot"></span><span className="badge">Volume Pricing</span> on bulk orders</div>
+        <div className="item"><span className="dot"></span><span className="badge">Pan-India</span> delivery &amp; tracking</div>
       </div>
 
+      {/* Balanced Light Divider Line */}
+      <div style={{ width: '100%', maxWidth: '1240px', margin: '75px auto 0', height: '1px', backgroundColor: '#d4d4d8' }}></div>
+
       {/* Category Grid Section */}
-      <section id="apple-categories" className="category-section">
+      <section id="apple-categories" className="category-section" style={{ scrollMarginTop: '60px' }}>
         <div className="wrap">
-          <div style={{ margin: '0 auto', textAlign: 'center', marginBottom: '48px' }}>
+          <div style={{ margin: '0 auto', textAlign: 'center', marginBottom: '28px' }}>
             <h2 className="text-zinc-900" style={{ fontSize: 'clamp(28px, 4vw, 40px)', color: '#1D1D1F', marginBottom: '12px', fontWeight: 700 }}>
               Apple category
             </h2>
@@ -600,9 +672,12 @@ export default function Home() {
         </div>
       </section>
 
-      <div id="procurement-section" className="divider-wrap" style={{ textAlign: 'center', margin: '100px 0 20px' }}>
+      {/* Light Divider Line Above B2B Section */}
+      <div style={{ width: '100%', maxWidth: '1240px', margin: '40px auto 0', height: '1px', backgroundColor: '#d4d4d8' }}></div>
+
+      <div id="procurement-section" className="divider-wrap" style={{ textAlign: 'center', margin: '35px 0 20px' }}>
         <h2 style={{ fontSize: 'clamp(24px, 4vw, 36px)', letterSpacing: '.05em', textTransform: 'uppercase', fontWeight: 800, color: '#111111' }}>
-          Built for procurement teams
+          Built for B2B Partners
         </h2>
       </div>
 
@@ -635,18 +710,67 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="quoteform">
-              <input type="text" placeholder="Company name" />
-              <input type="text" placeholder="Contact person" />
-              <select defaultValue="Product interest">
-                <option disabled>Product interest</option>
+            <form onSubmit={handleQuoteSubmit} className="quoteform">
+              {quoteSuccess && (
+                <div style={{ padding: '12px', marginBottom: '14px', background: '#ecfdf5', color: '#065f46', borderRadius: '10px', fontSize: '12px', fontWeight: '600', border: '1px solid #d1fae5', textAlign: 'left' }}>
+                  {quoteSuccess}
+                </div>
+              )}
+              <input
+                type="text"
+                placeholder="Company name"
+                value={quoteForm.companyName}
+                onChange={(e) => setQuoteForm({ ...quoteForm, companyName: e.target.value })}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Contact person"
+                value={quoteForm.fullName}
+                onChange={(e) => setQuoteForm({ ...quoteForm, fullName: e.target.value })}
+                required
+              />
+              <input
+                type="email"
+                placeholder="Work email"
+                value={quoteForm.email}
+                onChange={(e) => setQuoteForm({ ...quoteForm, email: e.target.value })}
+                required
+              />
+              <input
+                type="tel"
+                placeholder="Phone number"
+                value={quoteForm.phone}
+                onChange={(e) => setQuoteForm({ ...quoteForm, phone: e.target.value })}
+                required
+              />
+              <select
+                value={quoteForm.productInterest}
+                onChange={(e) => setQuoteForm({ ...quoteForm, productInterest: e.target.value })}
+                required
+              >
+                <option disabled value="Product interest">Product interest</option>
                 <option value="iPhone">iPhone</option>
                 <option value="Mac">Mac</option>
                 <option value="iPad">iPad</option>
                 <option value="Mixed / Fleet order">Mixed / Fleet order</option>
               </select>
-              <input type="text" placeholder="6000" />
-              <button className="btn-dark" style={{ border: 'none', cursor: 'pointer' }}>Request Quote →</button>
+              <input
+                type="number"
+                placeholder="Quantity (e.g. 10)"
+                value={quoteForm.quantity}
+                onChange={(e) => setQuoteForm({ ...quoteForm, quantity: e.target.value })}
+                required
+                min="1"
+              />
+              <button
+                type="submit"
+                disabled={submittingQuote}
+                className="btn-dark"
+                style={{ border: 'none', cursor: 'pointer', width: '100%' }}
+              >
+                {submittingQuote ? 'Submitting...' : 'Request Quote →'}
+              </button>
 
               <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', color: '#a1a1aa', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                 <div style={{ flexGrow: 1, height: '1px', background: '#ececec' }}></div>
@@ -666,34 +790,11 @@ export default function Home() {
                 <span>Chat with B2B Desk on WhatsApp</span>
               </a>
               <div style={{ textAlign: 'center', fontSize: '11px', color: '#a1a1aa', marginTop: '10px' }}>Typically replies in under 30 minutes, Mon–Sat</div>
-            </div>
+            </form>
           </div>
         </div>
       </section>
 
-      {/* Recently Viewed Products */}
-      {recentlyViewed.length > 0 && (
-        <section className="section bg-[#fdfdfd] border-t border-zinc-100" style={{ padding: '60px 0' }}>
-          <div className="wrap text-left">
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest block mb-2">PICK UP WHERE YOU LEFT OFF</span>
-            <h2 className="text-xl font-bold tracking-tight text-zinc-900 mb-8" style={{ fontFamily: 'Georgia, serif' }}>Recently Viewed Products</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {recentlyViewed.map((p) => (
-                <Link key={p._id} to={`/product/${p._id}`} className="group block space-y-3">
-                  <div className="aspect-[4/3] w-full rounded-2xl bg-zinc-50 border border-zinc-150/80 p-3 flex items-center justify-center overflow-hidden">
-                    <img src={p.images?.[0]} alt="" className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-350" />
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-bold text-zinc-405 uppercase tracking-widest">{p.brand}</span>
-                    <h4 className="font-bold text-xs text-zinc-900 leading-snug line-clamp-1 group-hover:text-[#0071e3] transition-colors">{p.title}</h4>
-                    <p className="font-extrabold text-xs text-zinc-900 font-sans">₹{p.price?.toLocaleString('en-IN')}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Trust Grid Section */}
       <section className="section" id="trust" style={{ paddingTop: 0 }}>

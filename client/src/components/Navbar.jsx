@@ -569,20 +569,20 @@ export default function Navbar() {
 
   const renderProductPreview = () => {
     return (
-      <div className="hidden md:flex md:col-span-5 pl-2 flex-col text-left shrink-0 items-start">
-        {/* Image preview box */}
-        <div 
-          className="aspect-[4/3] w-full max-w-[320px] rounded-lg bg-zinc-50 border border-dashed border-zinc-200 overflow-hidden flex items-center justify-center transition-all duration-300"
-          style={{
-            backgroundImage: hoveredProduct ? `url(${hoveredProduct.image})` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        >
-          {!hoveredProduct && (
-            <span className="text-zinc-400 text-[10px] uppercase font-bold tracking-wider">Preview</span>
-          )}
-        </div>
+      <div className="hidden md:flex md:col-span-6 pl-4 flex-col text-left shrink-0 justify-center">
+        {hoveredProduct ? (
+          <div className="w-full h-[300px] rounded-2xl bg-white border border-zinc-200/80 p-2 shadow-sm overflow-hidden flex items-center justify-center transition-all duration-300 animate-in fade-in">
+            <img 
+              src={hoveredProduct.image} 
+              alt={hoveredProduct.name} 
+              className="w-full h-full object-cover rounded-xl transition-transform duration-500 hover:scale-105"
+            />
+          </div>
+        ) : (
+          <div className="w-full h-[300px] rounded-2xl bg-zinc-50/70 border border-dashed border-zinc-200 flex items-center justify-center">
+            <span className="text-zinc-400 text-xs uppercase font-bold tracking-wider">Hover to Preview</span>
+          </div>
+        )}
       </div>
     );
   };
@@ -1119,7 +1119,7 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
               
               {/* Column 1: Explore Mac */}
-              <div className="md:col-span-7 space-y-3 text-left">
+              <div className="md:col-span-6 space-y-3 text-left">
                 <span className="text-[12px] font-medium text-zinc-400 block mb-1">
                   Explore Mac
                 </span>
@@ -1171,7 +1171,7 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
               
               {/* Column 1: Explore iPad */}
-              <div className="md:col-span-7 space-y-3 text-left">
+              <div className="md:col-span-6 space-y-3 text-left">
                 <span className="text-[12px] font-medium text-zinc-400 block mb-1">
                   Explore iPad
                 </span>
@@ -1223,7 +1223,7 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
               
               {/* Column 1: Explore iPhone */}
-              <div className="md:col-span-7 space-y-3 text-left">
+              <div className="md:col-span-6 space-y-3 text-left">
                 <span className="text-[12px] font-medium text-zinc-400 block mb-1">
                   Explore iPhone
                 </span>
@@ -1274,7 +1274,7 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
               
               {/* Column 1: Explore Watch */}
-              <div className="md:col-span-7 space-y-3 text-left">
+              <div className="md:col-span-6 space-y-3 text-left">
                 <span className="text-[12px] font-medium text-zinc-400 block mb-1">
                   Explore Watch
                 </span>
@@ -1324,7 +1324,7 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
               
               {/* Column 1: Explore AirPods */}
-              <div className="md:col-span-7 space-y-3 text-left">
+              <div className="md:col-span-6 space-y-3 text-left">
                 <span className="text-[12px] font-medium text-zinc-400 block mb-1">
                   Explore AirPods
                 </span>
@@ -1373,7 +1373,7 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
               
               {/* Column 1: Explore TV & Home */}
-              <div className="md:col-span-7 space-y-3 text-left">
+              <div className="md:col-span-6 space-y-3 text-left">
                 <span className="text-[12px] font-medium text-zinc-400 block mb-1">
                   Explore TV & Home
                 </span>
@@ -1487,7 +1487,7 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
               
               {/* Column 1: Shop Accessories */}
-              <div className="md:col-span-7 space-y-3 text-left">
+              <div className="md:col-span-6 space-y-3 text-left">
                 <span className="text-[12px] font-medium text-zinc-400 block mb-1">
                   Shop Accessories
                 </span>

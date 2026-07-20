@@ -33,15 +33,41 @@ export default function Macbook() {
   const getProductImage = (prod) => {
     const selectedColorName = selectedColors[prod.id];
     if (selectedColorName) {
-      const foundColor = prod.colors.find((c) => c.name === selectedColorName);
+      const targetNorm = selectedColorName.replace(/\s+/g, ' ').trim().toLowerCase();
+
+      // 1. Match in prod.colors by name or rawName
+      const foundColor = prod.colors.find((c) => {
+        const cNorm = (c.name || c.rawName || c).replace(/\s+/g, ' ').trim().toLowerCase();
+        return cNorm === targetNorm;
+      });
       if (foundColor && foundColor.image) {
         return foundColor.image;
       }
-      // Fallback: match index of color name with index of image in images array
-      const colorIdx = prod.colors.findIndex((c) => (c.name || c) === selectedColorName);
+
+      // 2. Match in prod.variants directly!
+      if (prod.variants && Array.isArray(prod.variants)) {
+        const foundVariant = prod.variants.find(v => {
+          if (!v.color) return false;
+          return v.color.replace(/\s+/g, ' ').trim().toLowerCase() === targetNorm;
+        });
+        if (foundVariant && foundVariant.images && foundVariant.images[0]) {
+          return foundVariant.images[0];
+        }
+      }
+
+      // 3. Match index of color in prod.colors with index in prod.images
+      const colorIdx = prod.colors.findIndex((c) => {
+        const cNorm = (c.name || c.rawName || c).replace(/\s+/g, ' ').trim().toLowerCase();
+        return cNorm === targetNorm;
+      });
       if (colorIdx !== -1 && prod.images && prod.images[colorIdx]) {
         return prod.images[colorIdx];
       }
+
+      // 4. Color name fallback mappings
+      if (targetNorm.includes('black') || targetNorm.includes('space black') || targetNorm.includes('dark')) return '/macbook_pro_dark.jpg';
+      if (targetNorm.includes('space gray') || targetNorm.includes('gray')) return '/macbook_category_v2.jpg';
+      if (targetNorm.includes('silver') || targetNorm.includes('white') || targetNorm.includes('starlight')) return '/macbook_category_v3.jpg';
     }
     return prod.image;
   };
@@ -130,10 +156,30 @@ export default function Macbook() {
       priceStr: `₹${p.price.toLocaleString()}`,
       image: isValidImg ? firstImg : '/macbook_category_v3.jpg',
       images: p.images || [],
+      variants: p.variants || [],
       colors: Array.isArray(p.colors) ? p.colors.map(c => {
-        const name = typeof c === 'string' ? c : (c.name || '');
+        const rawName = typeof c === 'string' ? c : (c.name || '');
+        const normName = rawName.replace(/\s+/g, ' ').trim();
         const val = typeof c === 'string' ? c : (c.value || c.name || '');
-        return { name, value: resolveColorValue(val) };
+
+        let variantImage = typeof c === 'object' && c.image ? c.image : null;
+        if (!variantImage && p.variants && Array.isArray(p.variants)) {
+          const matchedVariant = p.variants.find(v => {
+            if (!v.color) return false;
+            const vColor = v.color.replace(/\s+/g, ' ').trim().toLowerCase();
+            return vColor === normName.toLowerCase();
+          });
+          if (matchedVariant && matchedVariant.images && matchedVariant.images[0]) {
+            variantImage = matchedVariant.images[0];
+          }
+        }
+
+        return { 
+          name: normName, 
+          rawName: rawName,
+          value: resolveColorValue(val),
+          image: variantImage 
+        };
       }) : [],
       rating: p.rating || 5.0,
       isSoldOut: p.stock <= 0
@@ -289,7 +335,11 @@ export default function Macbook() {
                     return (
                       <button
                         key={color.name}
-                        onClick={() => handleColorChange(prod.id, color.name)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleColorChange(prod.id, color.name);
+                        }}
                         style={{ backgroundColor: color.value }}
                         className={`w-3.5 h-3.5 rounded-full cursor-pointer transition-all border ${isSelected ? 'scale-125 border-zinc-800 ring-1 ring-zinc-400' : 'border-zinc-300 hover:scale-110'
                           }`}

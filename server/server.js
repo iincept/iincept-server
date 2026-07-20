@@ -23,13 +23,7 @@ const allowedOrigins = process.env.NODE_ENV === "production"
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== "production") {
-        return callback(null, true);
-      }
-      return callback(new Error("CORS policy violation: origin not allowed."));
-    },
+    origin: true,
     credentials: true,
   })
 );

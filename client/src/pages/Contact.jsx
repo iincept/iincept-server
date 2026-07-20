@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Mail, Phone, Clock, MessageSquare, Send, CheckCircle, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import axiosClient from '../services/axiosClient';
 
 export default function Contact() {
   const [name, setName] = useState('');
@@ -8,19 +9,35 @@ export default function Contact() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !email || !message) {
       alert('Please fill in all required fields.');
       return;
     }
-    setSubmitted(true);
-    setName('');
-    setEmail('');
-    setSubject('');
-    setMessage('');
-    alert('Thank you for contacting us! Our support desk will reach out within 24 hours.');
+    setLoading(true);
+    try {
+      await axiosClient.post('/enquiries', {
+        fullName: name,
+        email: email,
+        companyName: subject || 'Contact Support Enquiry',
+        phone: 'N/A',
+        productInterest: 'General Enquiry',
+        quantity: 1,
+        message: message
+      });
+      setSubmitted(true);
+      setName('');
+      setEmail('');
+      setSubject('');
+      setMessage('');
+    } catch (err) {
+      alert('Failed to submit message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,6 +57,21 @@ export default function Contact() {
             <h2 className="text-base font-bold text-zinc-900 uppercase tracking-wider">Contact Information</h2>
 
             <div className="space-y-4 text-xs">
+              <div className="flex items-start gap-3">
+                <MapPin className="h-5 w-5 text-zinc-450 shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <p className="font-bold text-zinc-800">Our Offices</p>
+                  <div>
+                    <span className="font-bold text-zinc-900 block text-[11px]">Delhi Office:</span>
+                    <p className="text-zinc-500 leading-snug">109, Kushal House, Bazar 32-33, Nehru Place, New Delhi 110019</p>
+                  </div>
+                  <div>
+                    <span className="font-bold text-zinc-900 block text-[11px]">Gurugram Office:</span>
+                    <p className="text-zinc-500 leading-snug">Second floor, Plot No - 129P, Sector 39, Gurugram, Haryana 122003</p>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex items-start gap-3">
                 <Mail className="h-5 w-5 text-zinc-450 shrink-0" />
                 <div>
@@ -164,24 +196,65 @@ export default function Contact() {
 
       </div>
 
-      {/* Map Section */}
-      <div className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-sm overflow-hidden space-y-4 animate-in fade-in duration-300">
+      {/* Map Section - Dual Locations */}
+      <div className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-sm overflow-hidden space-y-5 animate-in fade-in duration-300">
         <div className="flex items-center gap-2 border-b border-zinc-100 pb-3 text-zinc-900">
           <MapPin className="h-5 w-5 text-zinc-800" />
-          <h2 className="text-base font-bold uppercase tracking-wider">Our Location</h2>
+          <h2 className="text-base font-bold uppercase tracking-wider">Our Locations</h2>
         </div>
         
-        <div className="relative w-full h-80 rounded-2xl overflow-hidden border border-zinc-150 shadow-inner">
-          <iframe 
-            title="Office Location Map"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d670.7611981972549!2d77.2506581862361!3d28.549188132598193!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce35554210a31%3A0xdd6ef47c87c2cb91!2sIINCEPT!5e0!3m2!1sen!2sin!4v1784097809983!5m2!1sen!2sin"
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            allowFullScreen=""
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          ></iframe>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Location 1: Delhi Office */}
+          <div className="space-y-3">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-zinc-900 flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 text-zinc-500" />
+                  Delhi Office (Nehru Place)
+                </span>
+                <span className="text-[10px] bg-zinc-100 text-zinc-600 font-semibold px-2 py-0.5 rounded-full">New Delhi</span>
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1 pl-5">109, Kushal House, Bazar 32-33, Nehru Place, New Delhi, Delhi 110019</p>
+            </div>
+            <div className="relative w-full h-80 rounded-2xl overflow-hidden border border-zinc-150 shadow-inner">
+              <iframe 
+                title="Delhi Office Location Map"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d670.7611981972549!2d77.2506581862361!3d28.549188132598193!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce35554210a31%3A0xdd6ef47c87c2cb91!2sIINCEPT!5e0!3m2!1sen!2sin!4v1784097809983!5m2!1sen!2sin"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+          </div>
+
+          {/* Location 2: Gurugram Office */}
+          <div className="space-y-3">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-zinc-900 flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 text-zinc-500" />
+                  Gurugram Office
+                </span>
+                <span className="text-[10px] bg-zinc-100 text-zinc-600 font-semibold px-2 py-0.5 rounded-full">Gurugram</span>
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1 pl-5">Second floor, Plot No - 129P, Sector 39, Gurugram, Haryana 122003</p>
+            </div>
+            <div className="relative w-full h-80 rounded-2xl overflow-hidden border border-zinc-150 shadow-inner">
+              <iframe 
+                title="Gurugram Office Location Map"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3508.1175521535197!2d77.04439237570371!3d28.445872592532222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d196ec57e0ff7%3A0x328aaa29f17e8a9b!2sIINCEPT!5e0!3m2!1sen!2sin!4v1784534311784!5m2!1sen!2sin"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+          </div>
         </div>
       </div>
 
