@@ -28,6 +28,11 @@ app.use(
   })
 );
 
+const path = require("path");
+
+app.use("/uploads", express.static(path.join(__dirname, "../client/public/uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // Routes
 const authRoutes = require("./routes/authRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
