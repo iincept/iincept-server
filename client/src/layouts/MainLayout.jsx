@@ -8,8 +8,6 @@ import Navbar from '../components/Navbar';
 import CartDrawer from '../components/CartDrawer';
 import Footer from '../components/Footer';
 
-import Lenis from 'lenis';
-
 export default function MainLayout() {
   const { pathname } = useLocation();
   const dispatch = useDispatch();
@@ -22,36 +20,12 @@ export default function MainLayout() {
     }
   }, [dispatch, isAuthenticated]);
 
-  // Lenis Smooth Scroll Engine
   useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 1.5
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
     });
-
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
-    window.lenis = lenis;
-
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (window.lenis) {
-      window.lenis.scrollTo(0, { immediate: true });
-    } else {
-      window.scrollTo(0, 0);
-    }
   }, [pathname]);
 
   return (
