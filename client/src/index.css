@@ -5,38 +5,8 @@
   --font-sans: "San Francisco", -apple-system, BlinkMacSystemFont, "SF Pro", "SF Pro Text", "SF Pro Display", sans-serif;
 }
 
-html {
-  scroll-behavior: smooth !important;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
 body {
   font-family: var(--font-sans);
-  overflow-x: hidden;
-  background-color: #fafafa;
-  scroll-behavior: smooth;
-}
-
-/* Custom Ultra-Smooth Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f4f4f7;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #d1d1d6;
-  border-radius: 9999px;
-  transition: background 0.3s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a1a1aa;
 }
 
 /* Aptronix Loyalty Banner Styles */
