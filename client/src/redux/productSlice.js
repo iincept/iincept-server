@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5088/api';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 const API_URL = `${BASE_URL}/products`;
 const CATEGORY_API_URL = `${BASE_URL}/categories`;
 
