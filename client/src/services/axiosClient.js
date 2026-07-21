@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://iincept-1.onrender.com/api'
+  baseURL: import.meta.env.VITE_API_URL || '/api'
 });
 
 // Request interceptor to automatically add authorization header

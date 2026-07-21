@@ -9,11 +9,11 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'https://iincept-1.onrender.com',
+        target: 'http://localhost:5088',
         changeOrigin: true
       },
       '/uploads': {
-        target: 'https://iincept-1.onrender.com',
+        target: 'http://localhost:5088',
         changeOrigin: true
       }
     }
