@@ -85,12 +85,12 @@ export default function Navbar() {
       }
       .pill-nav-container {
         width: 100%;
-        max-width: 1240px;
+        max-width: 1280px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 24px;
-        padding: 12px 26px;
+        gap: 16px;
+        padding: 10px 20px 10px 10px;
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.72) !important;
         backdrop-filter: blur(14px) saturate(160%) !important;
@@ -105,7 +105,7 @@ export default function Navbar() {
         top: 12px;
       }
       .pill-nav-stage.shrink .pill-nav-container {
-        padding: 8px 22px;
+        padding: 6px 18px 6px 8px;
         height: 52px;
         box-shadow: 0 6px 20px rgba(20, 20, 20, 0.12);
         background: rgba(255, 255, 255, 0.85) !important;
@@ -707,10 +707,10 @@ export default function Navbar() {
         </div>
       )}
 
-      <div className="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-[1400px] w-full mx-auto px-0 sm:px-1 lg:px-2 h-16 flex items-center justify-between gap-3">
         
         {/* Left: Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0 group -ml-1 sm:-ml-3 md:-ml-5">
+        <Link to="/" className="flex items-center gap-1.5 shrink-0 group -ml-2 sm:-ml-4 md:-ml-6 pl-1">
           <AppleIcon className={`h-5.5 w-5.5 transition-transform duration-200 group-hover:scale-110 ${isIphonePage ? 'text-black' : 'text-white'}`} />
           <span className={`text-2xl font-black tracking-widest font-serif transition-colors duration-200 ${isIphonePage ? 'text-black' : 'text-white'}`} style={{ fontFamily: 'Georgia, serif' }}>
             IINCEPT
@@ -718,7 +718,7 @@ export default function Navbar() {
         </Link>
 
         {/* Center: Navigation Menu */}
-        <div className="hidden lg:flex items-center gap-12 text-[11px] font-bold tracking-wider relative">
+        <div className="hidden lg:flex items-center gap-6 xl:gap-9 text-[11px] font-bold tracking-wider relative">
           {menuItems.map((item, idx) => {
             if (item.label === 'Mac') {
               return (
