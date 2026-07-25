@@ -90,7 +90,7 @@ export default function Navbar() {
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        padding: 10px 20px 10px 10px;
+        padding: 10px 20px 10px 18px;
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.72) !important;
         backdrop-filter: blur(14px) saturate(160%) !important;
@@ -105,7 +105,7 @@ export default function Navbar() {
         top: 12px;
       }
       .pill-nav-stage.shrink .pill-nav-container {
-        padding: 6px 18px 6px 8px;
+        padding: 6px 18px 6px 14px;
         height: 52px;
         box-shadow: 0 6px 20px rgba(20, 20, 20, 0.12);
         background: rgba(255, 255, 255, 0.85) !important;
@@ -710,7 +710,7 @@ export default function Navbar() {
       <div className="max-w-[1400px] w-full mx-auto px-0 sm:px-1 lg:px-2 h-16 flex items-center justify-between gap-3">
         
         {/* Left: Logo */}
-        <Link to="/" className="flex items-center gap-1.5 shrink-0 group -ml-2 sm:-ml-4 md:-ml-6 pl-1">
+        <Link to="/" className="flex items-center gap-1.5 shrink-0 group pl-0.5">
           <AppleIcon className={`h-5.5 w-5.5 transition-transform duration-200 group-hover:scale-110 ${isIphonePage ? 'text-black' : 'text-white'}`} />
           <span className={`text-2xl font-black tracking-widest font-serif transition-colors duration-200 ${isIphonePage ? 'text-black' : 'text-white'}`} style={{ fontFamily: 'Georgia, serif' }}>
             IINCEPT
