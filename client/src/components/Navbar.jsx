@@ -707,11 +707,11 @@ export default function Navbar() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         
         {/* Left: Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0 group">
-          <AppleIcon className={`h-5 w-5 transition-transform duration-200 group-hover:scale-110 ${isIphonePage ? 'text-black' : 'text-white'}`} />
+        <Link to="/" className="flex items-center gap-2 shrink-0 group -ml-1 sm:-ml-3 md:-ml-5">
+          <AppleIcon className={`h-5.5 w-5.5 transition-transform duration-200 group-hover:scale-110 ${isIphonePage ? 'text-black' : 'text-white'}`} />
           <span className={`text-2xl font-black tracking-widest font-serif transition-colors duration-200 ${isIphonePage ? 'text-black' : 'text-white'}`} style={{ fontFamily: 'Georgia, serif' }}>
             IINCEPT
           </span>
