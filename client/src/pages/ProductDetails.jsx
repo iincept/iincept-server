@@ -460,7 +460,31 @@ export default function ProductDetails() {
   };
 
   const handleRequestBulkQuote = () => {
-    alert("Bulk Quote request submitted! Our B2B Account Desk will verify your request and contact you within 24 hours.");
+    if (!product) return;
+
+    const prodTitle = product.title || product.name || 'Apple Product';
+    const activeColorStr = selectedColor?.name || (colors[0]?.name || '');
+    
+    // Find active variant part number
+    const activeVar = product.variants?.find(v => 
+      (v.color || '').toString().toLowerCase() === activeColorStr.toLowerCase() &&
+      (!selectedStorage || (v.storage || '').toString().toLowerCase() === selectedStorage.toLowerCase())
+    );
+    const partNum = activeVar?.partNumber || product.partNumber || product.modelNumber || '';
+
+    let message = `Hello iiNCEPT B2B Desk! 👋\nI would like to request a Bulk Wholesale Quote for the following Apple Product:\n\n`;
+    message += `📦 *Product:* ${prodTitle}\n`;
+    if (partNum) message += `🔢 *Part Number:* ${partNum}\n`;
+    if (activeColorStr) message += `🎨 *Color:* ${activeColorStr}\n`;
+    if (selectedStorage) message += `💾 *Storage:* ${selectedStorage}\n`;
+    if (selectedRam) message += `⚡ *RAM:* ${selectedRam}\n`;
+    message += `📊 *Quantity Required:* ${quantity} units\n`;
+    message += `💰 *Listed Price:* ₹${totalPrice.toLocaleString('en-IN')}\n\n`;
+    message += `Please provide your best B2B bulk pricing discount and delivery timeline. Thank you!`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/919999999999?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   if (loading && !localProduct) {
