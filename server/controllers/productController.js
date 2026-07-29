@@ -1,15 +1,34 @@
 const Product = require("../models/Product");
 const Category = require("../models/Category");
 
-// Helper to generate slugs
+// Helper to generate unique slugs
 const slugify = (text) => {
-  return text
+  return (text || "")
     .toString()
     .toLowerCase()
     .trim()
     .replace(/\s+/g, "-")
     .replace(/[^\w\-]+/g, "")
     .replace(/\-\-+/g, "-");
+};
+
+const generateUniqueSlug = async (title, currentProductId = null) => {
+  let baseSlug = slugify(title) || "product";
+  let slug = baseSlug;
+  let counter = 1;
+
+  while (true) {
+    const query = { slug };
+    if (currentProductId) {
+      query._id = { $ne: currentProductId };
+    }
+    const existing = await Product.findOne(query);
+    if (!existing) {
+      return slug;
+    }
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
 };
 
 // Add Product (Admin only)
@@ -40,7 +59,7 @@ const createProduct = async (req, res) => {
       return res.status(400).json({ message: "Category does not exist" });
     }
 
-    const slug = slugify(title);
+    const slug = await generateUniqueSlug(title);
 
     const product = await Product.create({
       title,
@@ -64,6 +83,18 @@ const createProduct = async (req, res) => {
 
     res.status(201).json(product);
   } catch (error) {
+    if (error.code === 11000) {
+      try {
+        const fallbackSlug = `${slugify(req.body.title || 'product')}-${Date.now().toString().slice(-4)}`;
+        const product = await Product.create({
+          ...req.body,
+          slug: fallbackSlug
+        });
+        return res.status(201).json(product);
+      } catch (retryError) {
+        return res.status(400).json({ message: "Duplicate product title/slug. Please use a unique title." });
+      }
+    }
     res.status(500).json({ message: error.message });
   }
 };
@@ -107,7 +138,7 @@ const updateProduct = async (req, res) => {
 
     if (title) {
       product.title = title;
-      product.slug = slugify(title);
+      product.slug = await generateUniqueSlug(title, productId);
     }
     if (description !== undefined) product.description = description;
     if (price !== undefined) product.price = price;
