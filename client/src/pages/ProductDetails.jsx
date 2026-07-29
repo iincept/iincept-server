@@ -617,7 +617,7 @@ export default function ProductDetails() {
                 <>
                   <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-900 tracking-tight text-left leading-snug">
                     {partNum && (
-                      <span className="font-mono font-extrabold text-[#0071e3] mr-3 inline-block">
+                      <span className="font-mono font-extrabold text-black mr-3 inline-block">
                         {partNum}
                       </span>
                     )}
