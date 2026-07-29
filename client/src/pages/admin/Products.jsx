@@ -254,6 +254,39 @@ export default function Products() {
     }
   };
 
+  const handleAutoGenerateColorVariants = () => {
+    const currentColors = (productForm.colors || []).map(c => typeof c === 'object' ? c.name : c);
+    if (currentColors.length === 0) {
+      setError("Please add at least one color in 'Colors Config Options' first!");
+      return;
+    }
+
+    const newVariants = [...(productForm.variants || [])];
+    let countAdded = 0;
+
+    currentColors.forEach(colorName => {
+      const exists = newVariants.find(v => (v.color || '').toString().toLowerCase() === colorName.toLowerCase());
+      if (!exists) {
+        newVariants.push({
+          color: colorName,
+          price: productForm.price || '',
+          discountPrice: productForm.discountPrice || '',
+          stock: productForm.stock || 10,
+          sku: `${productForm.brand ? productForm.brand.slice(0,3).toUpperCase() : 'APP'}-${colorName.slice(0,3).toUpperCase()}-${Date.now().toString().slice(-3)}`,
+          partNumber: '',
+          images: []
+        });
+        countAdded++;
+      }
+    });
+
+    setProductForm({
+      ...productForm,
+      variants: newVariants
+    });
+    showSuccessMessage(`Generated ${countAdded} Color Part Number blocks! Scroll to 'Variants' below to enter MPNs.`);
+  };
+
   const handleProductSubmit = async (e) => {
     if (e) e.preventDefault();
     if (!productForm.category) {
@@ -1064,6 +1097,14 @@ export default function Products() {
                       });
                     }}
                   />
+                  <button
+                    type="button"
+                    onClick={handleAutoGenerateColorVariants}
+                    className="mt-1 text-xs font-bold text-[#0071e3] hover:text-blue-700 bg-blue-50 border border-blue-200 px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Generate Color Part Number (MPN) Input Fields
+                  </button>
 
                   <VariantTagInput
                     label="Storage Options"

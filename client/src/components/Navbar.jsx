@@ -31,8 +31,8 @@ export default function Navbar() {
 
   const getNavBtnClass = (isOpen) => {
     return `transition-colors duration-200 uppercase font-bold text-[11px] cursor-pointer bg-transparent border-0 focus:outline-none ${isOpen
-        ? (isIphonePage ? 'text-black font-extrabold font-sans' : 'text-white font-extrabold')
-        : (isIphonePage ? 'text-zinc-500 hover:text-black font-sans' : 'text-zinc-400 hover:text-white')
+      ? (isIphonePage ? 'text-black font-extrabold font-sans' : 'text-white font-extrabold')
+      : (isIphonePage ? 'text-zinc-500 hover:text-black font-sans' : 'text-zinc-400 hover:text-white')
       }`;
   };
 
@@ -83,7 +83,7 @@ export default function Navbar() {
       }
       .pill-nav-container {
         width: 100%;
-        max-width: 1500px;
+        max-width: 1440px;
         display: flex;
         align-items: center;
         justify-content: space-between;
