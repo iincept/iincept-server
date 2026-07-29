@@ -595,13 +595,22 @@ export default function ProductDetails() {
             <div className="eyebrow">Apple Authorised Reseller · In stock</div>
             <h1>{product.name || product.title}</h1>
             
-            {/* Apple Part Number & Model Number Badges */}
+            {/* Apple Part Number & Model Number Badges (Dynamically changes per selected Color) */}
             {(() => {
-              const activeVar = product.variants?.find(v => 
-                (v.color === colorName || v.color === selectedColor?.name) &&
-                (!selectedStorage || v.storage === selectedStorage)
-              );
-              const partNum = activeVar?.partNumber || product.partNumber || product.variants?.find(v => v.partNumber)?.partNumber || null;
+              const activeColorStr = (selectedColor?.name || colorName || '').toString().trim().toLowerCase();
+              const activeStorageStr = (selectedStorage || '').toString().trim().toLowerCase();
+
+              let activeVar = product.variants?.find(v => {
+                const vColorStr = (v.color || '').toString().trim().toLowerCase();
+                const vStorageStr = (v.storage || '').toString().trim().toLowerCase();
+                return vColorStr === activeColorStr && vStorageStr === activeStorageStr;
+              });
+
+              if (!activeVar && activeColorStr) {
+                activeVar = product.variants?.find(v => (v.color || '').toString().trim().toLowerCase() === activeColorStr);
+              }
+
+              const partNum = activeVar?.partNumber || product.partNumber || null;
               const modelNum = activeVar?.modelNumber || product.modelNumber || null;
               
               if (!partNum && !modelNum) return null;
@@ -609,7 +618,7 @@ export default function ProductDetails() {
               return (
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   {partNum && (
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 rounded-md text-xs font-mono text-[#0071e3] border border-blue-200 font-bold shadow-2xs">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 rounded-md text-xs font-mono text-[#0071e3] border border-blue-200 font-bold shadow-2xs animate-in fade-in duration-200">
                       <span className="font-extrabold text-blue-950 uppercase tracking-wide">Part No / MPN:</span> {partNum}
                     </div>
                   )}
@@ -822,12 +831,18 @@ export default function ProductDetails() {
                 <span className="font-bold text-xs text-zinc-400 uppercase">Stock</span>
                 <span className="col-span-2 text-sm text-zinc-800 font-medium">{product.stock > 0 ? `${product.stock} units available` : 'Out of Stock'}</span>
               </div>
-              {(product.partNumber || product.variants?.find(v => v.partNumber)?.partNumber) && (
-                <div className="grid grid-cols-3 border-b border-zinc-100 pb-2">
-                  <span className="font-bold text-xs text-zinc-400 uppercase">Part Number</span>
-                  <span className="col-span-2 text-sm text-[#0071e3] font-mono font-bold">{product.partNumber || product.variants?.find(v => v.partNumber)?.partNumber}</span>
-                </div>
-              )}
+              {(() => {
+                const activeColorStr = (selectedColor?.name || colorName || '').toString().trim().toLowerCase();
+                let activeVar = product.variants?.find(v => (v.color || '').toString().trim().toLowerCase() === activeColorStr);
+                const currentPart = activeVar?.partNumber || product.partNumber || product.variants?.find(v => v.partNumber)?.partNumber;
+                if (!currentPart) return null;
+                return (
+                  <div className="grid grid-cols-3 border-b border-zinc-100 pb-2">
+                    <span className="font-bold text-xs text-zinc-400 uppercase">Part Number</span>
+                    <span className="col-span-2 text-sm text-[#0071e3] font-mono font-bold">{currentPart}</span>
+                  </div>
+                );
+              })()}
               {(product.modelNumber || product.variants?.find(v => v.modelNumber)?.modelNumber) && (
                 <div className="grid grid-cols-3 border-b border-zinc-100 pb-2">
                   <span className="font-bold text-xs text-zinc-400 uppercase">Model Number</span>
