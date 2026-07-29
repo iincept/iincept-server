@@ -633,15 +633,15 @@ export default function Products() {
                             />
                           </div>
                           <div>
-                            <span className="font-semibold text-zinc-900 block">{prod.title}</span>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-xs text-zinc-450 font-medium">{prod.brand}</span>
-                              {(prod.partNumber || prod.modelNumber || prod.variants?.[0]?.partNumber) && (
-                                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-50 text-[#0071e3] border border-blue-100 font-bold" title="Apple Part / Model Number">
-                                  MPN: {prod.partNumber || prod.variants?.[0]?.partNumber || prod.modelNumber}
+                            <span className="font-semibold text-zinc-900 block font-sans">
+                              {(prod.partNumber || prod.variants?.[0]?.partNumber) && (
+                                <span className="font-mono font-extrabold text-zinc-900 mr-2 inline-block">
+                                  {prod.partNumber || prod.variants?.[0]?.partNumber}
                                 </span>
                               )}
-                            </div>
+                              <span>{prod.title}</span>
+                            </span>
+                            <span className="text-xs text-zinc-450 font-medium">{prod.brand}</span>
                           </div>
                         </td>
                         <td className="py-4 px-6 text-zinc-500 font-medium font-sans">
@@ -1431,7 +1431,12 @@ export default function Products() {
                   {/* Title & Rating */}
                   <div>
                     <h2 className="text-lg font-extrabold text-zinc-900 leading-tight">
-                      {productForm.title || "MacBook Air (M3 Chip)"}
+                      {(productForm.partNumber || productForm.variants?.[0]?.partNumber) && (
+                        <span className="font-mono font-extrabold text-zinc-900 mr-2 inline-block">
+                          {productForm.partNumber || productForm.variants?.[0]?.partNumber}
+                        </span>
+                      )}
+                      <span>{productForm.title || "MacBook Air (M3 Chip)"}</span>
                     </h2>
 
                     <div className="flex items-center gap-1 mt-1.5">
