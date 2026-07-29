@@ -593,9 +593,8 @@ export default function ProductDetails() {
           {/* Product Info Column */}
           <div className="pinfo">
             <div className="eyebrow">Apple Authorised Reseller · In stock</div>
-            <h1>{product.name || product.title}</h1>
-            
-            {/* Apple Part Number & Model Number Badges (Dynamically changes per selected Color) */}
+
+            {/* Title with Inline Dynamic Apple Part Number */}
             {(() => {
               const activeColorStr = (selectedColor?.name || colorName || '').toString().trim().toLowerCase();
               const activeStorageStr = (selectedStorage || '').toString().trim().toLowerCase();
@@ -612,22 +611,26 @@ export default function ProductDetails() {
 
               const partNum = activeVar?.partNumber || product.partNumber || null;
               const modelNum = activeVar?.modelNumber || product.modelNumber || null;
-              
-              if (!partNum && !modelNum) return null;
 
               return (
-                <div className="flex flex-wrap items-center gap-2 mb-3">
-                  {partNum && (
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 rounded-md text-xs font-mono text-[#0071e3] border border-blue-200 font-bold shadow-2xs animate-in fade-in duration-200">
-                      <span className="font-extrabold text-blue-950 uppercase tracking-wide">Part No / MPN:</span> {partNum}
-                    </div>
-                  )}
+                <>
+                  <h1 className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+                    <span>{product.name || product.title}</span>
+                    {partNum && (
+                      <span className="text-lg md:text-2xl font-mono font-extrabold text-[#0071e3] tracking-tight shrink-0 bg-blue-50/80 px-2.5 py-0.5 rounded-lg border border-blue-200/80">
+                        ({partNum})
+                      </span>
+                    )}
+                  </h1>
+
                   {modelNum && (
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-100 rounded-md text-xs font-mono text-zinc-700 border border-zinc-200 font-medium shadow-2xs">
-                      <span className="font-bold text-zinc-900 uppercase tracking-wide">Model:</span> {modelNum}
+                    <div className="mb-3 mt-1 text-left">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-100 rounded-md text-xs font-mono text-zinc-700 border border-zinc-200 font-medium shadow-2xs">
+                        <span className="font-bold text-zinc-900 uppercase tracking-wide">Model:</span> {modelNum}
+                      </span>
                     </div>
                   )}
-                </div>
+                </>
               );
             })()}
 
