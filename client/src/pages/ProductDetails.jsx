@@ -615,18 +615,18 @@ export default function ProductDetails() {
 
               return (
                 <>
-                  <h1 className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-                    <span>{product.name || product.title}</span>
+                  <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-900 tracking-tight text-left leading-snug">
                     {partNum && (
-                      <span className="text-lg md:text-2xl font-mono font-extrabold text-[#0071e3] tracking-tight shrink-0 bg-blue-50/80 px-2.5 py-0.5 rounded-lg border border-blue-200/80">
-                        ({partNum})
+                      <span className="font-mono font-extrabold text-[#0071e3] mr-3 inline-block">
+                        {partNum}
                       </span>
                     )}
+                    <span>{product.name || product.title}</span>
                   </h1>
 
                   {modelNum && (
-                    <div className="mb-3 mt-1 text-left">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-100 rounded-md text-xs font-mono text-zinc-700 border border-zinc-200 font-medium shadow-2xs">
+                    <div className="mb-3 mt-1.5 text-left">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-zinc-100 rounded-md text-[11px] font-mono text-zinc-700 border border-zinc-200 font-medium">
                         <span className="font-bold text-zinc-900 uppercase tracking-wide">Model:</span> {modelNum}
                       </span>
                     </div>
@@ -636,7 +636,7 @@ export default function ProductDetails() {
             })()}
 
             <div className="price">₹{totalPrice.toLocaleString('en-IN')}</div>
-            <div className="gst">Price includes GST · Formal tax invoice on every order</div>
+
 
             {/* Dynamic static Description Block */}
             {(product.description) && (
@@ -775,10 +775,10 @@ export default function ProductDetails() {
               </div>
               {pincodeStatus && (
                 <div className={`p-2.5 rounded-xl text-[11px] font-semibold border ${pincodeStatus === 'error'
-                    ? 'bg-rose-50 text-rose-700 border-rose-100'
-                    : pincodeStatus === 'metro'
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                      : 'bg-blue-50 text-[#0071e3] border-blue-100'
+                  ? 'bg-rose-50 text-rose-700 border-rose-100'
+                  : pincodeStatus === 'metro'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                    : 'bg-blue-50 text-[#0071e3] border-blue-100'
                   }`}>
                   {pincodeMessage}
                 </div>
