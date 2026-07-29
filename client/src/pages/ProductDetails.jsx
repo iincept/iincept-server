@@ -13,10 +13,10 @@ export default function ProductDetails() {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   const { currentProduct, loading, products } = useSelector((state) => state.products);
   const { isAuthenticated } = useSelector((state) => state.auth);
-  
+
   const [activeImage, setActiveImage] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
@@ -216,7 +216,7 @@ export default function ProductDetails() {
   const getColorImages = (colorName) => {
     if (!product) return [];
     if (!colorName) return product.images || [];
-    
+
     // Find index and object/string of color in product.colors
     const colorIdx = (product.colors || []).findIndex(c => {
       const name = typeof c === 'object' ? c.name : c;
@@ -239,7 +239,7 @@ export default function ProductDetails() {
         }
       }
     }
-    
+
     const variantImages = [];
     (product.variants || []).forEach(v => {
       if (v.color?.toString().trim().toLowerCase() === colorName.toString().trim().toLowerCase() && v.images) {
@@ -251,7 +251,7 @@ export default function ProductDetails() {
     if (variantImages.length > 0) {
       return variantImages;
     }
-    
+
     return product.images && product.images.length > 0 ? product.images : [];
   };
 
@@ -471,9 +471,10 @@ export default function ProductDetails() {
 
   return (
     <div className="min-h-screen bg-white text-[#1D1D1F] font-sans pb-12">
-      
+
       {/* Dynamic Style Sheet block to inject template layout styles */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         :root {
           --ink: #FFFFFF; --ink-2: #F5F5F7; --ink-3: #101012; --paper: #1D1D1F;
           --blue: #0071E3; --line: rgba(0,0,0,0.10); --muted: rgba(29,29,31,0.62);
@@ -571,15 +572,15 @@ export default function ProductDetails() {
           {/* Gallery Column */}
           <div className="gallery">
             <div className="gallery-main">
-              <img 
-                src={activeImage} 
-                alt={product.name} 
-                className="object-contain max-h-[85%] max-w-[85%] mix-blend-multiply" 
+              <img
+                src={activeImage}
+                alt={product.name}
+                className="object-contain max-h-[85%] max-w-[85%] mix-blend-multiply"
               />
             </div>
             <div className="gallery-thumbs">
               {galleryImages.map((imgUrl, idx) => (
-                <div 
+                <div
                   key={idx}
                   onClick={() => setActiveImage(imgUrl)}
                   className={`gthumb ${activeImage === imgUrl ? 'active' : ''}`}
@@ -592,7 +593,7 @@ export default function ProductDetails() {
 
           {/* Product Info Column */}
           <div className="pinfo">
-            <div className="eyebrow">Apple Authorised Reseller · In stock</div>
+
 
             {/* Title with Inline Dynamic Apple Part Number */}
             {(() => {
@@ -651,13 +652,13 @@ export default function ProductDetails() {
                 {colors.map((cObj) => {
                   const isSelected = selectedColor?.name === cObj.name;
                   return (
-                    <div 
+                    <div
                       key={cObj.name}
                       onClick={() => handleColorSelect(cObj)}
                       className={`swatch active`}
-                      style={{ 
+                      style={{
                         backgroundColor: cObj.value,
-                        boxShadow: isSelected ? '0 0 0 2px #0071E3, 0 0 0 4px #fff' : '0 0 0 1px rgba(0,0,0,0.1)' 
+                        boxShadow: isSelected ? '0 0 0 2px #0071E3, 0 0 0 4px #fff' : '0 0 0 1px rgba(0,0,0,0.1)'
                       }}
                       title={cObj.name}
                     ></div>
@@ -671,19 +672,15 @@ export default function ProductDetails() {
               <div className="optgroup">
                 <label>Size / Model</label>
                 <div className="optrow">
-                  {sizes.map((sz) => {
-                    const displayPrice = getVariantPrice(null, sz, null, null);
-                    return (
-                      <div 
-                        key={sz}
-                        onClick={() => setSelectedSize(sz)}
-                        className={`opt ${selectedSize === sz ? 'active' : ''}`}
-                      >
-                        {sz}
-                        <span className="sub">₹{displayPrice.toLocaleString('en-IN')}</span>
-                      </div>
-                    );
-                  })}
+                  {sizes.map((sz) => (
+                    <div
+                      key={sz}
+                      onClick={() => setSelectedSize(sz)}
+                      className={`opt ${selectedSize === sz ? 'active' : ''}`}
+                    >
+                      {sz}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -693,19 +690,15 @@ export default function ProductDetails() {
               <div className="optgroup">
                 <label>Storage</label>
                 <div className="optrow">
-                  {storages.map((st) => {
-                    const displayPrice = getVariantPrice(null, null, st, null);
-                    return (
-                      <div 
-                        key={st}
-                        onClick={() => setSelectedStorage(st)}
-                        className={`opt ${selectedStorage === st ? 'active' : ''}`}
-                      >
-                        {st}
-                        <span className="sub">₹{displayPrice.toLocaleString('en-IN')}</span>
-                      </div>
-                    );
-                  })}
+                  {storages.map((st) => (
+                    <div
+                      key={st}
+                      onClick={() => setSelectedStorage(st)}
+                      className={`opt ${selectedStorage === st ? 'active' : ''}`}
+                    >
+                      {st}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -715,19 +708,15 @@ export default function ProductDetails() {
               <div className="optgroup">
                 <label>RAM (Memory)</label>
                 <div className="optrow">
-                  {rams.map((r) => {
-                    const displayPrice = getVariantPrice(null, null, null, r);
-                    return (
-                      <div 
-                        key={r}
-                        onClick={() => setSelectedRam(r)}
-                        className={`opt ${selectedRam === r ? 'active' : ''}`}
-                      >
-                        {r}
-                        <span className="sub">₹{displayPrice.toLocaleString('en-IN')}</span>
-                      </div>
-                    );
-                  })}
+                  {rams.map((r) => (
+                    <div
+                      key={r}
+                      onClick={() => setSelectedRam(r)}
+                      className={`opt ${selectedRam === r ? 'active' : ''}`}
+                    >
+                      {r}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -785,13 +774,12 @@ export default function ProductDetails() {
                 </button>
               </div>
               {pincodeStatus && (
-                <div className={`p-2.5 rounded-xl text-[11px] font-semibold border ${
-                  pincodeStatus === 'error'
+                <div className={`p-2.5 rounded-xl text-[11px] font-semibold border ${pincodeStatus === 'error'
                     ? 'bg-rose-50 text-rose-700 border-rose-100'
                     : pincodeStatus === 'metro'
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                    : 'bg-blue-50 text-[#0071e3] border-blue-100'
-                }`}>
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                      : 'bg-blue-50 text-[#0071e3] border-blue-100'
+                  }`}>
                   {pincodeMessage}
                 </div>
               )}
@@ -804,17 +792,15 @@ export default function ProductDetails() {
           <div className="tabs flex gap-2 border-b border-zinc-200 mb-6">
             <button
               onClick={() => setActiveTab('specs')}
-              className={`pb-3.5 px-4 font-bold text-sm border-b-2 transition-all cursor-pointer ${
-                activeTab === 'specs' ? 'border-black text-black' : 'border-transparent text-zinc-400 hover:text-zinc-700'
-              }`}
+              className={`pb-3.5 px-4 font-bold text-sm border-b-2 transition-all cursor-pointer ${activeTab === 'specs' ? 'border-black text-black' : 'border-transparent text-zinc-400 hover:text-zinc-700'
+                }`}
             >
               Specifications
             </button>
             <button
               onClick={() => setActiveTab('reviews')}
-              className={`pb-3.5 px-4 font-bold text-sm border-b-2 transition-all cursor-pointer ${
-                activeTab === 'reviews' ? 'border-black text-black' : 'border-transparent text-zinc-400 hover:text-zinc-700'
-              }`}
+              className={`pb-3.5 px-4 font-bold text-sm border-b-2 transition-all cursor-pointer ${activeTab === 'reviews' ? 'border-black text-black' : 'border-transparent text-zinc-400 hover:text-zinc-700'
+                }`}
             >
               Reviews ({reviews.length})
             </button>
@@ -859,7 +845,7 @@ export default function ProductDetails() {
             </div>
           ) : (
             <div className="space-y-8 animate-in fade-in duration-300">
-              
+
               {/* Reviews Summary Rating Breakdown */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center p-6 bg-zinc-50/50 border border-zinc-200 rounded-2xl">
                 <div className="text-center space-y-1">
