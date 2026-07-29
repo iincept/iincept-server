@@ -635,30 +635,34 @@ export default function ProductDetails() {
               );
             })()}
 
-            <div className="price">₹{totalPrice.toLocaleString('en-IN')}</div>
-
+            <div className="price text-3xl font-black text-zinc-950 mt-5 mb-8 text-left tracking-tight">
+              ₹{totalPrice.toLocaleString('en-IN')}
+            </div>
 
             {/* Dynamic static Description Block */}
             {(product.description) && (
-              <div className="my-6 text-sm text-zinc-650 leading-relaxed text-left border-b border-zinc-150 pb-5 font-sans" style={{ whiteSpace: 'pre-line' }}>
+              <div className="my-8 text-sm text-zinc-600 leading-relaxed text-left border-b border-zinc-150 pb-6 font-sans" style={{ whiteSpace: 'pre-line' }}>
                 {product.description}
               </div>
             )}
 
             {/* Color swatches */}
-            <div className="optgroup">
-              <label>Colour — {colorName}</label>
-              <div className="swatches">
+            <div className="optgroup mb-8">
+              <label className="block text-[11px] font-extrabold text-zinc-400 uppercase tracking-widest mb-3">Colour — <span className="text-zinc-900">{colorName}</span></label>
+              <div className="swatches flex items-center gap-3.5">
                 {colors.map((cObj) => {
                   const isSelected = selectedColor?.name === cObj.name;
                   return (
                     <div
                       key={cObj.name}
                       onClick={() => handleColorSelect(cObj)}
-                      className={`swatch active`}
+                      className="swatch active cursor-pointer transition-transform hover:scale-105"
                       style={{
                         backgroundColor: cObj.value,
-                        boxShadow: isSelected ? '0 0 0 2px #0071E3, 0 0 0 4px #fff' : '0 0 0 1px rgba(0,0,0,0.1)'
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '50%',
+                        boxShadow: isSelected ? '0 0 0 2px #0071E3, 0 0 0 4px #fff' : '0 0 0 1px rgba(0,0,0,0.12)'
                       }}
                       title={cObj.name}
                     ></div>
@@ -669,9 +673,9 @@ export default function ProductDetails() {
 
             {/* Size / Model options */}
             {sizes && sizes.length > 0 && (
-              <div className="optgroup">
-                <label>Size / Model</label>
-                <div className="optrow">
+              <div className="optgroup mb-8">
+                <label className="block text-[11px] font-extrabold text-zinc-400 uppercase tracking-widest mb-3">Size / Model</label>
+                <div className="optrow flex flex-wrap gap-3">
                   {sizes.map((sz) => (
                     <div
                       key={sz}
@@ -687,9 +691,9 @@ export default function ProductDetails() {
 
             {/* Storage options */}
             {storages && storages.length > 0 && (
-              <div className="optgroup">
-                <label>Storage</label>
-                <div className="optrow">
+              <div className="optgroup mb-8">
+                <label className="block text-[11px] font-extrabold text-zinc-400 uppercase tracking-widest mb-3">Storage</label>
+                <div className="optrow flex flex-wrap gap-3">
                   {storages.map((st) => (
                     <div
                       key={st}
@@ -705,9 +709,9 @@ export default function ProductDetails() {
 
             {/* RAM options */}
             {rams && rams.length > 0 && (
-              <div className="optgroup">
-                <label>RAM (Memory)</label>
-                <div className="optrow">
+              <div className="optgroup mb-8">
+                <label className="block text-[11px] font-extrabold text-zinc-400 uppercase tracking-widest mb-3">RAM (Memory)</label>
+                <div className="optrow flex flex-wrap gap-3">
                   {rams.map((r) => (
                     <div
                       key={r}
