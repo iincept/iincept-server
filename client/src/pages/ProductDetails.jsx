@@ -594,6 +594,22 @@ export default function ProductDetails() {
           <div className="pinfo">
             <div className="eyebrow">Apple Authorised Reseller · In stock</div>
             <h1>{product.name || product.title}</h1>
+            
+            {/* Apple Part Number / MPN Badge */}
+            {(selectedColor || product.partNumber || product.modelNumber || (product.variants && product.variants.length > 0)) && (() => {
+              const activeVar = product.variants?.find(v => 
+                (v.color === colorName || v.color === selectedColor?.name) &&
+                (!selectedStorage || v.storage === selectedStorage)
+              );
+              const partNum = activeVar?.partNumber || activeVar?.sku || product.partNumber || product.modelNumber;
+              if (!partNum) return null;
+              return (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-zinc-100 rounded-md text-[11px] font-mono text-zinc-700 mb-3 border border-zinc-200 shadow-2xs">
+                  <span className="font-bold text-zinc-900 uppercase">Part No:</span> {partNum}
+                </div>
+              );
+            })()}
+
             <div className="price">₹{totalPrice.toLocaleString('en-IN')}</div>
             <div className="gst">Price includes GST · Formal tax invoice on every order</div>
 

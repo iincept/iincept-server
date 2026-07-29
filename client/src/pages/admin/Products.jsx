@@ -144,6 +144,8 @@ export default function Products() {
     features: [],
     images: [],
     variants: [],
+    partNumber: '',
+    modelNumber: '',
     seoTitle: '',
     seoDescription: '',
     tags: []
@@ -409,6 +411,8 @@ export default function Products() {
       features: prod.features || [],
       images: prod.images || [],
       variants: prodVariants,
+      partNumber: prod.partNumber || '',
+      modelNumber: prod.modelNumber || '',
       seoTitle: prod.seoTitle || '',
       seoDescription: prod.seoDescription || '',
       tags: prod.tags || (prod.title ? prod.title.split(' ') : [])
@@ -458,6 +462,8 @@ export default function Products() {
       features: [],
       images: [],
       variants: [],
+      partNumber: '',
+      modelNumber: '',
       seoTitle: '',
       seoDescription: '',
       tags: []
@@ -628,7 +634,14 @@ export default function Products() {
                           </div>
                           <div>
                             <span className="font-semibold text-zinc-900 block">{prod.title}</span>
-                            <span className="text-xs text-zinc-450 font-medium">{prod.brand}</span>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-xs text-zinc-450 font-medium">{prod.brand}</span>
+                              {(prod.partNumber || prod.modelNumber || prod.variants?.[0]?.partNumber) && (
+                                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-50 text-[#0071e3] border border-blue-100 font-bold" title="Apple Part / Model Number">
+                                  MPN: {prod.partNumber || prod.variants?.[0]?.partNumber || prod.modelNumber}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="py-4 px-6 text-zinc-500 font-medium font-sans">
@@ -854,6 +867,35 @@ export default function Products() {
                       <option value="Sony">Sony</option>
                       <option value="Other">Other</option>
                     </select>
+                  </div>
+                </div>
+
+                {/* Model Number & Part Number / MPN side-by-side */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-2">
+                      Base Model Number (e.g. A3113 / A2681)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. A3113"
+                      value={productForm.modelNumber || ''}
+                      onChange={(e) => setProductForm({ ...productForm, modelNumber: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-zinc-200 outline-none text-sm bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-2">
+                      Base Part Number / MPN (e.g. MW2U3HN/A)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. MW2U3HN/A"
+                      value={productForm.partNumber || ''}
+                      onChange={(e) => setProductForm({ ...productForm, partNumber: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-zinc-200 outline-none text-sm bg-white font-mono text-zinc-800"
+                    />
                   </div>
                 </div>
 
@@ -1216,6 +1258,21 @@ export default function Products() {
                                   setProductForm({ ...productForm, variants: updated });
                                 }}
                                 className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1.5">Part No. / MPN (Color Variant)</label>
+                              <input
+                                type="text"
+                                placeholder="e.g. MW2U3HN/A"
+                                value={v.partNumber || ''}
+                                onChange={(e) => {
+                                  const updated = [...productForm.variants];
+                                  updated[vIdx] = { ...v, partNumber: e.target.value };
+                                  setProductForm({ ...productForm, variants: updated });
+                                }}
+                                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs font-mono text-zinc-800"
                               />
                             </div>
                           </div>

@@ -9,6 +9,8 @@ const VariantSchema = new mongoose.Schema({
   discountPrice: Number,
   stock: { type: Number, default: 0 },
   sku: String,
+  partNumber: String,
+  modelNumber: String,
   images: [String]
 });
 
@@ -93,6 +95,14 @@ const productSchema = new mongoose.Schema(
     sold: {
       type: Number,
       default: 0,
+    },
+    partNumber: {
+      type: String,
+      default: "",
+    },
+    modelNumber: {
+      type: String,
+      default: "",
     },
     variants: {
       type: [VariantSchema],

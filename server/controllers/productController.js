@@ -51,6 +51,8 @@ const createProduct = async (req, res) => {
       features,
       rating,
       variants,
+      partNumber,
+      modelNumber,
     } = req.body;
 
     // Validate category exists
@@ -79,6 +81,8 @@ const createProduct = async (req, res) => {
       features,
       rating,
       variants,
+      partNumber,
+      modelNumber,
     });
 
     res.status(201).json(product);
@@ -120,6 +124,8 @@ const updateProduct = async (req, res) => {
       features,
       rating,
       variants,
+      partNumber,
+      modelNumber,
     } = req.body;
 
     const product = await Product.findById(productId);
@@ -157,6 +163,8 @@ const updateProduct = async (req, res) => {
     if (features) product.features = features;
     if (rating !== undefined) product.rating = rating;
     if (variants !== undefined) product.variants = variants;
+    if (partNumber !== undefined) product.partNumber = partNumber;
+    if (modelNumber !== undefined) product.modelNumber = modelNumber;
 
     const updatedProduct = await product.save();
 
