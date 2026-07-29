@@ -85,18 +85,18 @@ export default function Navbar() {
       }
       .pill-nav-container {
         width: 100%;
-        max-width: 1280px;
+        max-width: 1360px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 16px;
-        padding: 10px 20px 10px 18px;
+        gap: 20px;
+        padding: 10px 24px;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.72) !important;
-        backdrop-filter: blur(14px) saturate(160%) !important;
-        -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
-        box-shadow: 0 8px 30px rgba(20, 20, 20, 0.08), 0 1px 0 rgba(20, 20, 20, 0.02) !important;
-        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        background: rgba(255, 255, 255, 0.78) !important;
+        backdrop-filter: blur(16px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(0, 0, 0, 0.04) !important;
+        border: 1px solid rgba(255, 255, 255, 0.7) !important;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         height: 60px;
         pointer-events: auto;
@@ -718,7 +718,7 @@ export default function Navbar() {
         </Link>
 
         {/* Center: Navigation Menu */}
-        <div className="hidden lg:flex items-center gap-6 xl:gap-9 text-[11px] font-bold tracking-wider relative">
+        <div className="hidden lg:flex items-center gap-6 xl:gap-8 2xl:gap-11 text-[11px] font-bold tracking-wider relative">
           {menuItems.map((item, idx) => {
             if (item.label === 'Mac') {
               return (
