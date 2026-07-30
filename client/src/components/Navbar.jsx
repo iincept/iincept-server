@@ -342,6 +342,27 @@ export default function Navbar() {
     }
   }, [dispatch, isAuthenticated]);
 
+  const getMatchingProducts = (query) => {
+    const q = (query || '').trim().toLowerCase();
+    if (!q || !products) return [];
+
+    return products.filter(p => {
+      const title = (p.title || p.name || '').toLowerCase();
+      const brand = (p.brand || '').toLowerCase();
+      const partNum = (p.partNumber || p.variants?.[0]?.partNumber || '').toLowerCase();
+      const modelNum = (p.modelNumber || '').toLowerCase();
+      const categoryName = (p.category?.name || p.category || '').toLowerCase();
+      const description = (p.description || '').toLowerCase();
+
+      return title.includes(q) ||
+             brand.includes(q) ||
+             partNum.includes(q) ||
+             modelNum.includes(q) ||
+             categoryName.includes(q) ||
+             description.includes(q);
+    });
+  };
+
   const getCategoryProducts = (catKey) => {
     if (!products || products.length === 0) return [];
     const k = (catKey || '').toLowerCase();
