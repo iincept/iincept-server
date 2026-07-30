@@ -172,11 +172,11 @@ export default function Ipad() {
           }
         }
 
-        return { 
-          name: normName, 
+        return {
+          name: normName,
           rawName: rawName,
           value: resolveColorValue(val),
-          image: variantImage 
+          image: variantImage
         };
       }) : [],
       rating: p.rating || 5.0,

@@ -260,9 +260,23 @@ export default function Airpods() {
                 />
               </div>
 
-              {/* Title */}
+              {/* Title with Dynamic Color Part Number */}
               <h3 className="font-semibold text-[16px] leading-snug tracking-tight text-zinc-900 group-hover:text-[#0071e3] transition-colors min-h-[48px]">
-                {prod.name}
+                {(() => {
+                  const selColor = selectedColors[prod.id];
+                  const activeVar = selColor ? prod.variants?.find(v => (v.color || '').toString().toLowerCase() === selColor.toLowerCase()) : null;
+                  const partNum = activeVar?.partNumber || prod.partNumber || prod.variants?.[0]?.partNumber || null;
+                  return (
+                    <>
+                      {partNum && (
+                        <span className="font-mono font-extrabold text-black mr-2 inline-block">
+                          {partNum}
+                        </span>
+                      )}
+                      <span>{prod.name || prod.title}</span>
+                    </>
+                  );
+                })()}
               </h3>
             </Link>
 
