@@ -126,12 +126,12 @@ export default function Shop() {
       
       {loading && <Loader message="Searching products catalog..." />}
 
-      {/* Catalog Title Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-850 pb-6">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">Products Catalog</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">Showing {filteredProducts.length} items matching criteria</p>
+      {/* Title Header */}
+      <div className="w-full pb-6 select-none font-sans border-b border-zinc-100 mb-6">
+        <div className="max-w-7xl mx-auto pt-2">
+          <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-zinc-950 text-left">Accessories</h1>
         </div>
+      </div>
         
         {/* Controls */}
         <div className="flex items-center gap-3">
@@ -157,7 +157,6 @@ export default function Shop() {
             </select>
           </div>
         </div>
-      </div>
 
       <div className="flex gap-8 items-start relative">
         {/* 1. Sidebar Filters (Desktop) */}

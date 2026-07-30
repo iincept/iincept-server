@@ -161,8 +161,15 @@ export default function TvHome() {
   });
 
   return (
-    <div className="min-h-screen bg-[#fcfcfc] text-[#1d1d1f] py-8 px-4 sm:px-8 md:px-12 lg:px-16 select-none animate-in fade-in duration-300 relative">
+    <div className="min-h-screen bg-[#fcfcfc] text-[#1d1d1f] py-4 px-4 sm:px-8 md:px-12 lg:px-16 select-none animate-in fade-in duration-300 relative">
       
+      {/* Title Header */}
+      <div className="w-full bg-[#fcfcfc] pb-6 select-none font-sans border-b border-zinc-100 mb-8">
+        <div className="max-w-7xl mx-auto pt-6">
+          <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-zinc-950 text-left">TV & Home</h1>
+        </div>
+      </div>
+
       {/* Controller Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-150 pb-6 mb-8 text-sm font-sans uppercase font-bold text-zinc-500 tracking-wider">
         <div className="text-zinc-800 text-xs tracking-widest">
