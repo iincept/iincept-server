@@ -412,8 +412,8 @@ export default function Accessories() {
                     />
                   </div>
 
-                  {/* Title */}
-                  <h3 className="font-semibold text-[16px] leading-snug tracking-tight text-zinc-900 group-hover:text-[#0071e3] transition-colors min-h-[48px]">
+                  {/* Title with Dynamic Color Part Number */}
+                  <h3 className="font-semibold text-[16px] leading-snug tracking-tight text-zinc-900 group-hover:text-zinc-900 transition-colors min-h-[48px]">
                     {prod.name}
                   </h3>
                 </Link>

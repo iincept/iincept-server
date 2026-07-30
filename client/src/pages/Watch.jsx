@@ -265,7 +265,7 @@ export default function Watch() {
               </div>
 
               {/* Title with Dynamic Color Part Number */}
-              <h3 className="font-semibold text-[16px] leading-snug tracking-tight text-zinc-900 group-hover:text-[#0071e3] transition-colors min-h-[48px]">
+              <h3 className="font-semibold text-[16px] leading-snug tracking-tight text-zinc-900 group-hover:text-zinc-900 transition-colors min-h-[48px]">
                 {(() => {
                   const selColor = selectedColors[prod.id];
                   const activeVar = selColor ? prod.variants?.find(v => (v.color || '').toString().toLowerCase() === selColor.toLowerCase()) : null;
