@@ -342,6 +342,27 @@ export default function Navbar() {
     }
   }, [dispatch, isAuthenticated]);
 
+  const getMatchingProducts = (query) => {
+    const q = (query || '').trim().toLowerCase();
+    if (!q || !products) return [];
+
+    return products.filter(p => {
+      const title = (p.title || p.name || '').toLowerCase();
+      const brand = (p.brand || '').toLowerCase();
+      const partNum = (p.partNumber || p.variants?.[0]?.partNumber || '').toLowerCase();
+      const modelNum = (p.modelNumber || '').toLowerCase();
+      const categoryName = (p.category?.name || p.category || '').toLowerCase();
+      const description = (p.description || '').toLowerCase();
+
+      return title.includes(q) ||
+             brand.includes(q) ||
+             partNum.includes(q) ||
+             modelNum.includes(q) ||
+             categoryName.includes(q) ||
+             description.includes(q);
+    });
+  };
+
   const highlightMatch = (text, query) => {
     if (!query) return <span>{text}</span>;
     const parts = text.split(new RegExp(`(${query})`, 'gi'));
@@ -631,74 +652,98 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Floating Search Suggestions Dropdown below Navbar */}
+          {/* Floating Real-Time Product Search Overlay Dropdown */}
           {isSearchOpen && (
             <div className={dropdownClass}>
-              <div className="max-w-3xl mx-auto space-y-8 font-sans">
+              <div className="max-w-4xl mx-auto space-y-6 font-sans py-2">
                 {!searchQuery.trim() ? (
-                  <div className="space-y-4">
-                    <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest block">Quick Links</span>
-                    <div className="flex flex-col gap-3">
+                  <div className="space-y-4 text-left">
+                    <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest block">Quick Categories</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {[
-                        { label: 'Explore AirPods', path: '/airpods' },
-                        { label: 'iPhone 17 Pro Max', path: '/product/ip17pm' },
-                        { label: 'MacBook Neo 14-inch', path: '/product/mbneo' },
-                        { label: 'Apple Watch Ultra 2', path: '/product/wultra2' },
+                        { label: 'iPhone Catalogue', path: '/iphone' },
+                        { label: 'MacBook Catalogue', path: '/macbook' },
+                        { label: 'iPad Catalogue', path: '/ipad' },
+                        { label: 'Watch Catalogue', path: '/watch' },
+                        { label: 'AirPods Catalogue', path: '/airpods' },
                         { label: 'Shop Accessories', path: '/accessories' }
                       ].map((link, idx) => (
                         <Link
                           key={idx}
                           to={link.path}
                           onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
-                          className="text-sm font-semibold flex items-center gap-2.5 transition-colors text-zinc-800 hover:text-[#0071e3]"
+                          className="text-xs font-bold p-3 rounded-xl bg-zinc-50 border border-zinc-200/80 hover:border-zinc-900 hover:bg-zinc-100 transition-all flex items-center justify-between text-zinc-900"
                         >
+                          <span>{link.label}</span>
                           <span className="text-zinc-400 text-xs">→</span>
-                          {link.label}
                         </Link>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
-                    {/* Suggested Links */}
-                    <div className="space-y-4">
-                      <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest block">Suggested Links</span>
-                      <div className="flex flex-col gap-3">
-                        {getSuggestions(searchQuery).links.length > 0 ? (
-                          getSuggestions(searchQuery).links.map((link, idx) => (
-                            <Link
-                              key={idx}
-                              to={link.path}
-                              onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
-                              className="text-sm font-semibold flex items-center gap-2.5 transition-colors text-zinc-800 hover:text-[#0071e3]"
-                            >
-                              <span className="text-zinc-400 text-xs">→</span>
-                              {highlightMatch(link.label, searchQuery)}
-                            </Link>
-                          ))
-                        ) : (
-                          <span className="text-sm text-zinc-500 italic">No matching suggestions</span>
-                        )}
-                      </div>
+                  <div className="space-y-4 text-left">
+                    <div className="flex items-center justify-between border-b border-zinc-150 pb-3">
+                      <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                        Products Matching "{searchQuery}" ({getMatchingProducts(searchQuery).length})
+                      </span>
+                      <Link
+                        to={`/search?q=${encodeURIComponent(searchQuery)}`}
+                        onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
+                        className="text-xs font-bold text-[#0071e3] hover:underline"
+                      >
+                        View all results →
+                      </Link>
                     </div>
 
-                    {/* Suggested Searches */}
-                    <div className="space-y-4">
-                      <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest block">Suggested Searches</span>
-                      <div className="flex flex-col gap-3">
-                        {getSuggestions(searchQuery).searches.map((searchItem, idx) => (
-                          <Link
-                            key={idx}
-                            to={searchItem.path}
-                            onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
-                            className="text-sm font-semibold flex items-center gap-2.5 transition-colors text-zinc-800 hover:text-[#0071e3]"
-                          >
-                            <Search className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                            {highlightMatch(searchItem.label, searchQuery)}
-                          </Link>
-                        ))}
+                    {getMatchingProducts(searchQuery).length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
+                        {getMatchingProducts(searchQuery).map((prod) => {
+                          const partNum = prod.partNumber || prod.variants?.[0]?.partNumber || null;
+                          const prodImage = prod.images?.[0] || prod.image || '/iphone_category_v2.jpg';
+                          return (
+                            <Link
+                              key={prod._id || prod.id}
+                              to={`/product/${prod._id || prod.id}`}
+                              onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
+                              className="group p-3 rounded-2xl border border-zinc-200/70 hover:border-zinc-900 bg-white hover:bg-zinc-50/80 transition-all flex items-center gap-3.5 shadow-2xs"
+                            >
+                              <div className="h-14 w-14 rounded-xl bg-zinc-50 border border-zinc-150 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                                <img src={prodImage} alt="" className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-xs font-extrabold text-zinc-900 truncate leading-snug">
+                                  {partNum && (
+                                    <span className="font-mono font-extrabold text-black mr-1.5 inline-block">
+                                      {partNum}
+                                    </span>
+                                  )}
+                                  <span>{prod.title || prod.name}</span>
+                                </div>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                    {prod.category?.name || prod.category || prod.brand || 'Apple'}
+                                  </span>
+                                  <span className="text-xs font-bold text-zinc-900 font-sans">
+                                    ₹{(prod.price || prod.variants?.[0]?.price || 0).toLocaleString('en-IN')}
+                                  </span>
+                                </div>
+                              </div>
+                            </Link>
+                          );
+                        })}
                       </div>
-                    </div>
+                    ) : (
+                      <div className="py-8 text-center bg-zinc-50 rounded-2xl border border-dashed border-zinc-200 space-y-2">
+                        <p className="text-xs text-zinc-500 font-medium">No products found matching "{searchQuery}"</p>
+                        <Link
+                          to={`/search?q=${encodeURIComponent(searchQuery)}`}
+                          onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
+                          className="inline-block text-xs font-bold text-[#0071e3] hover:underline"
+                        >
+                          Perform full catalog search →
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
