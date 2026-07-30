@@ -342,25 +342,82 @@ export default function Navbar() {
     }
   }, [dispatch, isAuthenticated]);
 
-  const getMatchingProducts = (query) => {
-    const q = (query || '').trim().toLowerCase();
-    if (!q || !products) return [];
-
+  const getCategoryProducts = (catKey) => {
+    if (!products || products.length === 0) return [];
+    const k = (catKey || '').toLowerCase();
+    
     return products.filter(p => {
+      const cName = (p.category?.name || p.category || '').toLowerCase();
       const title = (p.title || p.name || '').toLowerCase();
       const brand = (p.brand || '').toLowerCase();
-      const partNum = (p.partNumber || p.variants?.[0]?.partNumber || '').toLowerCase();
-      const modelNum = (p.modelNumber || '').toLowerCase();
-      const categoryName = (p.category?.name || p.category || '').toLowerCase();
-      const description = (p.description || '').toLowerCase();
 
-      return title.includes(q) ||
-             brand.includes(q) ||
-             partNum.includes(q) ||
-             modelNum.includes(q) ||
-             categoryName.includes(q) ||
-             description.includes(q);
+      if (k === 'mac') return cName.includes('mac') || title.includes('mac');
+      if (k === 'ipad') return cName.includes('ipad') || title.includes('ipad');
+      if (k === 'iphone') return cName.includes('iphone') || title.includes('iphone');
+      if (k === 'watch') return cName.includes('watch') || title.includes('watch');
+      if (k === 'airpods') return cName.includes('airpod') || title.includes('airpod');
+      if (k === 'tv-home') return cName.includes('tv') || cName.includes('home') || title.includes('tv') || title.includes('homepod');
+      if (k === 'accessories') return cName.includes('accessori') || title.includes('case') || title.includes('charger') || title.includes('cable') || title.includes('magsafe') || brand.includes('belkin');
+      return false;
     });
+  };
+
+  const renderProductCategoryList = (catKey, catTitle, catPath, closeDropdown) => {
+    const catProds = getCategoryProducts(catKey);
+
+    return (
+      <div className="md:col-span-6 space-y-3 text-left">
+        <span className="text-[12px] font-medium text-zinc-400 block mb-1">
+          {catTitle}
+        </span>
+        <div className="flex flex-col gap-1 max-h-[340px] overflow-y-auto pr-2">
+          <Link
+            to={catPath}
+            onMouseEnter={() => setHoveredProduct(null)}
+            onClick={() => {
+              closeDropdown();
+              setHoveredProduct(null);
+            }}
+            className="text-[13.5px] font-bold text-[#0071e3] tracking-wide transition-colors block py-1.5"
+          >
+            Explore All {catKey.toUpperCase()} →
+          </Link>
+
+          {catProds.length > 0 ? (
+            catProds.map((prod) => {
+              const partNum = prod.partNumber || prod.variants?.[0]?.partNumber || null;
+              const prodName = prod.title || prod.name;
+              const prodImage = prod.images?.[0] || prod.image || '/iphone_category_v2.jpg';
+              const displayPrice = prod.price || prod.variants?.[0]?.price ? `₹${(prod.price || prod.variants?.[0]?.price).toLocaleString('en-IN')}` : '';
+
+              return (
+                <Link
+                  key={prod._id || prod.id}
+                  to={`/product/${prod._id || prod.id}`}
+                  onMouseEnter={() => setHoveredProduct({ name: `${partNum ? `${partNum} ` : ''}${prodName}`, price: displayPrice, image: prodImage })}
+                  onClick={() => {
+                    closeDropdown();
+                    setHoveredProduct(null);
+                  }}
+                  className="text-[13px] font-semibold tracking-wide transition-colors flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-zinc-100/70"
+                >
+                  <span className="truncate">
+                    {partNum && (
+                      <span className="font-mono font-extrabold text-black mr-1.5 inline-block">
+                        {partNum}
+                      </span>
+                    )}
+                    <span>{prodName}</span>
+                  </span>
+                </Link>
+              );
+            })
+          ) : (
+            <span className="text-xs text-zinc-400 py-2 font-medium">Loading catalog items...</span>
+          )}
+        </div>
+      </div>
+    );
   };
 
   const highlightMatch = (text, query) => {
@@ -1151,7 +1208,6 @@ export default function Navbar() {
           {/* Mega Dropdown for Mac */}
           {isMacDropdownOpen && (
             <>
-              {/* Dropdown panel */}
               <div
                 onMouseEnter={handleMacMouseEnter}
                 onMouseLeave={() => {
@@ -1160,41 +1216,8 @@ export default function Navbar() {
                 }}
                 className={dropdownClass}>
                 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
-
-                  {/* Column 1: Explore Mac */}
-                  <div className="md:col-span-6 space-y-3 text-left">
-                    <span className="text-[12px] font-medium text-zinc-400 block mb-1">
-                      Explore Mac
-                    </span>
-                    <div className="flex flex-col gap-2">
-                      {[
-                        { label: 'Explore All Mac', path: '/macbook' },
-                        { label: 'MacBook Neo', path: '/macbook?search=MacBook Neo' },
-                        { label: 'MacBook Air', path: '/macbook?search=MacBook Air' },
-                        { label: 'MacBook Pro', path: '/macbook?search=MacBook Pro' },
-                        { label: 'iMac', path: '/macbook?search=iMac' },
-                        { label: 'Mac mini', path: '/macbook?search=Mac mini' },
-                        { label: 'Mac Studio', path: '/macbook?search=Mac Studio' },
-                        { label: 'Displays', path: '/macbook?search=Display' }
-                      ].map((sub, sIdx) => (
-                        <Link
-                          key={sIdx}
-                          to={sub.path}
-                          onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
-                          onClick={() => {
-                            setIsMacDropdownOpen(false);
-                            setHoveredProduct(null);
-                          }}
-                          className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
-                        >
-                          {sub.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-
+                  {renderProductCategoryList('mac', 'Explore Mac', '/macbook', () => setIsMacDropdownOpen(false))}
                   {renderProductPreview()}
-
                 </div>
               </div>
             </>
@@ -1203,7 +1226,6 @@ export default function Navbar() {
           {/* Mega Dropdown for iPad */}
           {isIpadDropdownOpen && (
             <>
-              {/* Dropdown panel */}
               <div
                 onMouseEnter={handleIpadMouseEnter}
                 onMouseLeave={() => {
@@ -1212,40 +1234,8 @@ export default function Navbar() {
                 }}
                 className={dropdownClass}>
                 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
-
-                  {/* Column 1: Explore iPad */}
-                  <div className="md:col-span-6 space-y-3 text-left">
-                    <span className="text-[12px] font-medium text-zinc-400 block mb-1">
-                      Explore iPad
-                    </span>
-                    <div className="flex flex-col gap-2">
-                      {[
-                        { label: 'Explore All iPad', path: '/ipad' },
-                        { label: 'iPad Pro', path: '/ipad?search=iPad Pro' },
-                        { label: 'iPad Air', path: '/ipad?search=iPad Air' },
-                        { label: 'iPad', path: '/ipad?search=iPad 10' },
-                        { label: 'iPad mini', path: '/ipad?search=iPad mini' },
-                        { label: 'Apple Pencil', path: '/accessories?search=Pencil' },
-                        { label: 'Keyboards', path: '/accessories?search=Keyboard' }
-                      ].map((sub, sIdx) => (
-                        <Link
-                          key={sIdx}
-                          to={sub.path}
-                          onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
-                          onClick={() => {
-                            setIsIpadDropdownOpen(false);
-                            setHoveredProduct(null);
-                          }}
-                          className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
-                        >
-                          {sub.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-
+                  {renderProductCategoryList('ipad', 'Explore iPad', '/ipad', () => setIsIpadDropdownOpen(false))}
                   {renderProductPreview()}
-
                 </div>
               </div>
             </>
@@ -1254,7 +1244,6 @@ export default function Navbar() {
           {/* Mega Dropdown for iPhone */}
           {isIphoneDropdownOpen && (
             <>
-              {/* Dropdown panel */}
               <div
                 onMouseEnter={handleIphoneMouseEnter}
                 onMouseLeave={() => {
@@ -1264,39 +1253,8 @@ export default function Navbar() {
                 className={dropdownClass}
               >
                 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
-
-                  {/* Column 1: Explore iPhone */}
-                  <div className="md:col-span-6 space-y-3 text-left">
-                    <span className="text-[12px] font-medium text-zinc-400 block mb-1">
-                      Explore iPhone
-                    </span>
-                    <div className="flex flex-col gap-2">
-                      {[
-                        { label: 'Explore All iPhone', path: '/iphone' },
-                        { label: 'iPhone 17 Pro', path: '/iphone?search=iPhone 17 Pro' },
-                        { label: 'iPhone Air', path: '/iphone?search=iPhone Air' },
-                        { label: 'iPhone 17', path: '/iphone?search=iPhone 17' },
-                        { label: 'iPhone 17e', path: '/iphone?search=iPhone 17e' },
-                        { label: 'iPhone 16', path: '/iphone?search=iPhone 16' }
-                      ].map((sub, sIdx) => (
-                        <Link
-                          key={sIdx}
-                          to={sub.path}
-                          onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
-                          onClick={() => {
-                            setIsIphoneDropdownOpen(false);
-                            setHoveredProduct(null);
-                          }}
-                          className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
-                        >
-                          {sub.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-
+                  {renderProductCategoryList('iphone', 'Explore iPhone', '/iphone', () => setIsIphoneDropdownOpen(false))}
                   {renderProductPreview()}
-
                 </div>
               </div>
             </>
@@ -1305,7 +1263,6 @@ export default function Navbar() {
           {/* Mega Dropdown for Watch */}
           {isWatchDropdownOpen && (
             <>
-              {/* Dropdown panel */}
               <div
                 onMouseEnter={handleWatchMouseEnter}
                 onMouseLeave={() => {
@@ -1315,38 +1272,8 @@ export default function Navbar() {
                 className={dropdownClass}
               >
                 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
-
-                  {/* Column 1: Explore Watch */}
-                  <div className="md:col-span-6 space-y-3 text-left">
-                    <span className="text-[12px] font-medium text-zinc-400 block mb-1">
-                      Explore Watch
-                    </span>
-                    <div className="flex flex-col gap-2">
-                      {[
-                        { label: 'Explore All Apple Watch', path: '/watch' },
-                        { label: 'Apple Watch Series 11', path: '/watch?search=Series 11' },
-                        { label: 'Apple Watch SE 3', path: '/watch?search=SE 3' },
-                        { label: 'Apple Watch Ultra 3', path: '/watch?search=Ultra 3' },
-                        { label: 'Apple Watch Nike', path: '/watch?search=Nike' }
-                      ].map((sub, sIdx) => (
-                        <Link
-                          key={sIdx}
-                          to={sub.path}
-                          onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
-                          onClick={() => {
-                            setIsWatchDropdownOpen(false);
-                            setHoveredProduct(null);
-                          }}
-                          className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
-                        >
-                          {sub.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-
+                  {renderProductCategoryList('watch', 'Explore Watch', '/watch', () => setIsWatchDropdownOpen(false))}
                   {renderProductPreview()}
-
                 </div>
               </div>
             </>
@@ -1355,7 +1282,6 @@ export default function Navbar() {
           {/* Mega Dropdown for AirPods */}
           {isAirpodsDropdownOpen && (
             <>
-              {/* Dropdown panel */}
               <div
                 onMouseEnter={handleAirpodsMouseEnter}
                 onMouseLeave={() => {
@@ -1365,37 +1291,8 @@ export default function Navbar() {
                 className={dropdownClass}
               >
                 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
-
-                  {/* Column 1: Explore AirPods */}
-                  <div className="md:col-span-6 space-y-3 text-left">
-                    <span className="text-[12px] font-medium text-zinc-400 block mb-1">
-                      Explore AirPods
-                    </span>
-                    <div className="flex flex-col gap-2">
-                      {[
-                        { label: 'Explore All AirPods', path: '/airpods' },
-                        { label: 'AirPods 4', path: '/airpods?search=AirPods 4' },
-                        { label: 'AirPods Pro 3', path: '/airpods?search=Pro 3' },
-                        { label: 'AirPods Max 2', path: '/airpods?search=Max 2' }
-                      ].map((sub, sIdx) => (
-                        <Link
-                          key={sIdx}
-                          to={sub.path}
-                          onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
-                          onClick={() => {
-                            setIsAirpodsDropdownOpen(false);
-                            setHoveredProduct(null);
-                          }}
-                          className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
-                        >
-                          {sub.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-
+                  {renderProductCategoryList('airpods', 'Explore AirPods', '/airpods', () => setIsAirpodsDropdownOpen(false))}
                   {renderProductPreview()}
-
                 </div>
               </div>
             </>
@@ -1404,7 +1301,6 @@ export default function Navbar() {
           {/* Mega Dropdown for TV & Home */}
           {isTvDropdownOpen && (
             <>
-              {/* Dropdown panel */}
               <div
                 onMouseEnter={handleTvMouseEnter}
                 onMouseLeave={() => {
@@ -1414,37 +1310,8 @@ export default function Navbar() {
                 className={dropdownClass}
               >
                 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
-
-                  {/* Column 1: Explore TV & Home */}
-                  <div className="md:col-span-6 space-y-3 text-left">
-                    <span className="text-[12px] font-medium text-zinc-400 block mb-1">
-                      Explore TV & Home
-                    </span>
-                    <div className="flex flex-col gap-2">
-                      {[
-                        { label: 'Explore TV & Home', path: '/tv-home' },
-                        { label: 'Apple TV 4K', path: '/tv-home?search=TV 4K' },
-                        { label: 'HomePod', path: '/tv-home?search=HomePod' },
-                        { label: 'HomePod mini', path: '/tv-home?search=mini' }
-                      ].map((sub, sIdx) => (
-                        <Link
-                          key={sIdx}
-                          to={sub.path}
-                          onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
-                          onClick={() => {
-                            setIsTvDropdownOpen(false);
-                            setHoveredProduct(null);
-                          }}
-                          className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
-                        >
-                          {sub.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-
+                  {renderProductCategoryList('tv-home', 'Explore TV & Home', '/tv-home', () => setIsTvDropdownOpen(false))}
                   {renderProductPreview()}
-
                 </div>
               </div>
             </>
