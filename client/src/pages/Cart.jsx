@@ -20,6 +20,11 @@ export default function Cart() {
     dispatch(updateQuantity({ id, quantity: Math.max(1, newQty) }));
   };
 
+  const handleQtyChange = (id, currentQty, type) => {
+    const newQty = type === 'inc' ? currentQty + 1 : Math.max(1, currentQty - 1);
+    handleUpdateQuantity(id, newQty);
+  };
+
   const handleRemove = (id) => {
     dispatch(removeFromCart(id));
   };
