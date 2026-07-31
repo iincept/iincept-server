@@ -623,13 +623,47 @@ export default function ProductDetails() {
             {(() => {
               const activeColorStr = (selectedColor?.name || colorName || '').toString().trim().toLowerCase();
               const activeStorageStr = (selectedStorage || '').toString().trim().toLowerCase();
+              const activeRamStr = (selectedRam || '').toString().trim().toLowerCase();
+              const activeSizeStr = (selectedSize || '').toString().trim().toLowerCase();
 
+              // 1. Try exact match on Color + Storage + RAM + Size
               let activeVar = product.variants?.find(v => {
                 const vColorStr = (v.color || '').toString().trim().toLowerCase();
                 const vStorageStr = (v.storage || '').toString().trim().toLowerCase();
-                return vColorStr === activeColorStr && vStorageStr === activeStorageStr;
+                const vRamStr = (v.ram || '').toString().trim().toLowerCase();
+                const vSizeStr = (v.size || '').toString().trim().toLowerCase();
+
+                const cMatch = !activeColorStr || !vColorStr || vColorStr === activeColorStr;
+                const sMatch = !activeStorageStr || !vStorageStr || vStorageStr === activeStorageStr;
+                const rMatch = !activeRamStr || !vRamStr || vRamStr === activeRamStr;
+                const zMatch = !activeSizeStr || !vSizeStr || vSizeStr === activeSizeStr;
+
+                return cMatch && sMatch && rMatch && zMatch;
               });
 
+              // 2. Fallback: match Color + Storage + RAM
+              if (!activeVar) {
+                activeVar = product.variants?.find(v => {
+                  const vColorStr = (v.color || '').toString().trim().toLowerCase();
+                  const vStorageStr = (v.storage || '').toString().trim().toLowerCase();
+                  const vRamStr = (v.ram || '').toString().trim().toLowerCase();
+
+                  return (vColorStr === activeColorStr || !vColorStr) &&
+                         (vStorageStr === activeStorageStr || !vStorageStr) &&
+                         (vRamStr === activeRamStr || !vRamStr);
+                });
+              }
+
+              // 3. Fallback: match Color + Storage
+              if (!activeVar) {
+                activeVar = product.variants?.find(v => {
+                  const vColorStr = (v.color || '').toString().trim().toLowerCase();
+                  const vStorageStr = (v.storage || '').toString().trim().toLowerCase();
+                  return (vColorStr === activeColorStr || !vColorStr) && (vStorageStr === activeStorageStr || !vStorageStr);
+                });
+              }
+
+              // 4. Fallback: match Color only
               if (!activeVar && activeColorStr) {
                 activeVar = product.variants?.find(v => (v.color || '').toString().trim().toLowerCase() === activeColorStr);
               }

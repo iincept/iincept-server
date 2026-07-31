@@ -287,6 +287,57 @@ export default function Products() {
     showSuccessMessage(`Generated ${countAdded} Color Part Number blocks! Scroll to 'Variants' below to enter MPNs.`);
   };
 
+  const handleAutoGenerateFullMatrixVariants = () => {
+    const currentColors = (productForm.colors || []).map(c => typeof c === 'object' ? c.name : c).filter(Boolean);
+    const currentStorages = (productForm.storages || []).filter(Boolean);
+    const currentRams = (productForm.rams || []).filter(Boolean);
+
+    if (currentColors.length === 0 && currentStorages.length === 0 && currentRams.length === 0) {
+      setError("Please enter Colors, Storage, or RAM options in Config Options first!");
+      return;
+    }
+
+    const colorList = currentColors.length > 0 ? currentColors : [''];
+    const storageList = currentStorages.length > 0 ? currentStorages : [''];
+    const ramList = currentRams.length > 0 ? currentRams : [''];
+
+    const newVariants = [...(productForm.variants || [])];
+    let countAdded = 0;
+
+    colorList.forEach(cName => {
+      storageList.forEach(sName => {
+        ramList.forEach(rName => {
+          const exists = newVariants.find(v => 
+            (v.color || '').toString().toLowerCase() === (cName || '').toLowerCase() &&
+            (v.storage || '').toString().toLowerCase() === (sName || '').toLowerCase() &&
+            (v.ram || '').toString().toLowerCase() === (rName || '').toLowerCase()
+          );
+
+          if (!exists) {
+            newVariants.push({
+              color: cName,
+              storage: sName,
+              ram: rName,
+              price: productForm.price || '',
+              discountPrice: productForm.discountPrice || '',
+              stock: productForm.stock || 10,
+              sku: `MPN-${cName ? cName.slice(0,2).toUpperCase() : 'XX'}-${sName ? sName.replace(/[^0-9]/g, '') : '0'}-${rName ? rName.replace(/[^0-9]/g, '') : '0'}-${Date.now().toString().slice(-3)}`,
+              partNumber: '',
+              images: []
+            });
+            countAdded++;
+          }
+        });
+      });
+    });
+
+    setProductForm({
+      ...productForm,
+      variants: newVariants
+    });
+    showSuccessMessage(`Generated ${countAdded} (Color + Storage + RAM) Combination Variant Blocks! Scroll down to enter individual MPNs & Prices.`);
+  };
+
   const handleProductSubmit = async (e) => {
     if (e) e.preventDefault();
     if (!productForm.category) {
@@ -1097,14 +1148,24 @@ export default function Products() {
                       });
                     }}
                   />
-                  <button
-                    type="button"
-                    onClick={handleAutoGenerateColorVariants}
-                    className="mt-1 text-xs font-bold text-[#0071e3] hover:text-blue-700 bg-blue-50 border border-blue-200 px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Generate Color Part Number (MPN) Input Fields
-                  </button>
+                  <div className="flex flex-wrap gap-2 mt-1.5">
+                    <button
+                      type="button"
+                      onClick={handleAutoGenerateColorVariants}
+                      className="text-xs font-bold text-[#0071e3] hover:text-blue-700 bg-blue-50 border border-blue-200 px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Generate Color-only MPN Fields
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAutoGenerateFullMatrixVariants}
+                      className="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Generate All (Color + Storage + RAM) Combination MPN & Price Fields
+                    </button>
+                  </div>
 
                   <VariantTagInput
                     label="Storage Options"
@@ -1216,11 +1277,13 @@ export default function Products() {
                             </button>
                           </div>
 
-                          {/* Unified row: Color, Price, Discount Price, Stock, SKU */}
-                          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                          {/* Grid row: Color, Storage, RAM, Price, Discount Price, Stock, Part No. / MPN */}
+                          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3.5">
                             <div>
                               <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1.5">Color</label>
-                              <select
+                              <input
+                                type="text"
+                                placeholder="e.g. Midnight"
                                 value={v.color || ''}
                                 onChange={(e) => {
                                   const updated = [...productForm.variants];
@@ -1228,13 +1291,53 @@ export default function Products() {
                                   setProductForm({ ...productForm, variants: updated });
                                   if (vIdx === 0) setSelectedPreviewColor(e.target.value);
                                 }}
-                                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs bg-white cursor-pointer"
-                              >
-                                <option value="">Select color</option>
-                                {colorOptionsList.map(opt => (
-                                  <option key={opt} value={opt}>{opt}</option>
-                                ))}
-                              </select>
+                                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs bg-white font-medium"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1.5">Storage</label>
+                              <input
+                                type="text"
+                                placeholder="e.g. 512GB SSD"
+                                value={v.storage || ''}
+                                onChange={(e) => {
+                                  const updated = [...productForm.variants];
+                                  updated[vIdx] = { ...v, storage: e.target.value };
+                                  setProductForm({ ...productForm, variants: updated });
+                                }}
+                                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs bg-white font-medium"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1.5">RAM</label>
+                              <input
+                                type="text"
+                                placeholder="e.g. 16GB"
+                                value={v.ram || ''}
+                                onChange={(e) => {
+                                  const updated = [...productForm.variants];
+                                  updated[vIdx] = { ...v, ram: e.target.value };
+                                  setProductForm({ ...productForm, variants: updated });
+                                }}
+                                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs bg-white font-medium"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1.5">Part No. / MPN *</label>
+                              <input
+                                type="text"
+                                placeholder="e.g. MDHE4HN/A"
+                                value={v.partNumber || ''}
+                                onChange={(e) => {
+                                  const updated = [...productForm.variants];
+                                  updated[vIdx] = { ...v, partNumber: e.target.value };
+                                  setProductForm({ ...productForm, variants: updated });
+                                }}
+                                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs font-mono font-bold text-black bg-amber-50/50"
+                              />
                             </div>
 
                             <div>
@@ -1243,14 +1346,14 @@ export default function Products() {
                                 type="number"
                                 required
                                 min="0"
-                                placeholder="119900"
+                                placeholder="149900"
                                 value={v.price || ''}
                                 onChange={(e) => {
                                   const updated = [...productForm.variants];
                                   updated[vIdx] = { ...v, price: e.target.value };
                                   setProductForm({ ...productForm, variants: updated });
                                 }}
-                                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs"
+                                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs font-bold text-zinc-900"
                               />
                             </div>
 
@@ -1259,7 +1362,7 @@ export default function Products() {
                               <input
                                 type="number"
                                 min="0"
-                                placeholder="109900"
+                                placeholder="139900"
                                 value={v.discountPrice || ''}
                                 onChange={(e) => {
                                   const updated = [...productForm.variants];
@@ -1284,36 +1387,6 @@ export default function Products() {
                                   setProductForm({ ...productForm, variants: updated });
                                 }}
                                 className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1.5">SKU *</label>
-                              <input
-                                type="text"
-                                placeholder="e.g. MBA-SLV"
-                                value={v.sku || ''}
-                                onChange={(e) => {
-                                  const updated = [...productForm.variants];
-                                  updated[vIdx] = { ...v, sku: e.target.value };
-                                  setProductForm({ ...productForm, variants: updated });
-                                }}
-                                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1.5">Part No. / MPN (Color Variant)</label>
-                              <input
-                                type="text"
-                                placeholder="e.g. MW2U3HN/A"
-                                value={v.partNumber || ''}
-                                onChange={(e) => {
-                                  const updated = [...productForm.variants];
-                                  updated[vIdx] = { ...v, partNumber: e.target.value };
-                                  setProductForm({ ...productForm, variants: updated });
-                                }}
-                                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs font-mono text-zinc-800"
                               />
                             </div>
                           </div>
