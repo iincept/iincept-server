@@ -1253,13 +1253,14 @@ export default function Products() {
                       return (
                         <div key={vIdx} className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm space-y-4 hover:border-zinc-300 transition-all text-left">
 
-                          {/* Variant header row */}
-                          <div className="flex justify-between items-center border-b border-zinc-150 pb-3 bg-zinc-50/50 -mx-5 -mt-5 px-5 py-2.5 rounded-t-xl">
+                          {/* Variant header row with Excel-style specs summary */}
+                          <div className="flex justify-between items-center border-b border-zinc-150 pb-3 bg-zinc-100/70 -mx-5 -mt-5 px-5 py-2.5 rounded-t-xl">
                             <div className="flex items-center gap-2">
                               <GripVertical className="h-4 w-4 text-zinc-400 cursor-grab" />
-                              <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                                <span className="inline-block w-3.5 h-3.5 rounded-full border border-zinc-300" style={{ backgroundColor: resolveColorValue(v.color) }} />
-                                Color: {v.color || 'Standard'} {vIdx === 0 && <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">Default</span>}
+                              <span className="text-[11px] font-extrabold text-zinc-800 uppercase tracking-wide flex items-center gap-2 font-mono">
+                                <span className="inline-block w-3.5 h-3.5 rounded-full border border-zinc-300 shrink-0" style={{ backgroundColor: resolveColorValue(v.color) }} />
+                                <span>#{vIdx + 1}: {v.color || 'Color'} {v.ram ? `| ${v.ram}` : ''} {v.storage ? `| ${v.storage}` : ''} {v.partNumber ? `| MPN: ${v.partNumber}` : ''} {v.price ? `| ₹${Number(v.price).toLocaleString('en-IN')}` : ''}</span>
+                                {vIdx === 0 && <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded font-sans">Default</span>}
                               </span>
                             </div>
                             <button
