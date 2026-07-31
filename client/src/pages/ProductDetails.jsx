@@ -386,33 +386,65 @@ export default function ProductDetails() {
     const defaultPrice = product.price || 0;
     if (!product.variants || product.variants.length === 0) return defaultPrice;
 
-    let candidates = [...product.variants];
-
     const targetColorName = oColor ? (oColor.name || oColor) : selectedColor?.name;
     const targetSize = oSize !== undefined ? oSize : selectedSize;
     const targetStorage = oStorage !== undefined ? oStorage : selectedStorage;
     const targetRam = oRam !== undefined ? oRam : selectedRam;
 
-    if (targetColorName && colors.length > 0) {
-      const filtered = candidates.filter(v => v.color?.toString().toLowerCase() === targetColorName.toString().toLowerCase());
+    const tColor = (targetColorName || '').toString().toLowerCase();
+    const tStorage = (targetStorage || '').toString().toLowerCase();
+    const tRam = (targetRam || '').toString().toLowerCase();
+    const tSize = (targetSize || '').toString().toLowerCase();
+
+    // 1. Try exact match for Color + Storage + RAM + Size
+    const exactVar = product.variants.find(v => {
+      const vColor = (v.color || '').toString().toLowerCase();
+      const vStorage = (v.storage || '').toString().toLowerCase();
+      const vRam = (v.ram || '').toString().toLowerCase();
+      const vSize = (v.size || '').toString().toLowerCase();
+
+      const cM = !tColor || !vColor || vColor === tColor;
+      const sM = !tStorage || !vStorage || vStorage === tStorage;
+      const rM = !tRam || !vRam || vRam === tRam;
+      const zM = !tSize || !vSize || vSize === tSize;
+
+      return cM && sM && rM && zM && (v.price > 0);
+    });
+
+    if (exactVar && exactVar.price) return Number(exactVar.price);
+
+    // 2. Try match for Storage + RAM + Color
+    const storageRamVar = product.variants.find(v => {
+      const vColor = (v.color || '').toString().toLowerCase();
+      const vStorage = (v.storage || '').toString().toLowerCase();
+      const vRam = (v.ram || '').toString().toLowerCase();
+
+      return (vColor === tColor || !vColor) &&
+             (vStorage === tStorage || !vStorage) &&
+             (vRam === tRam || !vRam) && (v.price > 0);
+    });
+
+    if (storageRamVar && storageRamVar.price) return Number(storageRamVar.price);
+
+    // 3. Progressive candidate filtering
+    let candidates = [...product.variants];
+    if (tColor) {
+      const filtered = candidates.filter(v => (v.color || '').toString().toLowerCase() === tColor);
       if (filtered.length > 0) candidates = filtered;
     }
-    if (targetSize && sizes.length > 0) {
-      const filtered = candidates.filter(v => v.size?.toString().toLowerCase() === targetSize.toString().toLowerCase());
+    if (tStorage) {
+      const filtered = candidates.filter(v => (v.storage || '').toString().toLowerCase() === tStorage);
       if (filtered.length > 0) candidates = filtered;
     }
-    if (targetStorage && storages.length > 0) {
-      const filtered = candidates.filter(v => v.storage?.toString().toLowerCase() === targetStorage.toString().toLowerCase());
-      if (filtered.length > 0) candidates = filtered;
-    }
-    if (targetRam && rams.length > 0) {
-      const filtered = candidates.filter(v => v.ram?.toString().toLowerCase() === targetRam.toString().toLowerCase());
+    if (tRam) {
+      const filtered = candidates.filter(v => (v.ram || '').toString().toLowerCase() === tRam);
       if (filtered.length > 0) candidates = filtered;
     }
 
     if (candidates.length > 0 && candidates[0].price) {
       return Number(candidates[0].price);
     }
+
     return defaultPrice;
   };
 
