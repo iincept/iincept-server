@@ -640,12 +640,12 @@ export default function ProductDetails() {
               return (
                 <>
                   <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-900 tracking-tight text-left leading-snug">
+                    <span>{product.name || product.title}</span>
                     {partNum && (
-                      <span className="font-mono font-extrabold text-black mr-3 inline-block">
+                      <span className="font-mono font-extrabold text-black ml-3 inline-block">
                         {partNum}
                       </span>
                     )}
-                    <span>{product.name || product.title}</span>
                   </h1>
 
                   {modelNum && (

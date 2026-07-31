@@ -423,12 +423,12 @@ export default function Navbar() {
                   className="text-[13px] font-semibold tracking-wide transition-colors flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-zinc-100/70"
                 >
                   <span className="truncate">
+                    <span>{prodName}</span>
                     {partNum && (
-                      <span className="font-mono font-extrabold text-black mr-1.5 inline-block">
+                      <span className="font-mono font-extrabold text-black ml-1.5 inline-block">
                         {partNum}
                       </span>
                     )}
-                    <span>{prodName}</span>
                   </span>
                 </Link>
               );
@@ -790,12 +790,12 @@ export default function Navbar() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="text-xs font-extrabold text-zinc-900 truncate leading-snug">
+                                  <span>{prod.title || prod.name}</span>
                                   {partNum && (
-                                    <span className="font-mono font-extrabold text-black mr-1.5 inline-block">
+                                    <span className="font-mono font-extrabold text-black ml-1.5 inline-block">
                                       {partNum}
                                     </span>
                                   )}
-                                  <span>{prod.title || prod.name}</span>
                                 </div>
                                 <div className="flex items-center gap-2 mt-1">
                                   <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">

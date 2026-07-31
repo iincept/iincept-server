@@ -326,12 +326,12 @@ export default function Macbook() {
                   const partNum = activeVar?.partNumber || prod.partNumber || prod.variants?.[0]?.partNumber || null;
                   return (
                     <>
+                      <span>{prod.name || prod.title}</span>
                       {partNum && (
-                        <span className="font-mono font-extrabold text-black mr-2 inline-block">
+                        <span className="font-mono font-extrabold text-black ml-2 inline-block">
                           {partNum}
                         </span>
                       )}
-                      <span>{prod.name || prod.title}</span>
                     </>
                   );
                 })()}

@@ -667,12 +667,12 @@ export default function Products() {
                           </div>
                           <div>
                             <span className="font-semibold text-zinc-900 block font-sans">
+                              <span>{prod.title}</span>
                               {(prod.partNumber || prod.variants?.[0]?.partNumber) && (
-                                <span className="font-mono font-extrabold text-zinc-900 mr-2 inline-block">
+                                <span className="font-mono font-extrabold text-zinc-900 ml-2 inline-block">
                                   {prod.partNumber || prod.variants?.[0]?.partNumber}
                                 </span>
                               )}
-                              <span>{prod.title}</span>
                             </span>
                             <span className="text-xs text-zinc-450 font-medium">{prod.brand}</span>
                           </div>
@@ -1472,12 +1472,12 @@ export default function Products() {
                   {/* Title & Rating */}
                   <div>
                     <h2 className="text-lg font-extrabold text-zinc-900 leading-tight">
+                      <span>{productForm.title || "MacBook Air (M3 Chip)"}</span>
                       {(productForm.partNumber || productForm.variants?.[0]?.partNumber) && (
-                        <span className="font-mono font-extrabold text-zinc-900 mr-2 inline-block">
+                        <span className="font-mono font-extrabold text-zinc-900 ml-2 inline-block">
                           {productForm.partNumber || productForm.variants?.[0]?.partNumber}
                         </span>
                       )}
-                      <span>{productForm.title || "MacBook Air (M3 Chip)"}</span>
                     </h2>
 
                     <div className="flex items-center gap-1 mt-1.5">
