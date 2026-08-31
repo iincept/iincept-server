@@ -5,6 +5,7 @@ import { Heart, SlidersHorizontal, ArrowUpDown, X, ShoppingBag } from 'lucide-re
 import { addToCart } from '../redux/cartSlice';
 import { addToWishlist } from '../redux/wishlistSlice';
 import { fetchProducts } from '../redux/productSlice';
+import { matchesProductSearch } from '../utils/searchUtils';
 
 // Products are loaded dynamically from e-commerce database API
 
@@ -150,9 +151,8 @@ export default function TvHome() {
 
   const filteredProducts = sortedProducts.filter((prod) => {
     const search = searchParams.get('search') || '';
-    if (search) {
-      const nameLower = (prod.name || prod.title || '').toLowerCase();
-      if (!nameLower.includes(search.toLowerCase())) return false;
+    if (search && !matchesProductSearch(prod, search)) {
+      return false;
     }
 
     if (activeTab === 'available') return !prod.isSoldOut;
@@ -266,21 +266,15 @@ export default function TvHome() {
                 />
               </div>
 
-              {/* Title with Dynamic Color Part Number */}
+              {/* Title (Clean Product Name) */}
               <h3 className="font-semibold text-[16px] leading-snug tracking-tight text-zinc-900 group-hover:text-zinc-900 transition-colors min-h-[48px]">
                 {(() => {
-                  const selColor = selectedColors[prod.id];
-                  const activeVar = selColor ? prod.variants?.find(v => (v.color || '').toString().toLowerCase() === selColor.toLowerCase()) : null;
-                  const partNum = activeVar?.partNumber || prod.partNumber || prod.variants?.[0]?.partNumber || null;
+                  const cleanProductTitle = (rawTitle) => {
+                    if (!rawTitle) return '';
+                    return rawTitle.replace(/\s*[A-Z0-9]{5,9}\/[A-Z]$/i, '').trim();
+                  };
                   return (
-                    <>
-                      <span>{prod.name || prod.title}</span>
-                      {partNum && (
-                        <span className="font-mono font-extrabold text-black ml-2 inline-block">
-                          {partNum}
-                        </span>
-                      )}
-                    </>
+                    <span>{cleanProductTitle(prod.name || prod.title)}</span>
                   );
                 })()}
               </h3>

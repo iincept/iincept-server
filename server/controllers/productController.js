@@ -147,8 +147,6 @@ const updateProduct = async (req, res) => {
       product.slug = await generateUniqueSlug(title, productId);
     }
     if (description !== undefined) product.description = description;
-    if (price !== undefined) product.price = price;
-    if (discountPrice !== undefined) product.discountPrice = discountPrice;
     if (images) product.images = images;
     if (brand) product.brand = brand;
     const oldStock = product.stock;
@@ -165,6 +163,19 @@ const updateProduct = async (req, res) => {
     if (variants !== undefined) product.variants = variants;
     if (partNumber !== undefined) product.partNumber = partNumber;
     if (modelNumber !== undefined) product.modelNumber = modelNumber;
+
+    // Auto-sync parent product price with lowest variant price if variants exist
+    if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
+      const validVariantPrices = product.variants.map(v => Number(v.price)).filter(p => !isNaN(p) && p > 0);
+      if (validVariantPrices.length > 0) {
+        product.price = Math.min(...validVariantPrices);
+      } else if (price !== undefined) {
+        product.price = price;
+      }
+    } else if (price !== undefined) {
+      product.price = price;
+    }
+    if (discountPrice !== undefined) product.discountPrice = discountPrice;
 
     const updatedProduct = await product.save();
 
@@ -212,11 +223,21 @@ const getProducts = async (req, res) => {
     const { search, category, minPrice, maxPrice, sortBy, order } = req.query;
     let query = {};
 
-    // 1. Search Filter (title or description)
+    // 1. Search Filter (title, description, brand, sku, partNumber, modelNumber, variants)
     if (search) {
+      const searchRegex = { $regex: search, $options: "i" };
       query.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
+        { title: searchRegex },
+        { description: searchRegex },
+        { brand: searchRegex },
+        { sku: searchRegex },
+        { partNumber: searchRegex },
+        { modelNumber: searchRegex },
+        { "variants.sku": searchRegex },
+        { "variants.partNumber": searchRegex },
+        { "variants.modelNumber": searchRegex },
+        { "variants.title": searchRegex },
+        { "variants.displayTitle": searchRegex },
       ];
     }
 

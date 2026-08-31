@@ -5,8 +5,18 @@ import { Heart, SlidersHorizontal, ArrowUpDown, X, ShoppingBag } from 'lucide-re
 import { addToCart } from '../redux/cartSlice';
 import { addToWishlist } from '../redux/wishlistSlice';
 import { fetchProducts } from '../redux/productSlice';
+import { matchesProductSearch } from '../utils/searchUtils';
 
-// Products are loaded dynamically from e-commerce database API
+const MAC_SUB_NAV_ITEMS = [
+  { name: 'MacBook Neo', query: 'MacBook Neo', image: '/mac_nav/macbook_neo.png', scale: 'scale-100' },
+  { name: 'MacBook Air', query: 'MacBook Air', image: '/mac_nav/macbook_air.png', scale: 'scale-100' },
+  { name: 'MacBook Pro', query: 'MacBook Pro', image: '/mac_nav/macbook_pro.png', scale: 'scale-100' },
+  { name: 'iMac', query: 'iMac', image: '/mac_nav/imac.png', scale: 'scale-95' },
+  { name: 'Mac mini', query: 'Mac mini', image: '/mac_nav/mac_mini.png', scale: 'scale-100' },
+  { name: 'Mac Studio', query: 'Mac Studio', image: '/mac_nav/mac_studio.png', scale: 'scale-105' },
+  { name: 'Compare', path: '/compare', image: '/mac_nav/mac_compare.png', scale: 'scale-100' },
+  { name: 'Displays', query: 'Studio Display', image: '/mac_nav/mac_displays.png', scale: 'scale-95' }
+];
 
 export default function Macbook() {
   const dispatch = useDispatch();
@@ -36,12 +46,13 @@ export default function Macbook() {
       const targetNorm = selectedColorName.replace(/\s+/g, ' ').trim().toLowerCase();
 
       // 1. Match in prod.colors by name or rawName
-      const foundColor = prod.colors.find((c) => {
+      const foundColor = prod.colors?.find((c) => {
         const cNorm = (c.name || c.rawName || c).replace(/\s+/g, ' ').trim().toLowerCase();
         return cNorm === targetNorm;
       });
-      if (foundColor && foundColor.image) {
-        return foundColor.image;
+      if (foundColor) {
+        const colImg = Array.isArray(foundColor.images) && foundColor.images.length > 0 ? foundColor.images[0] : (foundColor.image || foundColor.url);
+        if (colImg) return colImg;
       }
 
       // 2. Match in prod.variants directly!
@@ -56,20 +67,33 @@ export default function Macbook() {
       }
 
       // 3. Match index of color in prod.colors with index in prod.images
-      const colorIdx = prod.colors.findIndex((c) => {
-        const cNorm = (c.name || c.rawName || c).replace(/\s+/g, ' ').trim().toLowerCase();
-        return cNorm === targetNorm;
-      });
-      if (colorIdx !== -1 && prod.images && prod.images[colorIdx]) {
-        return prod.images[colorIdx];
+      if (prod.colors && Array.isArray(prod.colors)) {
+        const colorIdx = prod.colors.findIndex((c) => {
+          const cNorm = (c.name || c.rawName || c).replace(/\s+/g, ' ').trim().toLowerCase();
+          return cNorm === targetNorm;
+        });
+        if (colorIdx !== -1 && prod.images && prod.images[colorIdx]) {
+          return prod.images[colorIdx];
+        }
       }
-
-      // 4. Color name fallback mappings
-      if (targetNorm.includes('black') || targetNorm.includes('space black') || targetNorm.includes('dark')) return '/macbook_pro_dark.jpg';
-      if (targetNorm.includes('space gray') || targetNorm.includes('gray')) return '/macbook_category_v2.jpg';
-      if (targetNorm.includes('silver') || targetNorm.includes('white') || targetNorm.includes('starlight')) return '/macbook_category_v3.jpg';
     }
-    return prod.image;
+
+    const firstImg = prod.image || (prod.images && prod.images[0]);
+    if (firstImg && !firstImg.includes('mock-cloud') && !firstImg.includes('macbook_category_v3')) {
+      return firstImg;
+    }
+
+    // High-resolution clean PNG fallback matching model title
+    const title = (prod.name || prod.title || '').toLowerCase();
+    if (title.includes('neo')) return '/mac_nav/macbook_neo.png';
+    if (title.includes('air')) return '/mac_nav/macbook_air.png';
+    if (title.includes('pro')) return '/macbook_user_pro.png';
+    if (title.includes('imac')) return '/imac_studio_lifestyle.jpg';
+    if (title.includes('mini')) return '/mac_nav/mac_mini.png';
+    if (title.includes('studio') && !title.includes('display')) return '/mac_nav/mac_studio.png';
+    if (title.includes('display')) return '/mac_nav/mac_displays.png';
+
+    return '/mac_nav/macbook_air.png';
   };
 
   const handleAddToCart = (prod) => {
@@ -149,11 +173,14 @@ export default function Macbook() {
   }).map(p => {
     const firstImg = p.image || (p.images && p.images[0]);
     const isValidImg = firstImg && !firstImg.includes('mock-cloud');
+    const varPrices = (p.variants && Array.isArray(p.variants)) ? p.variants.map(v => v.price).filter(pr => typeof pr === 'number' && pr > 0) : [];
+    const effectivePrice = varPrices.length > 0 ? Math.min(...varPrices) : (p.price || 0);
+
     return {
       id: p._id || p.id,
       name: p.title || p.name,
-      price: p.price,
-      priceStr: `₹${p.price.toLocaleString()}`,
+      price: effectivePrice,
+      priceStr: `₹${effectivePrice.toLocaleString('en-IN')}`,
       image: isValidImg ? firstImg : '/macbook_category_v3.jpg',
       images: p.images || [],
       variants: p.variants || [],
@@ -188,20 +215,59 @@ export default function Macbook() {
 
   const combinedProducts = dbMacbooks;
 
+  const getMacSequenceRank = (productName) => {
+    const name = (productName || '').toLowerCase();
+
+    let sizeNum = 99; // Default if no size found
+
+    if (name.includes('13-inch') || name.includes('13 inch') || name.includes('13"') || name.includes('13.3')) {
+      sizeNum = 13;
+    } else if (name.includes('14-inch') || name.includes('14 inch') || name.includes('14"') || name.includes('14.2')) {
+      sizeNum = 14;
+    } else if (name.includes('15-inch') || name.includes('15 inch') || name.includes('15"') || name.includes('15.3')) {
+      sizeNum = 15;
+    } else if (name.includes('16-inch') || name.includes('16 inch') || name.includes('16"') || name.includes('16.2')) {
+      sizeNum = 16;
+    } else if (name.includes('24-inch') || name.includes('24 inch') || name.includes('24"')) {
+      sizeNum = 24;
+    } else if (name.includes('27-inch') || name.includes('27 inch') || name.includes('27"')) {
+      sizeNum = 27;
+    } else if (name.includes('32-inch') || name.includes('32 inch') || name.includes('32"')) {
+      sizeNum = 32;
+    } else {
+      const match = name.match(/(\d{2})\s*(?:-|\s)?(?:inch|in|\")/);
+      if (match) {
+        sizeNum = parseInt(match[1], 10);
+      }
+    }
+
+    let subWeight = 5;
+    if (name.includes('neo')) subWeight = 1;
+    else if (name.includes('air')) subWeight = 2;
+    else if (name.includes('pro')) subWeight = 3;
+
+    return sizeNum * 10 + subWeight;
+  };
+
   // Sorting logic
   const sortedProducts = [...combinedProducts].sort((a, b) => {
     if (sortBy === 'price-asc') return a.price - b.price;
     if (sortBy === 'price-desc') return b.price - a.price;
     if (sortBy === 'rating') return b.rating - a.rating;
-    return 0; // Default: 'latest' (original mock ordering)
+
+    // Default sequence: 13-inch -> 14-inch -> 15-inch -> 16-inch -> others
+    const rankA = getMacSequenceRank(a.name || a.title);
+    const rankB = getMacSequenceRank(b.name || b.title);
+    if (rankA !== rankB) return rankA - rankB;
+
+    return 0;
   });
 
   // Tab filtering logic (e.g. Filter Drawer Options) + Search Parameter filter
   const filteredProducts = sortedProducts.filter((prod) => {
     const search = searchParams.get('search') || '';
-    if (search) {
-      const nameLower = (prod.name || prod.title || '').toLowerCase();
-      if (!nameLower.includes(search.toLowerCase())) return false;
+    if (search && !matchesProductSearch(prod, search)) {
+      return false;
     }
 
     if (activeTab === 'available') return !prod.isSoldOut;
@@ -212,17 +278,48 @@ export default function Macbook() {
   return (
     <div className="min-h-screen bg-[#fcfcfc] text-[#1d1d1f] py-8 px-4 sm:px-8 md:px-12 lg:px-16 select-none animate-in fade-in duration-300 relative">
 
-      {/* Title Header */}
-      <div className="w-full bg-[#fcfcfc] pb-6 select-none font-sans border-b border-zinc-100 mb-8">
-        <div className="max-w-7xl mx-auto pt-6">
-          <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-zinc-950 text-left">Mac</h1>
+      {/* Title & Category Sub-Nav Header */}
+      <div className="w-full bg-[#fcfcfc] pt-2 pb-4 select-none font-sans mb-6">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-zinc-950 text-left mb-6">
+            Mac
+          </h1>
+
+          {/* Horizontal Apple Model Selector Row */}
+          <div className="flex items-center gap-6 sm:gap-10 md:gap-12 overflow-x-auto no-scrollbar py-2">
+            {MAC_SUB_NAV_ITEMS.map((item, idx) => {
+              const currentSearch = searchParams.get('search') || '';
+              const isActive = currentSearch.toLowerCase() === (item.query || '').toLowerCase();
+
+              return (
+                <Link
+                  key={idx}
+                  to={item.path || (item.query ? `/macbook?search=${encodeURIComponent(item.query)}` : '/macbook')}
+                  className={`flex flex-col items-center gap-2 shrink-0 group cursor-pointer transition-all duration-200 ${
+                    isActive ? 'scale-105' : 'hover:scale-105'
+                  }`}
+                >
+                  <div className="h-16 w-20 flex items-center justify-center p-1 overflow-visible">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className={`max-h-full max-w-full object-contain filter drop-shadow-sm transition-transform duration-300 group-hover:scale-110 ${item.scale || 'scale-100'}`}
+                    />
+                  </div>
+                  <span className="text-xs font-bold tracking-tight text-zinc-950 transition-colors">
+                    {item.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
 
 
 
       {/* Top Filter and View Controller Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-150 pb-6 mb-8 text-sm font-sans uppercase font-bold text-zinc-500 tracking-wider">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 mb-6 text-sm font-sans uppercase font-bold text-zinc-500 tracking-wider">
         <div className="text-zinc-800 text-xs tracking-widest">
           SHOWING ALL {filteredProducts.length} RESULTS
         </div>
@@ -314,25 +411,19 @@ export default function Macbook() {
                 <img
                   src={getProductImage(prod)}
                   alt={prod.name}
-                  className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 select-none"
+                  className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500 select-none"
                 />
               </div>
 
-              {/* Title with Dynamic Color Part Number */}
+              {/* Title (Clean Product Name) */}
               <h3 className="font-semibold text-[16px] leading-snug tracking-tight text-zinc-900 group-hover:text-zinc-900 transition-colors min-h-[48px]">
                 {(() => {
-                  const selColor = selectedColors[prod.id];
-                  const activeVar = selColor ? prod.variants?.find(v => (v.color || '').toString().toLowerCase() === selColor.toLowerCase()) : null;
-                  const partNum = activeVar?.partNumber || prod.partNumber || prod.variants?.[0]?.partNumber || null;
+                  const cleanProductTitle = (rawTitle) => {
+                    if (!rawTitle) return '';
+                    return rawTitle.replace(/\s*[A-Z0-9]{5,9}\/[A-Z]$/i, '').trim();
+                  };
                   return (
-                    <>
-                      <span>{prod.name || prod.title}</span>
-                      {partNum && (
-                        <span className="font-mono font-extrabold text-black ml-2 inline-block">
-                          {partNum}
-                        </span>
-                      )}
-                    </>
+                    <span>{cleanProductTitle(prod.name || prod.title)}</span>
                   );
                 })()}
               </h3>

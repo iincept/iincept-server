@@ -5,6 +5,7 @@ import { Star, ShoppingBag, Heart, Search as SearchIcon, ArrowRight, Loader2 } f
 import { fetchProducts } from '../redux/productSlice';
 import { addToCart } from '../redux/cartSlice';
 import { addToWishlist } from '../redux/wishlistSlice';
+import { matchesProductSearch, getMatchingSku } from '../utils/searchUtils';
 
 export default function Search() {
   const dispatch = useDispatch();
@@ -23,13 +24,7 @@ export default function Search() {
   // Client-side filtering matching query
   const filteredProducts = products.filter((prod) => {
     if (!query.trim()) return false;
-    const q = query.toLowerCase().trim();
-    const nameMatch = (prod.title || prod.name || '').toLowerCase().includes(q);
-    const descMatch = (prod.description || '').toLowerCase().includes(q);
-    const brandMatch = (prod.brand || '').toLowerCase().includes(q);
-    const catName = prod.category?.name || prod.category || '';
-    const catMatch = catName.toString().toLowerCase().includes(q);
-    return nameMatch || descMatch || brandMatch || catMatch;
+    return matchesProductSearch(prod, query);
   });
 
   const handleAddToCart = (product) => {
@@ -99,6 +94,7 @@ export default function Search() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.map((prod) => {
             const productImg = prod.image || (prod.images && prod.images[0]) || '/avatar.png';
+            const matchedSku = getMatchingSku(prod, query);
             return (
               <div 
                 key={prod._id || prod.id}
@@ -123,9 +119,16 @@ export default function Search() {
                 {/* Meta details */}
                 <div className="p-4 space-y-3 flex-grow flex flex-col justify-between">
                   <div className="space-y-1">
-                    <span className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider">
-                      {prod.brand || 'Premium'}
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider">
+                        {prod.brand || 'Premium'}
+                      </span>
+                      {matchedSku && (
+                        <span className="font-mono text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                          SKU: {matchedSku}
+                        </span>
+                      )}
+                    </div>
                     <h3 className="font-bold text-zinc-800 text-sm line-clamp-1 group-hover:text-black transition-colors">
                       <Link to={`/product/${prod._id || prod.id}`}>{prod.title || prod.name}</Link>
                     </h3>

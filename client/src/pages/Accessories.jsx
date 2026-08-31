@@ -5,6 +5,7 @@ import { Heart, ShoppingBag, Loader2, ChevronDown, Search, Laptop, Tablet, Smart
 import { addToCart } from '../redux/cartSlice';
 import { addToWishlist } from '../redux/wishlistSlice';
 import { fetchProducts } from '../redux/productSlice';
+import { matchesProductSearch } from '../utils/searchUtils';
 
 // Products are loaded dynamically from e-commerce database API
 
@@ -175,8 +176,18 @@ export default function Accessories() {
       isMainDevice = true;
     }
 
-    // Exclude MacBooks: title contains macbook / laptop
-    if (titleLower.includes('macbook') || titleLower.includes('laptop') || titleLower.includes('pc ')) {
+    // Exclude MacBooks: title contains macbook / laptop (unless it is an accessory like adapter, charger, power, cable, magsafe, sleeve, case)
+    if ((titleLower.includes('macbook') || titleLower.includes('laptop') || titleLower.includes('pc ')) &&
+        !titleLower.includes('adapter') &&
+        !titleLower.includes('charger') &&
+        !titleLower.includes('power') &&
+        !titleLower.includes('magsafe') &&
+        !titleLower.includes('cable') &&
+        !titleLower.includes('sleeve') &&
+        !titleLower.includes('case') &&
+        !titleLower.includes('cover') &&
+        !titleLower.includes('dock') &&
+        !titleLower.includes('stand')) {
       isMainDevice = true;
     }
 
@@ -190,8 +201,12 @@ export default function Accessories() {
       isMainDevice = true;
     }
 
-    // Exclude AirPods: title contains "airpods" or "air pods" but not case, charm, strap
+    // Exclude AirPods: title contains "airpods" or "air pods" or "headphone" (unless earpods, plug, adapter, cable, case, charm, strap, stand)
     if ((titleLower.includes('airpods') || titleLower.includes('air pods') || titleLower.includes('headphone') || titleLower.includes('headphones')) && 
+        !titleLower.includes('earpods') &&
+        !titleLower.includes('plug') &&
+        !titleLower.includes('adapter') &&
+        !titleLower.includes('cable') &&
         !titleLower.includes('case') && 
         !titleLower.includes('charm') && 
         !titleLower.includes('strap') && 
@@ -243,8 +258,7 @@ export default function Accessories() {
     if (activeTab === 'soldout' && !prod.isSoldOut) return false;
 
     // 2. Search query filter
-    const nameLower = prod.name?.toLowerCase() || '';
-    if (searchQuery && !nameLower.includes(searchQuery.toLowerCase())) return false;
+    if (searchQuery && !matchesProductSearch(prod, searchQuery)) return false;
 
     // 3. Product filter (selectedProductFilter)
     if (selectedProductFilter) {
@@ -322,44 +336,6 @@ export default function Accessories() {
       </div>
 
       <div className="px-4 sm:px-8 md:px-12 lg:px-16 py-8">
-
-        {/* Apple Style Accessories Banner Container */}
-        <div className="w-full rounded-[32px] overflow-hidden bg-[#f5f5f7] mb-12 flex flex-col md:flex-row items-stretch min-h-[340px] relative border border-zinc-150 shadow-sm">
-
-          {/* Left Text details column */}
-          <div className="flex flex-col justify-center space-y-5 p-8 sm:p-12 md:py-12 md:pl-16 md:pr-8 w-full md:w-1/2 text-left z-10">
-            <h1 className="text-[40px] sm:text-[48px] font-semibold leading-tight tracking-tight text-zinc-900">
-              Meet your match.
-            </h1>
-            <p className="text-zinc-500 text-sm font-medium leading-relaxed">
-              The accessories you love. In a new mix of colors and textures.
-            </p>
-
-            <div className="pt-2 flex flex-col gap-2.5">
-              <Link
-                to="/iphone"
-                className="text-[#0071e3] hover:underline text-sm font-semibold tracking-wide flex items-center gap-1"
-              >
-                Shop all iPhone accessories <span className="text-xs">&gt;</span>
-              </Link>
-              <Link
-                to="/watch"
-                className="text-[#0071e3] hover:underline text-sm font-semibold tracking-wide flex items-center gap-1"
-              >
-                Shop all Apple Watch bands <span className="text-xs">&gt;</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* Right Product Collage mockup Image Column */}
-          <div className="w-full md:w-1/2 h-72 md:h-auto overflow-hidden relative select-none md:absolute md:right-0 md:top-0 md:bottom-0">
-            <img
-              src="/accessories_banner.png"
-              alt="Apple Premium Accessories Lineup"
-              className="w-full h-full object-cover object-left animate-in fade-in duration-500"
-            />
-          </div>
-        </div>
 
 
 

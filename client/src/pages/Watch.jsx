@@ -1,16 +1,161 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Heart, SlidersHorizontal, ArrowUpDown, X, ShoppingBag } from 'lucide-react';
+import { Heart, SlidersHorizontal, ArrowUpDown, X, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { addToCart } from '../redux/cartSlice';
 import { addToWishlist } from '../redux/wishlistSlice';
 import { fetchProducts } from '../redux/productSlice';
+import { matchesProductSearch } from '../utils/searchUtils';
 
-// Products are loaded dynamically from e-commerce database API
+const WATCH_CHAPTER_NAV_ITEMS = [
+  { 
+    id: 'series-11',
+    name: 'Apple Watch',
+    subName: 'Series 11',
+    query: 'Series 11',
+    icon: (
+      <svg className="w-8 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 32 56" fill="none" stroke="currentColor">
+        <path d="M11 12V4C11 2.89543 11.8954 2 13 2H19C20.1046 2 21 2.89543 21 4V12" strokeLinecap="round" />
+        <rect x="7" y="12" width="18" height="24" rx="7" fill="none" stroke="currentColor" />
+        <rect x="25" y="17" width="2" height="5" rx="1" fill="currentColor" />
+        <rect x="25" y="26" width="1.5" height="6" rx="0.75" fill="currentColor" />
+        <path d="M11 36V44C11 45.1046 11.8954 46 13 46H19C20.1046 46 21 45.1046 21 44V36" strokeLinecap="round" />
+      </svg>
+    )
+  },
+  { 
+    id: 'se-3',
+    name: 'Apple Watch',
+    subName: 'SE 3',
+    query: 'SE 3',
+    icon: (
+      <svg className="w-8 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 32 56" fill="none" stroke="currentColor">
+        <path d="M11 13V5C11 3.89543 11.8954 3 13 3H19C20.1046 3 21 3.89543 21 5V13" strokeLinecap="round" />
+        <rect x="8" y="13" width="16" height="22" rx="6" fill="none" stroke="currentColor" />
+        <rect x="24" y="18" width="2" height="4" rx="1" fill="currentColor" />
+        <path d="M11 35V43C11 44.1046 11.8954 45 13 45H19C20.1046 45 21 44.1046 21 43V35" strokeLinecap="round" />
+      </svg>
+    )
+  },
+  { 
+    id: 'ultra-3',
+    name: 'Apple Watch',
+    subName: 'Ultra 3',
+    query: 'Ultra 3',
+    icon: (
+      <svg className="w-9 h-12 text-zinc-900 stroke-[1.8]" viewBox="0 0 36 56" fill="none" stroke="currentColor">
+        <path d="M12 11V3C12 1.89543 12.8954 1 14 1H22C23.1046 1 24 1.89543 24 3V11" strokeLinecap="round" />
+        <rect x="5" y="21" width="2" height="6" rx="1" fill="#FF5500" stroke="none" />
+        <rect x="7" y="11" width="22" height="26" rx="6" fill="none" stroke="currentColor" />
+        <path d="M29 17H31V23H29" fill="currentColor" />
+        <path d="M12 37V45C12 46.1046 12.8954 47 14 47H22C23.1046 47 24 46.1046 24 45V37" strokeLinecap="round" />
+      </svg>
+    )
+  },
+  { 
+    id: 'nike',
+    name: 'Apple Watch',
+    subName: 'Nike',
+    query: 'Nike',
+    icon: (
+      <svg className="w-8 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 32 56" fill="none" stroke="currentColor">
+        <path d="M11 12V4C11 2.89543 11.8954 2 13 2H19C20.1046 2 21 2.89543 21 4V12" strokeLinecap="round" />
+        <circle cx="15" cy="6" r="1" fill="currentColor" />
+        <circle cx="15" cy="9" r="1" fill="currentColor" />
+        <rect x="7" y="12" width="18" height="24" rx="7" fill="none" stroke="currentColor" />
+        <rect x="25" y="17" width="2" height="5" rx="1" fill="currentColor" />
+        <path d="M11 36V44C11 45.1046 11.8954 46 13 46H19C20.1046 46 21 45.1046 21 44V36" strokeLinecap="round" />
+        <circle cx="15" cy="39" r="1" fill="currentColor" />
+        <circle cx="15" cy="42" r="1" fill="currentColor" />
+      </svg>
+    )
+  },
+  { 
+    id: 'compare',
+    name: 'Compare',
+    subName: '',
+    path: '/compare?category=watch',
+    icon: (
+      <svg className="w-12 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 48 56" fill="none" stroke="currentColor">
+        <rect x="6" y="14" width="14" height="20" rx="5" />
+        <rect x="28" y="14" width="14" height="20" rx="5" strokeDasharray="3 3" />
+      </svg>
+    )
+  },
+  { 
+    id: 'straps',
+    name: 'Straps',
+    subName: '',
+    path: '/accessories',
+    icon: (
+      <svg className="w-6 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 24 56" fill="none" stroke="currentColor">
+        <path d="M8 4H16V52H8V4Z" rx="2" fill="none" />
+        <circle cx="12" cy="16" r="1.5" fill="currentColor" />
+        <circle cx="12" cy="24" r="1.5" fill="currentColor" />
+        <circle cx="12" cy="32" r="1.5" fill="currentColor" />
+        <line x1="8" y1="40" x2="16" y2="40" />
+      </svg>
+    )
+  },
+  { 
+    id: 'accessories',
+    name: 'Accessories',
+    subName: '',
+    path: '/accessories',
+    icon: (
+      <svg className="w-7 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 28 56" fill="none" stroke="currentColor">
+        <circle cx="14" cy="20" r="9" />
+        <circle cx="14" cy="20" r="5" strokeDasharray="2 2" />
+        <line x1="14" y1="29" x2="14" y2="46" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    )
+  },
+  { 
+    id: 'fitness',
+    name: 'Apple Fitness+',
+    subName: '',
+    path: '/watch',
+    icon: (
+      <svg className="w-10 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 40 56" fill="none" stroke="currentColor">
+        <circle cx="20" cy="24" r="12" />
+        <circle cx="20" cy="24" r="8" />
+        <circle cx="20" cy="24" r="4" fill="currentColor" />
+      </svg>
+    )
+  },
+  { 
+    id: 'shop-watch',
+    name: 'Shop Watch',
+    subName: '',
+    path: '/watch',
+    icon: (
+      <svg className="w-14 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 56 56" fill="none" stroke="currentColor">
+        <rect x="4" y="16" width="14" height="20" rx="5" />
+        <rect x="21" y="12" width="14" height="24" rx="6" />
+        <rect x="38" y="16" width="14" height="20" rx="5" />
+      </svg>
+    )
+  },
+  { 
+    id: 'watchos',
+    name: 'watchOS 27',
+    subName: '',
+    badge: 'Preview',
+    path: '/watch',
+    icon: (
+      <svg className="w-10 h-12 text-zinc-900" viewBox="0 0 40 56" fill="none">
+        <circle cx="20" cy="24" r="14" fill="#111" />
+        <text x="20" y="22" textAnchor="middle" fill="#fff" fontSize="6" fontWeight="bold" fontFamily="sans-serif">watch</text>
+        <text x="20" y="29" textAnchor="middle" fill="#fff" fontSize="8" fontWeight="black" fontFamily="sans-serif">OS</text>
+      </svg>
+    )
+  }
+];
 
 export default function Watch() {
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
+  const navRef = useRef(null);
   const { products } = useSelector((state) => state.products);
   const [viewCols, setViewCols] = useState(4); // 2, 3, or 4 columns
   const [showLimit, setShowLimit] = useState(16); // 16, 32, 64
@@ -148,9 +293,8 @@ export default function Watch() {
 
   const filteredProducts = sortedProducts.filter((prod) => {
     const search = searchParams.get('search') || '';
-    if (search) {
-      const nameLower = (prod.name || prod.title || '').toLowerCase();
-      if (!nameLower.includes(search.toLowerCase())) return false;
+    if (search && !matchesProductSearch(prod, search)) {
+      return false;
     }
 
     if (activeTab === 'available') return !prod.isSoldOut;
@@ -161,10 +305,73 @@ export default function Watch() {
   return (
     <div className="min-h-screen bg-[#fcfcfc] text-[#1d1d1f] py-4 px-4 sm:px-8 md:px-12 lg:px-16 select-none animate-in fade-in duration-300 relative">
       
-      {/* Title Header */}
-      <div className="w-full bg-[#fcfcfc] pb-6 select-none font-sans border-b border-zinc-100 mb-8">
-        <div className="max-w-7xl mx-auto pt-6">
-          <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-zinc-950 text-left">Watch</h1>
+      {/* Title & Apple Watch ChapterNav Header */}
+      <div className="w-full bg-[#fcfcfc] pt-2 pb-6 select-none font-sans border-b border-zinc-150 mb-8">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-zinc-950 text-left mb-6">
+            Watch
+          </h1>
+
+          {/* ChapterNav Horizontal Items Carousel with Nav Paddles */}
+          <div className="relative group/chapternav">
+            {/* Scroll Left Paddle */}
+            <button 
+              onClick={() => navRef.current?.scrollBy({ left: -300, behavior: 'smooth' })}
+              className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 shadow-md border border-zinc-200 items-center justify-center text-zinc-600 hover:text-black hover:scale-110 transition-all cursor-pointer"
+              aria-label="Previous items"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <div 
+              ref={navRef}
+              className="flex items-start justify-start md:justify-center gap-8 sm:gap-10 overflow-x-auto no-scrollbar py-3 px-2 scroll-smooth"
+            >
+              {WATCH_CHAPTER_NAV_ITEMS.map((item) => {
+                const currentSearch = searchParams.get('search') || '';
+                const isActive = item.query && currentSearch.toLowerCase().includes(item.query.toLowerCase());
+
+                return (
+                  <Link
+                    key={item.id}
+                    to={item.path || (item.query ? `/watch?search=${encodeURIComponent(item.query)}` : '/watch')}
+                    className={`flex flex-col items-center gap-2 shrink-0 group cursor-pointer transition-all duration-200 ${
+                      isActive ? 'scale-105 opacity-100' : 'hover:scale-105 opacity-90 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="h-14 w-16 flex items-center justify-center p-1 transition-transform group-hover:scale-105">
+                      {item.icon}
+                    </div>
+                    <div className="text-center space-y-0.5">
+                      <p className="text-[11px] font-semibold leading-tight text-zinc-900 group-hover:text-[#0071e3] transition-colors">
+                        {item.name}
+                        {item.subName && (
+                          <>
+                            <br />
+                            <span className="font-bold">{item.subName}</span>
+                          </>
+                        )}
+                      </p>
+                      {item.badge && (
+                        <span className="inline-block text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 rounded-full px-2 py-0.5 mt-0.5 tracking-wider">
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Scroll Right Paddle */}
+            <button 
+              onClick={() => navRef.current?.scrollBy({ left: 300, behavior: 'smooth' })}
+              className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 shadow-md border border-zinc-200 items-center justify-center text-zinc-600 hover:text-black hover:scale-110 transition-all cursor-pointer"
+              aria-label="Next items"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -264,21 +471,15 @@ export default function Watch() {
                 />
               </div>
 
-              {/* Title with Dynamic Color Part Number */}
+              {/* Title (Clean Product Name) */}
               <h3 className="font-semibold text-[16px] leading-snug tracking-tight text-zinc-900 group-hover:text-zinc-900 transition-colors min-h-[48px]">
                 {(() => {
-                  const selColor = selectedColors[prod.id];
-                  const activeVar = selColor ? prod.variants?.find(v => (v.color || '').toString().toLowerCase() === selColor.toLowerCase()) : null;
-                  const partNum = activeVar?.partNumber || prod.partNumber || prod.variants?.[0]?.partNumber || null;
+                  const cleanProductTitle = (rawTitle) => {
+                    if (!rawTitle) return '';
+                    return rawTitle.replace(/\s*[A-Z0-9]{5,9}\/[A-Z]$/i, '').trim();
+                  };
                   return (
-                    <>
-                      <span>{prod.name || prod.title}</span>
-                      {partNum && (
-                        <span className="font-mono font-extrabold text-black ml-2 inline-block">
-                          {partNum}
-                        </span>
-                      )}
-                    </>
+                    <span>{cleanProductTitle(prod.name || prod.title)}</span>
                   );
                 })()}
               </h3>

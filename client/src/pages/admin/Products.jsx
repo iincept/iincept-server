@@ -140,6 +140,8 @@ export default function Products() {
     colors: [],
     storage: [],
     ram: [],
+    glasses: [],
+    processors: [],
     material: [],
     features: [],
     images: [],
@@ -366,6 +368,7 @@ export default function Products() {
     const variantSizes = [];
     const variantStorage = [];
     const variantRam = [];
+    const variantProcessors = [];
 
     finalVariants.forEach(v => {
       if (v.color && !variantColors.find(c => (c.name || c) === v.color)) {
@@ -379,6 +382,9 @@ export default function Products() {
       }
       if (v.ram && !variantRam.includes(v.ram)) {
         variantRam.push(v.ram);
+      }
+      if ((v.processor || v.chip) && !variantProcessors.includes(v.processor || v.chip)) {
+        variantProcessors.push(v.processor || v.chip);
       }
     });
 
@@ -406,6 +412,11 @@ export default function Products() {
       if (!finalRam.includes(vr)) finalRam.push(vr);
     });
 
+    const finalProcessors = [...(productForm.processors || [])];
+    variantProcessors.forEach(vp => {
+      if (!finalProcessors.includes(vp)) finalProcessors.push(vp);
+    });
+
     const finalVariantsWithPrice = finalVariants.map(v => ({
       ...v,
       price: Number(v.price || productForm.price || 0),
@@ -422,6 +433,7 @@ export default function Products() {
       colors: finalColors,
       storage: finalStorage,
       ram: finalRam,
+      processors: finalProcessors,
       variants: finalVariantsWithPrice
     };
 
@@ -491,6 +503,8 @@ export default function Products() {
       colors: Array.isArray(prod.colors) ? prod.colors : (prod.colors ? [prod.colors] : []),
       storage: Array.isArray(prod.storage) ? prod.storage : (prod.storage ? [prod.storage] : []),
       ram: Array.isArray(prod.ram) ? prod.ram : (prod.ram ? [prod.ram] : []),
+      glasses: Array.isArray(prod.glasses) ? prod.glasses : (prod.glasses ? [prod.glasses] : []),
+      processors: Array.isArray(prod.processors) ? prod.processors : (prod.processor ? [prod.processor] : []),
       material: prod.material || [],
       features: prod.features || [],
       images: prod.images || [],
@@ -542,6 +556,7 @@ export default function Products() {
       colors: [],
       storage: [],
       ram: [],
+      glasses: [],
       material: [],
       features: [],
       images: [],
@@ -717,15 +732,52 @@ export default function Products() {
                             />
                           </div>
                           <div>
-                            <span className="font-semibold text-zinc-900 block font-sans">
-                              <span>{prod.title}</span>
-                              {(prod.partNumber || prod.variants?.[0]?.partNumber) && (
-                                <span className="font-mono font-extrabold text-zinc-900 ml-2 inline-block">
-                                  {prod.partNumber || prod.variants?.[0]?.partNumber}
+                            <span className="font-semibold text-zinc-900 block font-sans text-sm">
+                              {(() => {
+                                const cleanTitle = (t) => (t || '').replace(/\s*[A-Z0-9]{5,9}\/[A-Z]$/i, '').trim();
+                                return cleanTitle(prod.title);
+                              })()}
+                            </span>
+
+                            <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                              {/* Variants Count badge */}
+                              {prod.variants && prod.variants.length > 0 && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-50 text-[#0071e3] border border-blue-200/80">
+                                  {prod.variants.length} Variants
                                 </span>
                               )}
-                            </span>
-                            <span className="text-xs text-zinc-450 font-medium">{prod.brand}</span>
+
+                              {/* Storage badge */}
+                              {prod.storage && prod.storage.length > 0 && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200">
+                                  💾 {Array.isArray(prod.storage) ? prod.storage.join(', ') : prod.storage}
+                                </span>
+                              )}
+
+                              {/* RAM badge */}
+                              {prod.ram && prod.ram.length > 0 && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200">
+                                  ⚡ {Array.isArray(prod.ram) ? prod.ram.join(', ') : prod.ram}
+                                </span>
+                              )}
+
+                              {/* Part Number / SKU badge */}
+                              {(() => {
+                                const skus = Array.from(new Set([
+                                  prod.partNumber,
+                                  ...(prod.variants || []).map(v => v.partNumber || v.sku)
+                                ].filter(Boolean)));
+
+                                if (skus.length === 0) return null;
+
+                                return (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-200/80" title={skus.join(', ')}>
+                                    <span className="text-amber-700 uppercase font-sans">SKU{skus.length > 1 ? `s (${skus.length})` : ''}:</span>
+                                    <span>{skus.slice(0, 3).join(', ')}{skus.length > 3 ? ` +${skus.length - 3} more` : ''}</span>
+                                  </span>
+                                );
+                              })()}
+                            </div>
                           </div>
                         </td>
                         <td className="py-4 px-6 text-zinc-500 font-medium font-sans">
@@ -1204,6 +1256,44 @@ export default function Products() {
                       setProductForm({ ...productForm, ram: tags, variants: updatedVariants });
                     }}
                   />
+
+                  <VariantTagInput
+                    label="Chip & Processor Options (Laptops & PCs / Mac)"
+                    placeholder="e.g. Apple M5 chip with 10-core CPU and 10-core GPU, Apple M4 chip with 10-core CPU and 8-core GPU"
+                    tags={productForm.processors || []}
+                    onChange={(tags) => {
+                      const removed = (productForm.processors || []).filter(t => !tags.includes(t));
+                      let updatedVariants = [...(productForm.variants || [])];
+                      if (removed.length > 0) {
+                        updatedVariants = updatedVariants.map(v => {
+                          if (removed.includes(v.processor)) {
+                            return { ...v, processor: '' };
+                          }
+                          return v;
+                        });
+                      }
+                      setProductForm({ ...productForm, processors: tags, variants: updatedVariants });
+                    }}
+                  />
+
+                  <VariantTagInput
+                    label="Glass Finish Config Options"
+                    placeholder="e.g. Standard glass, Nano-texture glass"
+                    tags={productForm.glasses || []}
+                    onChange={(tags) => {
+                      const removed = (productForm.glasses || []).filter(t => !tags.includes(t));
+                      let updatedVariants = [...(productForm.variants || [])];
+                      if (removed.length > 0) {
+                        updatedVariants = updatedVariants.map(v => {
+                          if (removed.includes(v.glass)) {
+                            return { ...v, glass: '' };
+                          }
+                          return v;
+                        });
+                      }
+                      setProductForm({ ...productForm, glasses: tags, variants: updatedVariants });
+                    }}
+                  />
                 </div>
 
               </div>
@@ -1327,6 +1417,38 @@ export default function Products() {
                             </div>
 
                             <div>
+                              <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1.5">Glass Finish</label>
+                              <input
+                                type="text"
+                                placeholder="e.g. Standard glass / Nano-texture glass"
+                                value={v.glass || ''}
+                                onChange={(e) => {
+                                  const updated = [...productForm.variants];
+                                  updated[vIdx] = { ...v, glass: e.target.value };
+                                  setProductForm({ ...productForm, variants: updated });
+                                }}
+                                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs bg-white font-medium"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1.5">Chip & Processor</label>
+                              <input
+                                type="text"
+                                placeholder="e.g. Apple M5 chip with 10-core CPU"
+                                value={v.processor || v.chip || ''}
+                                onChange={(e) => {
+                                  const updated = [...productForm.variants];
+                                  updated[vIdx] = { ...v, processor: e.target.value, chip: e.target.value };
+                                  setProductForm({ ...productForm, variants: updated });
+                                }}
+                                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs bg-white font-medium text-zinc-900 font-sans"
+                              />
+                            </div>
+
+
+
+                            <div>
                               <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1.5">Part No. / MPN *</label>
                               <input
                                 type="text"
@@ -1334,10 +1456,25 @@ export default function Products() {
                                 value={v.partNumber || ''}
                                 onChange={(e) => {
                                   const updated = [...productForm.variants];
-                                  updated[vIdx] = { ...v, partNumber: e.target.value };
+                                  updated[vIdx] = { ...v, partNumber: e.target.value, sku: e.target.value };
                                   setProductForm({ ...productForm, variants: updated });
                                 }}
                                 className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs font-mono font-bold text-black bg-amber-50/50"
+                              />
+                            </div>
+
+                            <div className="col-span-2">
+                              <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-1.5">Variant Title (Optional)</label>
+                              <input
+                                type="text"
+                                placeholder="e.g. 11-inch iPad Pro Wi‑Fi 1TB with nano-texture glass"
+                                value={v.displayTitle || v.title || ''}
+                                onChange={(e) => {
+                                  const updated = [...productForm.variants];
+                                  updated[vIdx] = { ...v, displayTitle: e.target.value, title: e.target.value };
+                                  setProductForm({ ...productForm, variants: updated });
+                                }}
+                                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:border-[#0071e3] outline-none text-xs bg-white font-medium"
                               />
                             </div>
 

@@ -5,8 +5,20 @@ import { Heart, SlidersHorizontal, ArrowUpDown, X, ShoppingBag } from 'lucide-re
 import { addToCart } from '../redux/cartSlice';
 import { addToWishlist } from '../redux/wishlistSlice';
 import { fetchProducts } from '../redux/productSlice';
+import { matchesProductSearch } from '../utils/searchUtils';
 
 // Products are loaded dynamically from e-commerce database API
+
+const IPHONE_SUB_NAV_ITEMS = [
+  { name: 'iPhone 17 Pro', query: 'iPhone 17 Pro', image: '/iphone_nav/iphone_17_pro.png' },
+  { name: 'iPhone Air', query: 'iPhone Air', image: '/iphone_nav/iphone_air.png' },
+  { name: 'iPhone 17', query: 'iPhone 17', image: '/iphone_nav/iphone_17.png' },
+  { name: 'iPhone 17e', query: 'iPhone 17e', image: '/iphone_nav/iphone_17e.png' },
+  { name: 'iPhone 16', query: 'iPhone 16', image: '/iphone_nav/iphone_16.png' },
+  { name: 'Compare', path: '/compare?category=iphone', image: '/iphone_nav/iphone_compare.png' },
+  { name: 'Accessories', path: '/accessories', image: '/iphone_nav/accessories.png' },
+  { name: 'Shop iPhone', path: '/iphone', image: '/iphone_nav/shop_iphone.png' }
+];
 
 export default function Iphone() {
   const dispatch = useDispatch();
@@ -152,11 +164,14 @@ export default function Iphone() {
   }).map(p => {
     const firstImg = p.image || (p.images && p.images[0]);
     const isValidImg = firstImg && !firstImg.includes('mock-cloud');
+    const varPrices = (p.variants && Array.isArray(p.variants)) ? p.variants.map(v => v.price).filter(pr => typeof pr === 'number' && pr > 0) : [];
+    const effectivePrice = varPrices.length > 0 ? Math.min(...varPrices) : (p.price || 0);
+
     return {
       id: p._id || p.id,
       name: p.title || p.name,
-      price: p.price,
-      priceStr: `₹${p.price.toLocaleString()}`,
+      price: effectivePrice,
+      priceStr: `₹${effectivePrice.toLocaleString('en-IN')}`,
       image: isValidImg ? firstImg : '/iphone_category_v2.jpg',
       images: p.images || [],
       variants: p.variants || [],
@@ -202,9 +217,8 @@ export default function Iphone() {
   // Tab filtering logic (e.g. Filter Drawer Options) + Search Parameter filter
   const filteredProducts = sortedProducts.filter((prod) => {
     const search = searchParams.get('search') || '';
-    if (search) {
-      const nameLower = (prod.name || prod.title || '').toLowerCase();
-      if (!nameLower.includes(search.toLowerCase())) return false;
+    if (search && !matchesProductSearch(prod, search)) {
+      return false;
     }
 
     if (activeTab === 'available') return !prod.isSoldOut;
@@ -215,10 +229,41 @@ export default function Iphone() {
   return (
     <div className="min-h-screen bg-[#fcfcfc] text-[#1d1d1f] py-4 px-4 sm:px-8 md:px-12 lg:px-16 select-none animate-in fade-in duration-300 relative">
       
-      {/* Title Header */}
-      <div className="w-full bg-[#fcfcfc] pb-6 select-none font-sans border-b border-zinc-100 mb-8">
-        <div className="max-w-7xl mx-auto pt-6">
-          <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-zinc-950 text-left">iPhone</h1>
+      {/* Title & Category Sub-Nav Header */}
+      <div className="w-full bg-[#fcfcfc] pt-2 pb-4 mb-6">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-zinc-950 text-left mb-6">
+            iPhone
+          </h1>
+
+          {/* Horizontal iPhone Model Selector Row */}
+          <div className="flex items-center gap-6 sm:gap-10 md:gap-12 overflow-x-auto no-scrollbar py-2">
+            {IPHONE_SUB_NAV_ITEMS.map((item, idx) => {
+              const currentSearch = searchParams.get('search') || '';
+              const isActive = currentSearch.toLowerCase() === (item.query || '').toLowerCase();
+
+              return (
+                <Link
+                  key={idx}
+                  to={item.path || (item.query ? `/iphone?search=${encodeURIComponent(item.query)}` : '/iphone')}
+                  className={`flex flex-col items-center gap-2 shrink-0 group cursor-pointer transition-all duration-200 ${
+                    isActive ? 'scale-105' : 'hover:scale-105'
+                  }`}
+                >
+                  <div className="h-16 w-20 flex items-center justify-center p-1">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="max-h-full max-w-full object-contain filter drop-shadow-xs transition-transform group-hover:scale-105"
+                    />
+                  </div>
+                  <span className="text-xs font-bold tracking-tight text-zinc-950 transition-colors">
+                    {item.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -321,21 +366,15 @@ export default function Iphone() {
                 />
               </div>
 
-              {/* Title with Dynamic Color Part Number */}
+              {/* Title (Clean Product Name) */}
               <h3 className="font-semibold text-[16px] leading-snug tracking-tight text-zinc-900 group-hover:text-zinc-900 transition-colors min-h-[48px]">
                 {(() => {
-                  const selColor = selectedColors[prod.id];
-                  const activeVar = selColor ? prod.variants?.find(v => (v.color || '').toString().toLowerCase() === selColor.toLowerCase()) : null;
-                  const partNum = activeVar?.partNumber || prod.partNumber || prod.variants?.[0]?.partNumber || null;
+                  const cleanProductTitle = (rawTitle) => {
+                    if (!rawTitle) return '';
+                    return rawTitle.replace(/\s*[A-Z0-9]{5,9}\/[A-Z]$/i, '').trim();
+                  };
                   return (
-                    <>
-                      <span>{prod.name || prod.title}</span>
-                      {partNum && (
-                        <span className="font-mono font-extrabold text-black ml-2 inline-block">
-                          {partNum}
-                        </span>
-                      )}
-                    </>
+                    <span>{cleanProductTitle(prod.name || prod.title)}</span>
                   );
                 })()}
               </h3>

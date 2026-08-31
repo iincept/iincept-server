@@ -18,6 +18,7 @@ import Watch from '../pages/Watch';
 import Airpods from '../pages/Airpods';
 import TvHome from '../pages/TvHome';
 import Accessories from '../pages/Accessories';
+import AppleCare from '../pages/AppleCare';
 import About from '../pages/About';
 import ProtectedRoute from '../components/ProtectedRoute';
 import AdminProtectedRoute from '../components/AdminProtectedRoute';
@@ -87,6 +88,10 @@ const router = createBrowserRouter([
       {
         path: 'accessories',
         element: <Accessories />
+      },
+      {
+        path: 'applecare',
+        element: <AppleCare />
       },
       {
         path: 'categories',

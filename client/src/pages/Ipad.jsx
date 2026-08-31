@@ -5,8 +5,20 @@ import { Heart, SlidersHorizontal, ArrowUpDown, X, ShoppingBag } from 'lucide-re
 import { addToCart } from '../redux/cartSlice';
 import { addToWishlist } from '../redux/wishlistSlice';
 import { fetchProducts } from '../redux/productSlice';
+import { matchesProductSearch } from '../utils/searchUtils';
 
 // Products are loaded dynamically from e-commerce database API
+
+const IPAD_SUB_NAV_ITEMS = [
+  { name: 'iPad Pro', query: 'iPad Pro', image: '/ipad_nav/ipad_pro.png' },
+  { name: 'iPad Air', query: 'iPad Air', image: '/ipad_nav/ipad_air.png' },
+  { name: 'iPad', query: 'iPad', image: '/ipad_nav/ipad.png' },
+  { name: 'iPad mini', query: 'iPad mini', image: '/ipad_nav/ipad_mini.png' },
+  { name: 'Compare', path: '/compare?category=ipad', image: '/ipad_nav/ipad_compare.png' },
+  { name: 'Apple Pencil', path: '/accessories?search=Pencil', image: '/ipad_nav/apple_pencil.png' },
+  { name: 'Keyboards', path: '/accessories?search=Keyboard', image: '/ipad_nav/keyboards.png' },
+  { name: 'Accessories', path: '/accessories', image: '/ipad_nav/accessories.png' }
+];
 
 export default function Ipad() {
   const dispatch = useDispatch();
@@ -186,18 +198,55 @@ export default function Ipad() {
 
   const combinedProducts = dbIpads;
 
+  const getIpadSequenceRank = (productName) => {
+    const name = (productName || '').toLowerCase();
+
+    let sizeNum = 99; // Default for accessories or non-sized
+
+    if (name.includes('mini') || name.includes('8.3')) {
+      sizeNum = 8;
+    } else if (name.includes('10.9-inch') || name.includes('10.9 inch') || name.includes('10.9"') || name.includes('10th gen') || (name.includes('ipad') && !name.includes('air') && !name.includes('pro') && !name.includes('mini') && !name.includes('pencil') && !name.includes('keyboard'))) {
+      sizeNum = 10;
+    } else if (name.includes('11-inch') || name.includes('11 inch') || name.includes('11"')) {
+      sizeNum = 11;
+    } else if (name.includes('12.9-inch') || name.includes('12.9 inch') || name.includes('12.9"')) {
+      sizeNum = 12;
+    } else if (name.includes('13-inch') || name.includes('13 inch') || name.includes('13"')) {
+      sizeNum = 13;
+    } else {
+      const match = name.match(/(\d{1,2}(?:\.\d)?)\s*(?:-|\s)?(?:inch|in|\")/);
+      if (match) {
+        sizeNum = Math.floor(parseFloat(match[1]));
+      }
+    }
+
+    let subWeight = 5;
+    if (name.includes('mini')) subWeight = 1;
+    else if (name.includes('ipad') && !name.includes('air') && !name.includes('pro')) subWeight = 2;
+    else if (name.includes('air')) subWeight = 3;
+    else if (name.includes('pro')) subWeight = 4;
+    else if (name.includes('pencil') || name.includes('keyboard') || name.includes('case')) subWeight = 9;
+
+    return sizeNum * 10 + subWeight;
+  };
+
   const sortedProducts = [...combinedProducts].sort((a, b) => {
     if (sortBy === 'price-asc') return a.price - b.price;
     if (sortBy === 'price-desc') return b.price - a.price;
     if (sortBy === 'rating') return b.rating - a.rating;
+
+    // Default sequence: iPad mini (8.3") -> iPad (10.9") -> 11" iPad Air/Pro -> 13" iPad Air/Pro
+    const rankA = getIpadSequenceRank(a.name || a.title);
+    const rankB = getIpadSequenceRank(b.name || b.title);
+    if (rankA !== rankB) return rankA - rankB;
+
     return 0;
   });
 
   const filteredProducts = sortedProducts.filter((prod) => {
     const search = searchParams.get('search') || '';
-    if (search) {
-      const nameLower = (prod.name || prod.title || '').toLowerCase();
-      if (!nameLower.includes(search.toLowerCase())) return false;
+    if (search && !matchesProductSearch(prod, search)) {
+      return false;
     }
 
     if (activeTab === 'available') return !prod.isSoldOut;
@@ -208,10 +257,41 @@ export default function Ipad() {
   return (
     <div className="min-h-screen bg-[#fcfcfc] text-[#1d1d1f] py-8 px-4 sm:px-8 md:px-12 lg:px-16 select-none animate-in fade-in duration-300 relative">
 
-      {/* Title Header */}
-      <div className="w-full bg-[#fcfcfc] pb-6 select-none font-sans border-b border-zinc-100 mb-8">
-        <div className="max-w-7xl mx-auto pt-6">
-          <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-zinc-950 text-left">iPad</h1>
+      {/* Title & Category Sub-Nav Header */}
+      <div className="w-full bg-[#fcfcfc] pt-2 pb-4 select-none font-sans mb-6">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-zinc-950 text-left mb-6">
+            iPad
+          </h1>
+
+          {/* Horizontal iPad Model Selector Row */}
+          <div className="flex items-center gap-6 sm:gap-10 md:gap-12 overflow-x-auto no-scrollbar py-2">
+            {IPAD_SUB_NAV_ITEMS.map((item, idx) => {
+              const currentSearch = searchParams.get('search') || '';
+              const isActive = currentSearch.toLowerCase() === (item.query || '').toLowerCase();
+
+              return (
+                <Link
+                  key={idx}
+                  to={item.path || (item.query ? `/ipad?search=${encodeURIComponent(item.query)}` : '/ipad')}
+                  className={`flex flex-col items-center gap-2 shrink-0 group cursor-pointer transition-all duration-200 ${
+                    isActive ? 'scale-105' : 'hover:scale-105'
+                  }`}
+                >
+                  <div className="h-16 w-20 flex items-center justify-center p-1">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="max-h-full max-w-full object-contain filter drop-shadow-xs transition-transform group-hover:scale-105"
+                    />
+                  </div>
+                  <span className="text-xs font-bold tracking-tight text-zinc-950 transition-colors">
+                    {item.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -308,25 +388,19 @@ export default function Ipad() {
                 <img
                   src={getProductImage(prod)}
                   alt={prod.name}
-                  className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 select-none"
+                  className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500 select-none"
                 />
               </div>
 
-              {/* Title with Dynamic Color Part Number */}
+              {/* Title (Clean Product Name) */}
               <h3 className="font-semibold text-[16px] leading-snug tracking-tight text-zinc-900 group-hover:text-zinc-900 transition-colors min-h-[48px]">
                 {(() => {
-                  const selColor = selectedColors[prod.id];
-                  const activeVar = selColor ? prod.variants?.find(v => (v.color || '').toString().toLowerCase() === selColor.toLowerCase()) : null;
-                  const partNum = activeVar?.partNumber || prod.partNumber || prod.variants?.[0]?.partNumber || null;
+                  const cleanProductTitle = (rawTitle) => {
+                    if (!rawTitle) return '';
+                    return rawTitle.replace(/\s*[A-Z0-9]{5,9}\/[A-Z]$/i, '').trim();
+                  };
                   return (
-                    <>
-                      <span>{prod.name || prod.title}</span>
-                      {partNum && (
-                        <span className="font-mono font-extrabold text-black ml-2 inline-block">
-                          {partNum}
-                        </span>
-                      )}
-                    </>
+                    <span>{cleanProductTitle(prod.name || prod.title)}</span>
                   );
                 })()}
               </h3>

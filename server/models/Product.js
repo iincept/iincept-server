@@ -5,6 +5,11 @@ const VariantSchema = new mongoose.Schema({
   color: String,
   storage: String,
   ram: String,
+  glass: String,
+  processor: String,
+  chip: String,
+  displayTitle: String,
+  title: String,
   price: { type: Number, required: true },
   discountPrice: Number,
   stock: { type: Number, default: 0 },
@@ -84,6 +89,14 @@ const productSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    glasses: {
+      type: [String],
+      default: [],
+    },
+    processors: {
+      type: [String],
+      default: [],
+    },
     material: {
       type: [String],
       default: [],
@@ -109,7 +122,7 @@ const productSchema = new mongoose.Schema(
       default: [],
     },
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 module.exports = mongoose.model("Product", productSchema);

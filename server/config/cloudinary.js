@@ -17,23 +17,35 @@ if (!isMockMode) {
 // Upload buffer stream to Cloudinary (or mock upload)
 const uploadToCloudinary = (fileBuffer, originalname) => {
   return new Promise((resolve, reject) => {
+    if (!fileBuffer || fileBuffer.length === 0) {
+      return reject(new Error("Uploaded file is empty (0 bytes)"));
+    }
+
     if (isMockMode) {
       const fs = require("fs");
       const path = require("path");
-      console.log("[MOCK CLOUDINARY] Uploading file to local public/uploads directory:", originalname);
+      console.log("[MOCK CLOUDINARY] Uploading file to local uploads directories:", originalname);
       try {
-        const clientPublicDir = path.join(__dirname, "../../client/public");
-        const uploadsDir = path.join(clientPublicDir, "uploads");
-        
-        if (!fs.existsSync(uploadsDir)) {
-          fs.mkdirSync(uploadsDir, { recursive: true });
-        }
+        const publicUploads = path.join(__dirname, "../../client/public/uploads");
+        const distUploads = path.join(__dirname, "../../client/dist/uploads");
+        const serverUploads = path.join(__dirname, "../uploads");
+
+        [publicUploads, distUploads, serverUploads].forEach(dir => {
+          if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+          }
+        });
         
         const fileExt = path.extname(originalname || ".png");
         const fileName = `upload_${Date.now()}_${Math.floor(Math.random() * 1000)}${fileExt}`;
-        const filePath = path.join(uploadsDir, fileName);
-        
-        fs.writeFileSync(filePath, fileBuffer);
+
+        [publicUploads, distUploads, serverUploads].forEach(dir => {
+          try {
+            fs.writeFileSync(path.join(dir, fileName), fileBuffer);
+          } catch (e) {
+            // Ignore if directory doesn't exist
+          }
+        });
         
         return resolve({
           secure_url: `/uploads/${fileName}`,

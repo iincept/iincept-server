@@ -102,7 +102,7 @@ export default function Contact() {
             <h3 className="font-bold text-zinc-850 text-sm">Need immediate assistance?</h3>
             <p className="text-xs text-zinc-500">Reach our product coordinators directly over WhatsApp chat.</p>
             <a 
-              href="https://wa.me/919999999999" 
+              href="https://wa.me/918607222417" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center bg-[#25d366] hover:bg-[#20ba59] text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-sm"

@@ -6,6 +6,7 @@ import { fetchProducts, fetchCategories } from '../redux/productSlice';
 import { addToCart } from '../redux/cartSlice';
 import { addToWishlist } from '../redux/wishlistSlice';
 import Loader from '../components/Loader';
+import { matchesProductSearch } from '../utils/searchUtils';
 
 // Fallback definitions removed in favor of real database records
 
@@ -51,9 +52,7 @@ export default function Shop() {
 
   // Filter and Sort Logic
   const filteredProducts = activeProducts.filter((prod) => {
-    const matchesSearch = prod.name?.toLowerCase().includes(search.toLowerCase()) || 
-                          prod.title?.toLowerCase().includes(search.toLowerCase()) ||
-                          prod.description?.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = matchesProductSearch(prod, search);
     
     // Category match
     const categoryName = prod.category?.name || prod.category;

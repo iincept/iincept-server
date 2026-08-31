@@ -95,19 +95,64 @@ export default function Checkout() {
   const shippingFee = subtotal > 500 ? 0 : 15.00;
   const totalAmount = subtotal + shippingFee - discountAmount;
 
+  const sendWhatsAppOrderNotification = (order, items, addressObj, pMethod, finalTotal) => {
+    try {
+      const orderIdStr = order?.id || order?._id || 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+      const custName = addressObj?.fullName || addressObj?.name || 'Customer';
+      const custPhone = addressObj?.phone || addressObj?.phoneNumber || '';
+      const street = addressObj?.address || addressObj?.street || addressObj?.addressLine1 || '';
+      const city = addressObj?.city || '';
+      const state = addressObj?.state || '';
+      const pincode = addressObj?.pincode || addressObj?.postalCode || '';
+
+      let message = `🎉 *ORDER CONFIRMATION - iiNCEPT Electronics* 🎉\n\n`;
+      message += `Hello ${custName}! 👋\n`;
+      message += `Aapka order successfully place ho gaya hai. Yahan aapke order ki details hain:\n\n`;
+      message += `🆔 *Order ID:* #${orderIdStr}\n`;
+      if (custPhone) message += `📞 *Mobile:* ${custPhone}\n`;
+      message += `📍 *Delivery Address:* ${street}, ${city}, ${state} - ${pincode}\n`;
+      message += `💳 *Payment Method:* ${pMethod}\n\n`;
+      message += `📦 *Aapne Ye Products Order Kiye Hain:*\n`;
+
+      (items || []).forEach((item, idx) => {
+        const itemTitle = item.name || item.title || 'Product';
+        const itemQty = item.quantity || 1;
+        const itemPrice = (item.price || 0) * itemQty;
+        message += `${idx + 1}. *${itemTitle}*\n   Qty: ${itemQty} | Amount: ₹${itemPrice.toLocaleString('en-IN')}\n`;
+      });
+
+      message += `\n💰 *Total Order Amount:* ₹${Number(finalTotal).toLocaleString('en-IN')}\n\n`;
+      message += `Thank you for shopping with iiNCEPT! Hum aapka order jald hi process aur dispatch kar denge.`;
+
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/918607222417?text=${encodedMessage}`;
+      window.open(whatsappUrl, '_blank');
+    } catch (err) {
+      console.error('Failed to launch WhatsApp order notification:', err);
+    }
+  };
+
   const executeOrderPlacement = () => {
+    const activeAddress = isAddingNewAddress 
+      ? shippingAddress 
+      : (savedAddresses.find(a => (a._id || a.id) === selectedAddressId) || shippingAddress);
+    const pMethod = paymentMethod === 'razorpay' ? 'Razorpay' : 'COD';
+    const finalTotal = Math.max(0, totalAmount);
+    const snapshotItems = [...cartItems];
+
     dispatch(placeNewOrder({
       shippingAddressId: !isAddingNewAddress ? selectedAddressId : undefined,
       shippingAddressData: isAddingNewAddress ? shippingAddress : undefined,
-      paymentMethod: paymentMethod === 'razorpay' ? 'Razorpay' : 'COD',
+      paymentMethod: pMethod,
       couponCode: discountAmount > 0 ? couponCode : undefined,
       cartItems,
-      totalAmount: Math.max(0, totalAmount)
+      totalAmount: finalTotal
     }))
       .unwrap()
       .then((order) => {
         dispatch(clearCart()); // Empty the cart on successful checkout
-        alert(`Order placed successfully! Order ID: #${order.id}`);
+        sendWhatsAppOrderNotification(order, snapshotItems, activeAddress, pMethod, finalTotal);
+        alert(`Order placed successfully! Order ID: #${order.id || order._id}`);
         navigate('/orders');
       })
       .catch((err) => {

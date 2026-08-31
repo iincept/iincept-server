@@ -3,7 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   User, Mail, Phone, MapPin, Edit, Plus, Trash2, 
-  CheckCircle2, Package, Clock, Eye, X, ArrowRight, Save
+  CheckCircle2, Package, Clock, Eye, X, ArrowRight, Save, MessageCircle
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import { updateUser } from '../redux/authSlice';
@@ -548,6 +548,44 @@ export default function Profile() {
                           <span className="font-extrabold text-base text-zinc-900">₹{Number(order.totalAmount).toLocaleString('en-IN')}</span>
                           
                           <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const orderIdStr = order.id || order._id;
+                                const items = order.items || order.orderItems || [];
+                                const address = order.shippingAddress || {};
+                                const custName = address.name || address.fullName || 'Customer';
+                                const custPhone = address.phone || address.phoneNumber || '';
+                                
+                                let message = `🎉 *ORDER CONFIRMATION RECEIPT - iiNCEPT Electronics* 🎉\n\n`;
+                                message += `Hello ${custName}! 👋\n`;
+                                message += `Aapka order successfully place ho gaya hai. Yahan aapke order ki details hain:\n\n`;
+                                message += `🆔 *Order ID:* #${orderIdStr}\n`;
+                                if (custPhone) message += `📞 *Mobile:* ${custPhone}\n`;
+                                message += `💳 *Payment Method:* ${order.paymentMethod || 'COD'}\n\n`;
+                                message += `📦 *Ordered Items:*\n`;
+
+                                (items || []).forEach((item, idx) => {
+                                  const itemTitle = item.name || item.title || 'Product';
+                                  const itemQty = item.quantity || 1;
+                                  const itemPrice = (item.price || 0) * itemQty;
+                                  message += `${idx + 1}. *${itemTitle}*\n   Qty: ${itemQty} | Amount: ₹${itemPrice.toLocaleString('en-IN')}\n`;
+                                });
+
+                                message += `\n💰 *Total Amount:* ₹${Number(order.totalAmount || 0).toLocaleString('en-IN')}\n\n`;
+                                message += `Thank you for shopping with iiNCEPT!`;
+
+                                const encodedMessage = encodeURIComponent(message);
+                                const targetPhone = custPhone ? `91${custPhone.replace(/[^0-9]/g, '')}` : '918607222417';
+                                const whatsappUrl = `https://wa.me/${targetPhone}?text=${encodedMessage}`;
+                                window.open(whatsappUrl, '_blank');
+                              }}
+                              className="inline-flex items-center gap-1.5 bg-[#25d366] hover:bg-[#20ba59] text-white font-extrabold text-[11px] px-3 py-2 rounded-xl transition-all shadow-sm cursor-pointer border-0"
+                              title="Send Order Receipt Copy to WhatsApp"
+                            >
+                              <MessageCircle className="h-3.5 w-3.5" />
+                              <span>WhatsApp Receipt</span>
+                            </button>
                             <button 
                               onClick={() => setActiveOrderDetail(order)}
                               className="p-2 bg-zinc-50 border border-zinc-200 hover:bg-zinc-100 text-zinc-800 rounded-xl transition-all cursor-pointer"

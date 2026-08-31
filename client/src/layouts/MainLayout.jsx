@@ -6,6 +6,7 @@ import { fetchWishlist } from '../redux/wishlistSlice';
 import Header from '../components/Header';
 import Navbar from '../components/Navbar';
 import CartDrawer from '../components/CartDrawer';
+import AIChatWidget from '../components/AIChatWidget';
 import Footer from '../components/Footer';
 
 export default function MainLayout() {
@@ -39,8 +40,11 @@ export default function MainLayout() {
       {/* Slide-out Cart Drawer */}
       <CartDrawer />
 
+      {/* Global AI Chat Support Widget */}
+      <AIChatWidget />
+
       {/* Main Outlet for nested routes */}
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-8 shrink-0">
+      <main className="flex-grow w-full min-w-0 pt-0 pb-8 shrink-0">
         <Outlet />
       </main>
 

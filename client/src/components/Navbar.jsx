@@ -383,58 +383,177 @@ export default function Navbar() {
     });
   };
 
+  const CATEGORY_MODEL_MAP = {
+    mac: {
+      title: 'Explore Mac',
+      mainLink: { label: 'Explore All Mac', path: '/macbook' },
+      items: [
+        { label: 'MacBook Neo', path: '/macbook?search=MacBook Neo', query: 'MacBook Neo' },
+        { label: 'MacBook Air', path: '/macbook?search=MacBook Air', query: 'MacBook Air' },
+        { label: 'MacBook Pro', path: '/macbook?search=MacBook Pro', query: 'MacBook Pro' },
+        { label: 'iMac', path: '/macbook?search=iMac', query: 'iMac' },
+        { label: 'Mac mini', path: '/macbook?search=Mac mini', query: 'Mac mini' },
+        { label: 'Mac Studio', path: '/macbook?search=Mac Studio', query: 'Mac Studio' },
+        { label: 'Displays', path: '/macbook?search=Studio Display', query: 'Display' },
+        { label: 'Compare Mac', path: '/compare?category=mac', query: 'Compare' }
+      ]
+    },
+    iphone: {
+      title: 'Explore iPhone',
+      mainLink: { label: 'Explore All iPhone', path: '/iphone' },
+      items: [
+        { label: 'iPhone 17 Pro Max', path: '/iphone?search=iPhone 17 Pro Max', query: 'iPhone 17 Pro Max' },
+        { label: 'iPhone 17 Pro', path: '/iphone?search=iPhone 17 Pro', query: 'iPhone 17 Pro' },
+        { label: 'iPhone 17 Air', path: '/iphone?search=iPhone 17 Air', query: 'iPhone 17 Air' },
+        { label: 'iPhone 17', path: '/iphone?search=iPhone 17', query: 'iPhone 17' },
+        { label: 'iPhone 17e', path: '/iphone?search=iPhone 17e', query: 'iPhone 17e' },
+        { label: 'iPhone 16', path: '/iphone?search=iPhone 16', query: 'iPhone 16' },
+        { label: 'Compare iPhone', path: '/compare?category=iphone', query: 'Compare' }
+      ]
+    },
+    ipad: {
+      title: 'Explore iPad',
+      mainLink: { label: 'Explore All iPad', path: '/ipad' },
+      items: [
+        { label: 'iPad Pro', path: '/ipad?search=iPad Pro', query: 'iPad Pro' },
+        { label: 'iPad Air', path: '/ipad?search=iPad Air', query: 'iPad Air' },
+        { label: 'iPad', path: '/ipad?search=iPad', query: 'iPad' },
+        { label: 'iPad mini', path: '/ipad?search=iPad mini', query: 'iPad mini' },
+        { label: 'Apple Pencil', path: '/accessories?search=Pencil', query: 'Pencil' },
+        { label: 'Keyboards', path: '/accessories?search=Keyboard', query: 'Keyboard' },
+        { label: 'Compare iPad', path: '/compare?category=ipad', query: 'Compare' }
+      ]
+    },
+    watch: {
+      title: 'Explore Watch',
+      mainLink: { label: 'Explore All Watch', path: '/watch' },
+      items: [
+        { label: 'Apple Watch Series 10', path: '/watch?search=Series 10', query: 'Series 10' },
+        { label: 'Apple Watch Ultra 2', path: '/watch?search=Ultra', query: 'Ultra' },
+        { label: 'Apple Watch SE', path: '/watch?search=SE', query: 'SE' },
+        { label: 'Compare Watch', path: '/compare?category=watch', query: 'Compare' }
+      ]
+    },
+    airpods: {
+      title: 'Explore AirPods',
+      mainLink: { label: 'Explore All AirPods', path: '/airpods' },
+      items: [
+        { label: 'AirPods Pro 2', path: '/airpods?search=Pro', query: 'AirPods Pro' },
+        { label: 'AirPods 4', path: '/airpods?search=AirPods 4', query: 'AirPods 4' },
+        { label: 'AirPods Max', path: '/airpods?search=Max', query: 'AirPods Max' }
+      ]
+    },
+    'tv-home': {
+      title: 'Explore TV & Home',
+      mainLink: { label: 'Explore All TV & Home', path: '/tv-home' },
+      items: [
+        { label: 'Apple TV 4K', path: '/tv-home?search=Apple TV', query: 'Apple TV' },
+        { label: 'HomePod', path: '/tv-home?search=HomePod', query: 'HomePod' },
+        { label: 'HomePod mini', path: '/tv-home?search=HomePod mini', query: 'HomePod mini' }
+      ]
+    }
+  };
+
   const renderProductCategoryList = (catKey, catTitle, catPath, closeDropdown) => {
+    const config = CATEGORY_MODEL_MAP[catKey];
     const catProds = getCategoryProducts(catKey);
 
+    const handleItemHover = (queryStr, defaultLabel) => {
+      const explicitPreview = productPreviews[defaultLabel] || productPreviews[queryStr];
+
+      const matched = products?.find(p => {
+        const title = (p.title || p.name || '').toLowerCase();
+        const q = (queryStr || defaultLabel || '').toLowerCase();
+        return title.includes(q);
+      });
+
+      let img = null;
+      let name = defaultLabel;
+      let price = '';
+
+      if (matched) {
+        img = matched.images?.[0] || matched.image;
+        if (img?.includes('mock-cloud')) img = null;
+        name = matched.title || matched.name;
+        if (matched.price) price = `₹${matched.price.toLocaleString('en-IN')}`;
+      }
+
+      if (!img && explicitPreview) {
+        img = explicitPreview.image;
+        if (!price && explicitPreview.price) price = explicitPreview.price;
+        if (explicitPreview.name) name = explicitPreview.name;
+      }
+
+      if (!img) {
+        const qLower = (queryStr || defaultLabel || '').toLowerCase();
+        if (qLower.includes('neo')) img = '/mac_nav/macbook_neo.png';
+        else if (qLower.includes('air')) img = '/mac_nav/macbook_air.png';
+        else if (qLower.includes('pro') && (qLower.includes('mac') || qLower.includes('laptop'))) img = '/macbook_user_pro.png';
+        else if (qLower.includes('imac')) img = '/imac_studio_lifestyle.jpg';
+        else if (qLower.includes('mini')) img = '/mac_nav/mac_mini.png';
+        else if (qLower.includes('studio') && !qLower.includes('display')) img = '/mac_nav/mac_studio.png';
+        else if (qLower.includes('display')) img = '/mac_nav/mac_displays.png';
+        else img = '/macbook_category_v3.jpg';
+      }
+
+      setHoveredProduct({
+        name: name || defaultLabel,
+        price: price || '',
+        image: img
+      });
+    };
+
     return (
-      <div className="md:col-span-6 space-y-3 text-left">
-        <span className="text-[12px] font-medium text-zinc-400 block mb-1">
-          {catTitle}
+      <div className="md:col-span-6 text-left">
+        <span className="text-[12px] font-normal text-[#6E6E73] dark:text-zinc-400 block mb-3">
+          {config?.title || catTitle}
         </span>
-        <div className="flex flex-col gap-1 max-h-[340px] overflow-y-auto pr-2">
-          <Link
-            to={catPath}
-            onMouseEnter={() => setHoveredProduct(null)}
-            onClick={() => {
-              closeDropdown();
-              setHoveredProduct(null);
-            }}
-            className="text-[13.5px] font-bold text-[#0071e3] tracking-wide transition-colors block py-1.5"
-          >
-            Explore All {catKey.toUpperCase()} →
-          </Link>
 
-          {catProds.length > 0 ? (
-            catProds.map((prod) => {
-              const partNum = prod.partNumber || prod.variants?.[0]?.partNumber || null;
-              const prodName = prod.title || prod.name;
-              const prodImage = prod.images?.[0] || prod.image || '/iphone_category_v2.jpg';
-              const displayPrice = prod.price || prod.variants?.[0]?.price ? `₹${(prod.price || prod.variants?.[0]?.price).toLocaleString('en-IN')}` : '';
+        <div className="flex flex-col gap-1 max-h-[380px] overflow-y-auto pr-2">
+          {config ? (
+            <>
+              <Link
+                to={config.mainLink.path}
+                onMouseEnter={() => handleItemHover(catKey, config.mainLink.label)}
+                onClick={() => {
+                  closeDropdown();
+                  setHoveredProduct(null);
+                }}
+                className="text-[22px] md:text-[24px] font-bold text-[#1D1D1F] dark:text-white leading-tight tracking-tight hover:text-[#0071e3] transition-colors block py-0.5"
+              >
+                {config.mainLink.label}
+              </Link>
 
-              return (
+              {config.items.map((item, idx) => (
                 <Link
-                  key={prod._id || prod.id}
-                  to={`/product/${prod._id || prod.id}`}
-                  onMouseEnter={() => setHoveredProduct({ name: `${partNum ? `${partNum} ` : ''}${prodName}`, price: displayPrice, image: prodImage })}
+                  key={idx}
+                  to={item.path}
+                  onMouseEnter={() => handleItemHover(item.query, item.label)}
                   onClick={() => {
                     closeDropdown();
                     setHoveredProduct(null);
                   }}
-                  className="text-[13px] font-semibold tracking-wide transition-colors flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-zinc-100/70"
+                  className="text-[22px] md:text-[24px] font-bold text-[#1D1D1F] dark:text-white leading-tight tracking-tight hover:text-[#0071e3] transition-colors block py-0.5"
                 >
-                  <span className="truncate">
-                    <span>{prodName}</span>
-                    {partNum && (
-                      <span className="font-mono font-extrabold text-black ml-1.5 inline-block">
-                        {partNum}
-                      </span>
-                    )}
-                  </span>
+                  {item.label}
                 </Link>
-              );
-            })
+              ))}
+            </>
           ) : (
-            <span className="text-xs text-zinc-400 py-2 font-medium">Loading catalog items...</span>
+            catProds.map((prod) => (
+              <Link
+                key={prod._id || prod.id}
+                to={`/product/${prod._id || prod.id}`}
+                onMouseEnter={() => setHoveredProduct({ name: prod.title || prod.name, price: prod.price ? `₹${prod.price.toLocaleString('en-IN')}` : '', image: prod.images?.[0] || prod.image })}
+                onClick={() => {
+                  closeDropdown();
+                  setHoveredProduct(null);
+                }}
+                className="text-[22px] md:text-[24px] font-bold text-[#1D1D1F] dark:text-white leading-tight tracking-tight hover:text-[#0071e3] transition-colors block py-0.5"
+              >
+                {prod.title || prod.name}
+              </Link>
+            ))
           )}
         </div>
       </div>
@@ -608,9 +727,9 @@ export default function Navbar() {
     'Explore All Mac': { name: 'Mac Workstations', price: 'Procure M3/M4 Series', image: '/macbook_category_v3.jpg' },
     'MacBook Neo': { name: 'MacBook Neo Concept', price: 'High Performance Laptop', image: '/mac_dark_banner.jpg' },
     'MacBook Air': { name: 'MacBook Air', price: 'Light & Powerful. From ₹1,14,900', image: '/student_mac_banner.jpg' },
-    'MacBook Pro': { name: 'MacBook Pro', price: 'Pro Workflow Leader. From ₹1,69,900', image: '/macbook_pro_dark.jpg' },
+    'MacBook Pro': { name: 'MacBook Pro', price: 'Pro Workflow Leader. From ₹1,69,900', image: '/mac_nav/macbook_pro.png' },
     'iMac': { name: 'iMac 24"', price: 'All-in-one Desktop. From ₹1,29,900', image: '/macbook_category_v3.jpg' },
-    'Mac mini': { name: 'Mac mini', price: 'Compact Powerhouse. From ₹54,900', image: '/macbook_category_v2.jpg' },
+    'Mac mini': { name: 'Mac mini', price: 'Compact Powerhouse. From ₹54,900', image: '/mac_nav/mac_mini.png' },
     'Mac Studio': { name: 'Mac Studio', price: 'Creator Station. From ₹1,99,900', image: '/macbook_category_v2.jpg' },
     'Displays': { name: 'Studio & Pro Display', price: 'Retina 5K & 6K Panels', image: '/macbook_category_v3.jpg' },
 
@@ -692,6 +811,7 @@ export default function Navbar() {
     { label: 'AirPods', path: '/airpods' },
     { label: 'TV & Home', path: '/tv-home' },
     { label: 'Accessories', path: '/accessories' },
+    { label: 'AppleCare', path: '/applecare' },
     { label: 'Compare', path: '/compare' },
     { label: 'Bulk Orders', path: '/bulk-orders' }
   ];
@@ -966,6 +1086,24 @@ export default function Navbar() {
                       className={getNavBtnClass(isAccessoriesDropdownOpen)}
                     >
                       Accessories
+                    </button>
+                  );
+                }
+                if (item.label === 'AppleCare') {
+                  return (
+                    <button
+                      key={idx}
+                      onMouseEnter={() => {
+                        clearAllTimeouts();
+                        closeAllDropdowns();
+                      }}
+                      onClick={() => {
+                        closeAllDropdowns();
+                        navigate(item.path);
+                      }}
+                      className={getNavBtnClass(location.pathname === '/applecare')}
+                    >
+                      AppleCare
                     </button>
                   );
                 }
@@ -1532,7 +1670,7 @@ export default function Navbar() {
                     </span>
                     <div className="flex flex-col gap-3">
                       {[
-                        { label: 'Get AppleCare', path: '/profile' },
+                        { label: 'Get AppleCare', path: '/applecare' },
                         { label: 'Apple Account and Password', path: '/profile' },
                         { label: 'Billing & Subscriptions', path: '/profile' },
                         { label: 'Accessibility', path: '/profile' }

@@ -40,6 +40,7 @@ export default function Footer() {
               <li><Link to="/ipad" className="hover:text-zinc-900 transition-colors">iPad</Link></li>
               <li><Link to="/watch" className="hover:text-zinc-900 transition-colors">Watch</Link></li>
               <li><Link to="/airpods" className="hover:text-zinc-900 transition-colors">AirPods</Link></li>
+              <li><Link to="/applecare" className="hover:text-zinc-900 transition-colors">AppleCare+</Link></li>
             </ul>
           </div>
 
@@ -85,7 +86,7 @@ export default function Footer() {
 
       {/* Floating WhatsApp Contact Button (Global across all MainLayout pages) */}
       <a
-        href="https://wa.me/919999999999?text=Hi%20there!%20I%20am%20interested%20in%20buying%20Apple%20products%20for%20my%20business."
+        href="https://wa.me/918607222417?text=Hi%20there!%20I%20am%20interested%20in%20buying%20Apple%20products%20for%20my%20business."
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 w-14 h-14 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-[0_4px_14px_rgba(37,211,102,0.45)] hover:scale-110 active:scale-95 transition-all z-45"

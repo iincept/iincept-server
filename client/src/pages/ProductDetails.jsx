@@ -18,11 +18,32 @@ export default function ProductDetails() {
   const { isAuthenticated } = useSelector((state) => state.auth);
 
   const [activeImage, setActiveImage] = useState('');
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedStorage, setSelectedStorage] = useState('');
+
+  const handleGalleryMouseMove = (e) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((e.clientX - left) / width) * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - top) / height) * 100));
+    setZoomPos({ x, y });
+  };
+
+  const handleGalleryMouseEnter = () => {
+    setIsZoomed(true);
+  };
+
+  const handleGalleryMouseLeave = () => {
+    setIsZoomed(false);
+    setZoomPos({ x: 50, y: 50 });
+  };
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedRam, setSelectedRam] = useState('');
+  const [selectedGlass, setSelectedGlass] = useState('');
+  const [selectedConnectivity, setSelectedConnectivity] = useState('');
+  const [selectedAppleCare, setSelectedAppleCare] = useState(false);
   const [activeTab, setActiveTab] = useState('specs');
 
   const [reviews, setReviews] = useState([]);
@@ -133,38 +154,57 @@ export default function ProductDetails() {
   };
 
   const getProductFromStore = (prodId) => {
-    if (!products || products.length === 0) return null;
-    if (/^[0-9a-fA-F]{24}$/.test(prodId)) {
-      return products.find(p => (p._id || p.id) === prodId);
-    }
+    if (!products || products.length === 0 || !prodId) return null;
+
+    // 1. Direct _id / id match
+    const directMatch = products.find(p => (p._id || p.id) === prodId);
+    if (directMatch) return directMatch;
+
+    // 2. Mock map or title substring match
     const mockIdMap = {
       'ip17pm': 'iPhone 17 Pro Max',
       'ip17p': 'iPhone 17 Pro',
+      'iphone-17-pro': 'iPhone 17 Pro',
       'ipair': 'iPhone Air',
+      'iphone-air': 'iPhone Air',
       'ip17': 'iPhone 17',
+      'iphone-17': 'iPhone 17',
       'ip16pm': 'iPhone 17e',
+      'iphone-17e': 'iPhone 17e',
       'ip16': 'iPhone 16',
-      'mbneo': 'MacBook Neo 14-inch',
+      'iphone-16': 'iPhone 16',
+      'mbneo': 'MacBook Neo',
+      'mac-neo-a18': 'MacBook Neo',
+      'mac-air-13-m5': 'MacBook Air',
+      'mac-pro-14-m5': 'MacBook Pro',
+      'ipadpro13': 'iPad Pro 13',
+      'ipad-pro-13-m4': 'iPad Pro',
+      'ipadair13': 'iPad Air',
+      'ipad-air-11-m2': 'iPad Air',
+      'ipad10': 'iPad 10',
+      'ipad-10th-gen': 'iPad',
+      'ipad-mini-a17': 'iPad mini',
       'appletv4k': 'Apple TV 4K',
       'homepodmini': 'HomePod mini',
-      'belkin3in1': 'Belkin UltraCharge Pro 3-in-1 Magnetic Charging Dock',
-      'herschelsling': 'Herschel Cloud Sling for iPhone',
-      'herscheltote': 'Herschel AirPods Tote Bag Charm',
-      'ipadpro13': 'iPad Pro 13-inch (M4)',
-      'ipadair13': 'iPad Air 13-inch (M4)',
-      'ipad10': 'iPad 10.9-inch (10th Gen)',
-      'watchultra2': 'Apple Watch Ultra 2',
-      'watchseries10': 'Apple Watch Series 10',
+      'belkin3in1': 'Belkin UltraCharge',
+      'herschelsling': 'Herschel Cloud Sling',
+      'herscheltote': 'Herschel AirPods',
+      'watchultra2': 'Apple Watch Ultra',
+      'watchseries10': 'Apple Watch Series',
       'watchse': 'Apple Watch SE',
-      'airpodsmax': 'AirPods Max (USB-C)',
-      'airpodspro2': 'AirPods Pro 2',
+      'airpodsmax': 'AirPods Max',
+      'airpodspro2': 'AirPods Pro',
       'airpods4': 'AirPods 4'
     };
-    const title = mockIdMap[prodId];
-    if (title) {
-      return products.find(p => (p.title || p.name) === title);
-    }
-    return null;
+
+    const targetTitle = mockIdMap[prodId] || prodId;
+    const matchedProduct = products.find(p => {
+      const pTitle = (p.title || p.name || '').toLowerCase();
+      const tLower = targetTitle.toLowerCase();
+      return pTitle.includes(tLower) || tLower.includes(pTitle);
+    });
+
+    return matchedProduct || null;
   };
 
   const localProduct = getProductFromStore(id);
@@ -217,39 +257,44 @@ export default function ProductDetails() {
     if (!product) return [];
     if (!colorName) return product.images || [];
 
-    // Find index and object/string of color in product.colors
+    const normColor = colorName.toString().trim().toLowerCase();
+
+    // 1. Check variants for matching color (Admin Panel uploaded images)
+    if (product.variants && Array.isArray(product.variants)) {
+      const colorVariant = product.variants.find(v => 
+        v.color?.toString().trim().toLowerCase() === normColor &&
+        Array.isArray(v.images) && v.images.length > 0
+      );
+      if (colorVariant && colorVariant.images && colorVariant.images.length > 0) {
+        return colorVariant.images;
+      }
+    }
+
+    // 2. Check product.colors array object
     const colorIdx = (product.colors || []).findIndex(c => {
       const name = typeof c === 'object' ? c.name : c;
-      return name?.toString().trim().toLowerCase() === colorName.toString().trim().toLowerCase();
+      return name?.toString().trim().toLowerCase() === normColor;
     });
 
     if (colorIdx !== -1) {
       const colorObj = product.colors[colorIdx];
       if (colorObj && typeof colorObj === 'object') {
-        if (colorObj.images && colorObj.images.length > 0) {
+        if (Array.isArray(colorObj.images) && colorObj.images.length > 0) {
           return colorObj.images;
         }
         if (colorObj.image) {
           return [colorObj.image];
         }
       } else {
-        // Fallback for flat string color arrays (matching corresponding image index)
+        // Fallback for flat string color arrays
         if (product.images && product.images[colorIdx]) {
           return [product.images[colorIdx]];
         }
       }
     }
 
-    const variantImages = [];
-    (product.variants || []).forEach(v => {
-      if (v.color?.toString().trim().toLowerCase() === colorName.toString().trim().toLowerCase() && v.images) {
-        v.images.forEach(img => {
-          if (!variantImages.includes(img)) variantImages.push(img);
-        });
-      }
-    });
-    if (variantImages.length > 0) {
-      return variantImages;
+    if (normColor.includes('silver') && (product?.name || product?.title || '').toLowerCase().includes('air')) {
+      return ['/macbook_category_v3.jpg'];
     }
 
     return product.images && product.images.length > 0 ? product.images : [];
@@ -265,6 +310,10 @@ export default function ProductDetails() {
       }
     });
     rawColors = uniqueColors;
+  }
+
+  if (rawColors.length === 0 && ((product?.title || product?.name || id || '').toLowerCase().includes('neo'))) {
+    rawColors = ['Silver', 'Blush', 'Citrus', 'Indigo'];
   }
 
   const colors = rawColors.map(c => {
@@ -291,26 +340,56 @@ export default function ProductDetails() {
     sizes = uniqueSizes;
   }
 
-  let storages = product?.storage || [];
-  if (storages.length === 0 && product?.variants && product.variants.length > 0) {
-    const uniqueStorage = [];
+  let storages = [];
+  const rawStorages = Array.isArray(product?.storage) ? [...product.storage] : [];
+  if (product?.variants && product.variants.length > 0) {
     product.variants.forEach(v => {
-      if (v.storage && !uniqueStorage.includes(v.storage)) {
-        uniqueStorage.push(v.storage);
+      if (v.storage) rawStorages.push(v.storage);
+    });
+  }
+  rawStorages.forEach(st => {
+    const trimmed = (st || '').toString().trim();
+    if (trimmed && !storages.some(s => s.toLowerCase() === trimmed.toLowerCase())) {
+      storages.push(trimmed);
+    }
+  });
+
+  let rams = [];
+  const rawRams = Array.isArray(product?.ram) ? [...product.ram] : (Array.isArray(product?.rams) ? [...product.rams] : []);
+  if (product?.variants && product.variants.length > 0) {
+    product.variants.forEach(v => {
+      if (v.ram) rawRams.push(v.ram);
+    });
+  }
+  rawRams.forEach(r => {
+    const trimmed = (r || '').toString().trim();
+    if (trimmed && !rams.some(rm => rm.toLowerCase() === trimmed.toLowerCase())) {
+      rams.push(trimmed);
+    }
+  });
+
+  let glasses = Array.isArray(product?.glasses) ? [...product.glasses] : [];
+  if (product?.variants && product.variants.length > 0) {
+    product.variants.forEach(v => {
+      if (v.glass) {
+        const trimmedGl = v.glass.toString().trim();
+        if (trimmedGl && !glasses.some(g => g.toLowerCase() === trimmedGl.toLowerCase())) {
+          glasses.push(trimmedGl);
+        }
       }
     });
-    storages = uniqueStorage;
   }
 
-  let rams = product?.ram || product?.rams || [];
-  if (rams.length === 0 && product?.variants && product.variants.length > 0) {
-    const uniqueRams = [];
+  let connectivities = Array.isArray(product?.connectivities) ? [...product.connectivities] : [];
+  if (product?.variants && product.variants.length > 0) {
     product.variants.forEach(v => {
-      if (v.ram && !uniqueRams.includes(v.ram)) {
-        uniqueRams.push(v.ram);
+      if (v.connectivity) {
+        const trimmedConn = v.connectivity.toString().trim();
+        if (trimmedConn && !connectivities.some(c => c.toLowerCase() === trimmedConn.toLowerCase())) {
+          connectivities.push(trimmedConn);
+        }
       }
     });
-    rams = uniqueRams;
   }
 
   const activeColorName = selectedColor?.name || (colors[0]?.name || '');
@@ -358,8 +437,20 @@ export default function ProductDetails() {
       } else {
         setSelectedRam('');
       }
+
+      if (glasses.length > 0) {
+        setSelectedGlass(glasses[0]);
+      } else {
+        setSelectedGlass('');
+      }
+
+      if (connectivities.length > 0) {
+        setSelectedConnectivity(connectivities[0]);
+      } else {
+        setSelectedConnectivity('');
+      }
     }
-  }, [product, colors.length, sizes.length, storages.length, rams.length]);
+  }, [product, colors.length, sizes.length, storages.length, rams.length, glasses.length, connectivities.length]);
 
   // Set active image whenever selectedColor changes
   useEffect(() => {
@@ -380,76 +471,258 @@ export default function ProductDetails() {
     setSelectedColor(colorObj);
   };
 
+  const handleRamSelect = (ramVal) => {
+    setSelectedRam(ramVal);
+    // Find compatible storage for this RAM & active color
+    if (product && product.variants && product.variants.length > 0) {
+      const activeColorStr = (selectedColor?.name || colors[0]?.name || '').toString().toLowerCase();
+      const normRam = ramVal.toString().toLowerCase();
+
+      // Check if current selectedStorage works with this RAM
+      const currentCompatible = product.variants.find(v => 
+        (v.color || '').toString().toLowerCase() === activeColorStr &&
+        (v.ram || '').toString().toLowerCase() === normRam &&
+        (v.storage || '').toString().toLowerCase() === (selectedStorage || '').toString().toLowerCase()
+      );
+
+      if (!currentCompatible) {
+        // Find any storage that works with this RAM
+        const match = product.variants.find(v => 
+          (v.ram || '').toString().toLowerCase() === normRam && v.storage
+        );
+        if (match && match.storage) {
+          setSelectedStorage(match.storage);
+        }
+      }
+    }
+  };
+
+  const handleGlassSelect = (glassVal) => {
+    setSelectedGlass(glassVal);
+    setSelectedConnectivity(glassVal);
+    // Find compatible storage for this Glass & active color
+    if (product && product.variants && product.variants.length > 0) {
+      const activeColorStr = (selectedColor?.name || colors[0]?.name || '').toString().toLowerCase();
+      const normGlass = glassVal.toString().toLowerCase();
+
+      // Check if current selectedStorage works with this Glass/Connectivity
+      const currentCompatible = product.variants.find(v => 
+        (v.color || '').toString().toLowerCase() === activeColorStr &&
+        ((v.glass || '').toString().toLowerCase() === normGlass || (v.connectivity || '').toString().toLowerCase() === normGlass) &&
+        (v.storage || '').toString().toLowerCase() === (selectedStorage || '').toString().toLowerCase()
+      );
+
+      if (!currentCompatible) {
+        // Find first storage that works with this glass finish
+        const match = product.variants.find(v => 
+          ((v.glass || '').toString().toLowerCase() === normGlass || (v.connectivity || '').toString().toLowerCase() === normGlass) && v.storage
+        );
+        if (match && match.storage) {
+          setSelectedStorage(match.storage);
+        }
+      }
+    }
+  };
+
+  const handleStorageSelect = (storageVal) => {
+    setSelectedStorage(storageVal);
+    // Find compatible RAM & Glass for this storage & active color
+    if (product && product.variants && product.variants.length > 0) {
+      const activeColorStr = (selectedColor?.name || colors[0]?.name || '').toString().toLowerCase();
+      const normStorage = storageVal.toString().toLowerCase();
+
+      // Check if current selectedGlass works with this storage
+      const currentCompatibleGlass = product.variants.find(v => 
+        (v.color || '').toString().toLowerCase() === activeColorStr &&
+        (v.storage || '').toString().toLowerCase() === normStorage &&
+        ((v.glass || '').toString().toLowerCase() === (selectedGlass || '').toString().toLowerCase() ||
+         (v.connectivity || '').toString().toLowerCase() === (selectedGlass || '').toString().toLowerCase())
+      );
+
+      if (!currentCompatibleGlass) {
+        const matchGlass = product.variants.find(v => 
+          (v.storage || '').toString().toLowerCase() === normStorage && (v.glass || v.connectivity)
+        );
+        if (matchGlass) {
+          const matchedVal = matchGlass.glass || matchGlass.connectivity;
+          setSelectedGlass(matchedVal);
+          setSelectedConnectivity(matchedVal);
+        }
+      }
+
+      // Check if current selectedRam works with this storage
+      const currentCompatibleRam = product.variants.find(v => 
+        (v.color || '').toString().toLowerCase() === activeColorStr &&
+        (v.storage || '').toString().toLowerCase() === normStorage &&
+        (v.ram || '').toString().toLowerCase() === (selectedRam || '').toString().toLowerCase()
+      );
+
+      if (!currentCompatibleRam) {
+        const matchRam = product.variants.find(v => 
+          (v.storage || '').toString().toLowerCase() === normStorage && v.ram
+        );
+        if (matchRam && matchRam.ram) {
+          setSelectedRam(matchRam.ram);
+        }
+      }
+    }
+  };
+
+  const cleanProductTitle = (rawTitle) => {
+    if (!rawTitle) return '';
+    return rawTitle.replace(/\s*[A-Z0-9]{5,9}\/[A-Z]$/i, '').trim();
+  };
+
+  const getProcessorSpec = () => {
+    // 1. Admin panel active variant level processor field
+    const activeVar = getActiveVariant();
+    if (activeVar && (activeVar.processor || activeVar.chip)) {
+      return activeVar.processor || activeVar.chip;
+    }
+
+    // 2. Admin panel top-level product.processors array
+    if (product && product.processors && Array.isArray(product.processors) && product.processors.length > 0) {
+      const normRam = (selectedRam || '').toString().toLowerCase();
+      const normStorage = (selectedStorage || '').toString().toLowerCase();
+
+      const matched = product.processors.find(p => {
+        const pNorm = p.toLowerCase();
+        return (normRam && pNorm.includes(normRam)) || (normStorage && pNorm.includes(normStorage));
+      });
+
+      if (matched) return matched;
+      return product.processors[0];
+    }
+
+    // 3. Dynamic default fallback
+    const rStr = (selectedRam || '').toString().toLowerCase();
+    const sStr = (selectedStorage || '').toString().toLowerCase();
+
+    const is16 = rStr.includes('16');
+    const is24 = rStr.includes('24');
+    const is512 = sStr.includes('512');
+    const is1TB = sStr.includes('1tb') || sStr.includes('1024') || sStr.includes('1 tb');
+
+    if (is24 && is1TB) {
+      return 'Apple M5 chip with 10‑core CPU and 10‑core GPU';
+    }
+
+    if (is16 && is1TB) {
+      return 'Apple M5 chip with 10‑core CPU and 10‑core GPU';
+    }
+
+    if (is16 && is512) {
+      return 'Apple M5 chip with 10‑core CPU and 10‑core GPU';
+    }
+
+    if (is24 || is16 || is1TB || sStr.includes('2tb')) {
+      return 'Apple M5 chip with 10‑core CPU and 10‑core GPU';
+    }
+
+    return 'Apple M5 chip with 8‑core CPU and 8‑core GPU';
+  };
+
+  // Helper to extract active variant based on current selectors
+  const getActiveVariant = (oColor, oStorage, oRam, oSize, oGlass, oConnectivity) => {
+    if (!product || !product.variants || product.variants.length === 0) return null;
+
+    const targetColorStr = oColor ? (oColor.name || oColor) : (selectedColor?.name || colors[0]?.name || '');
+    const targetStorageStr = oStorage !== undefined ? oStorage : selectedStorage;
+    const targetRamStr = oRam !== undefined ? oRam : selectedRam;
+    const targetSizeStr = oSize !== undefined ? oSize : selectedSize;
+    const targetGlassStr = oGlass !== undefined ? oGlass : selectedGlass;
+    const targetConnStr = oConnectivity !== undefined ? oConnectivity : selectedConnectivity;
+
+    const norm = (s) => (s || '').toString().trim().toLowerCase().replace(/ssd|ssd storage|storage|\s+/g, '');
+
+    const normColor = norm(targetColorStr);
+    const normStorage = norm(targetStorageStr);
+    const normRam = norm(targetRamStr);
+    const normSize = norm(targetSizeStr);
+    const normGlass = norm(targetGlassStr);
+    const normConn = norm(targetConnStr);
+
+    let bestMatch = null;
+    let maxScore = -10000;
+
+    for (const v of product.variants) {
+      const vColor = norm(v.color);
+      const vStorage = norm(v.storage);
+      const vRam = norm(v.ram);
+      const vSize = norm(v.size);
+      const vGlass = norm(v.glass);
+      const vConn = norm(v.connectivity);
+
+      let score = 0;
+
+      // Color matching
+      if (normColor) {
+        if (vColor === normColor) score += 100;
+        else if (vColor && vColor !== normColor) score -= 500;
+      }
+
+      // Storage matching
+      if (normStorage) {
+        if (vStorage === normStorage) score += 100;
+        else if (vStorage && (vStorage.includes(normStorage) || normStorage.includes(vStorage))) score += 50;
+        else if (vStorage && vStorage !== normStorage) score -= 500;
+      }
+
+      // Glass & Connectivity matching
+      if (normGlass) {
+        if (vGlass === normGlass || vConn === normGlass) score += 200;
+        else if ((vGlass && vGlass !== normGlass) && (!vConn || vConn !== normGlass)) score -= 500;
+      }
+
+      if (normConn) {
+        if (vConn === normConn || vGlass === normConn) score += 200;
+        else if ((vConn && vConn !== normConn) && (!vGlass || vGlass !== normConn)) score -= 500;
+      }
+
+      // RAM matching
+      if (normRam) {
+        if (vRam === normRam) score += 100;
+        else if (vRam && (vRam.includes(normRam) || normRam.includes(vRam))) score += 50;
+        else if (vRam && vRam !== normRam) score -= 500;
+      }
+
+      // Size matching
+      if (normSize) {
+        if (vSize === normSize) score += 100;
+        else if (vSize && vSize !== normSize) score -= 500;
+      }
+
+      // Part number presence bonus
+      if (v.partNumber && v.partNumber.trim()) {
+        score += 20;
+      }
+
+      if (score > maxScore) {
+        maxScore = score;
+        bestMatch = v;
+      }
+    }
+
+    return bestMatch || product.variants[0];
+  };
+
   // Helper to dynamically match variant price based on current selectors
-  const getVariantPrice = (oColor, oSize, oStorage, oRam) => {
+  const getVariantPrice = (oColor, oSize, oStorage, oRam, oGlass, oConnectivity) => {
     if (!product) return 0;
     const defaultPrice = product.price || 0;
     if (!product.variants || product.variants.length === 0) return defaultPrice;
 
-    const targetColorName = oColor ? (oColor.name || oColor) : selectedColor?.name;
-    const targetSize = oSize !== undefined ? oSize : selectedSize;
-    const targetStorage = oStorage !== undefined ? oStorage : selectedStorage;
-    const targetRam = oRam !== undefined ? oRam : selectedRam;
-
-    const tColor = (targetColorName || '').toString().toLowerCase();
-    const tStorage = (targetStorage || '').toString().toLowerCase();
-    const tRam = (targetRam || '').toString().toLowerCase();
-    const tSize = (targetSize || '').toString().toLowerCase();
-
-    // 1. Try exact match for Color + Storage + RAM + Size
-    const exactVar = product.variants.find(v => {
-      const vColor = (v.color || '').toString().toLowerCase();
-      const vStorage = (v.storage || '').toString().toLowerCase();
-      const vRam = (v.ram || '').toString().toLowerCase();
-      const vSize = (v.size || '').toString().toLowerCase();
-
-      const cM = !tColor || !vColor || vColor === tColor;
-      const sM = !tStorage || !vStorage || vStorage === tStorage;
-      const rM = !tRam || !vRam || vRam === tRam;
-      const zM = !tSize || !vSize || vSize === tSize;
-
-      return cM && sM && rM && zM && (v.price > 0);
-    });
-
-    if (exactVar && exactVar.price) return Number(exactVar.price);
-
-    // 2. Try match for Storage + RAM + Color
-    const storageRamVar = product.variants.find(v => {
-      const vColor = (v.color || '').toString().toLowerCase();
-      const vStorage = (v.storage || '').toString().toLowerCase();
-      const vRam = (v.ram || '').toString().toLowerCase();
-
-      return (vColor === tColor || !vColor) &&
-             (vStorage === tStorage || !vStorage) &&
-             (vRam === tRam || !vRam) && (v.price > 0);
-    });
-
-    if (storageRamVar && storageRamVar.price) return Number(storageRamVar.price);
-
-    // 3. Progressive candidate filtering
-    let candidates = [...product.variants];
-    if (tColor) {
-      const filtered = candidates.filter(v => (v.color || '').toString().toLowerCase() === tColor);
-      if (filtered.length > 0) candidates = filtered;
+    const matchedVar = getActiveVariant(oColor, oStorage, oRam, oSize, oGlass, oConnectivity);
+    if (matchedVar && matchedVar.price > 0) {
+      return Number(matchedVar.price);
     }
-    if (tStorage) {
-      const filtered = candidates.filter(v => (v.storage || '').toString().toLowerCase() === tStorage);
-      if (filtered.length > 0) candidates = filtered;
-    }
-    if (tRam) {
-      const filtered = candidates.filter(v => (v.ram || '').toString().toLowerCase() === tRam);
-      if (filtered.length > 0) candidates = filtered;
-    }
-
-    if (candidates.length > 0 && candidates[0].price) {
-      return Number(candidates[0].price);
-    }
-
     return defaultPrice;
   };
 
   const unitPrice = getVariantPrice();
-  const totalPrice = unitPrice * quantity;
+  const appleCareCost = selectedAppleCare ? 2900 : 0;
+  const finalUnitPrice = unitPrice + appleCareCost;
+  const totalPrice = finalUnitPrice * quantity;
 
   if (!product) {
     if (loading) {
@@ -469,53 +742,72 @@ export default function ProductDetails() {
 
   const handleAddToCart = () => {
     const colorName = selectedColor?.name || (colors[0]?.name || 'Standard');
+    const activeVar = getActiveVariant();
+    const partNum = activeVar?.partNumber || product.partNumber || product.modelNumber || '';
+    const glassVal = selectedGlass || selectedConnectivity || activeVar?.glass || activeVar?.connectivity || '';
+    const processorVal = activeVar?.processor || activeVar?.chip || getProcessorSpec();
+
     const detailsArr = [];
     if (selectedSize) detailsArr.push(selectedSize);
+    if (colorName) detailsArr.push(colorName);
     if (selectedStorage) detailsArr.push(selectedStorage);
+    if (glassVal) detailsArr.push(glassVal);
     if (selectedRam) detailsArr.push(selectedRam);
-    detailsArr.push(colorName);
+    if (processorVal && ((product.title || product.name || '').toLowerCase().includes('mac') || (product.title || product.name || '').toLowerCase().includes('ipad'))) {
+      detailsArr.push(processorVal);
+    }
+    if (selectedAppleCare) detailsArr.push('AppleCare+ Included (₹2,900)');
+    if (partNum) detailsArr.push(`MPN: ${partNum}`);
+
     const nameDetails = detailsArr.join(' / ');
 
     dispatch(addToCart({
-      id: `${id}-${selectedSize || 'std'}-${selectedStorage || 'std'}-${selectedRam || 'std'}-${colorName}`,
-      name: `${product.name || product.title} (${nameDetails})`,
-      price: unitPrice,
+      id: `${id}-${selectedSize || 'std'}-${selectedStorage || 'std'}-${selectedRam || 'std'}-${glassVal || 'std'}-${selectedAppleCare ? 'ac' : 'noac'}-${colorName}`,
+      name: `${cleanProductTitle(product.name || product.title)} (${nameDetails})`,
+      price: finalUnitPrice,
       image: activeImage,
       quantity,
       size: selectedSize,
       storage: selectedStorage,
+      glass: glassVal,
+      processor: processorVal,
+      partNumber: partNum,
       ram: selectedRam,
       color: colorName,
+      appleCare: selectedAppleCare,
       stock: product.stock || 10
     }));
-    alert(`Added ${product.name || product.title} (${nameDetails}) to Order!`);
+    alert(`Added ${cleanProductTitle(product.name || product.title)} (${nameDetails}) to Order!`);
   };
 
   const handleRequestBulkQuote = () => {
     if (!product) return;
 
-    const prodTitle = product.title || product.name || 'Apple Product';
+    const prodTitle = cleanProductTitle(product.title || product.name || 'Apple Product');
+    const activeVar = getActiveVariant();
     const activeColorStr = selectedColor?.name || (colors[0]?.name || '');
-    
-    // Find active variant part number
-    const activeVar = product.variants?.find(v => 
-      (v.color || '').toString().toLowerCase() === activeColorStr.toLowerCase() &&
-      (!selectedStorage || (v.storage || '').toString().toLowerCase() === selectedStorage.toLowerCase())
-    );
     const partNum = activeVar?.partNumber || product.partNumber || product.modelNumber || '';
+    const glassVal = selectedGlass || selectedConnectivity || activeVar?.glass || activeVar?.connectivity || '';
+    const processorVal = activeVar?.processor || activeVar?.chip || getProcessorSpec();
 
-    let message = `Hello iiNCEPT B2B Desk! 👋\nI would like to request a Bulk Wholesale Quote for the following Apple Product:\n\n`;
+    let message = `Hello iiNCEPT B2B Desk! 👋\nI would like to request a quote/inquiry for the following Apple Product:\n\n`;
     message += `📦 *Product:* ${prodTitle}\n`;
-    if (partNum) message += `🔢 *Part Number:* ${partNum}\n`;
+    if (partNum) message += `🔢 *SKU/Part Number:* ${partNum}\n`;
+    if (selectedSize) message += `📏 *Size/Model:* ${selectedSize}\n`;
     if (activeColorStr) message += `🎨 *Color:* ${activeColorStr}\n`;
     if (selectedStorage) message += `💾 *Storage:* ${selectedStorage}\n`;
+    if (glassVal) message += `✨ *Glass Finish / Option:* ${glassVal}\n`;
     if (selectedRam) message += `⚡ *RAM:* ${selectedRam}\n`;
-    message += `📊 *Quantity Required:* ${quantity} units\n`;
-    message += `💰 *Listed Price:* ₹${totalPrice.toLocaleString('en-IN')}\n\n`;
-    message += `Please provide your best B2B bulk pricing discount and delivery timeline. Thank you!`;
+    if (processorVal && ((product.title || product.name || '').toLowerCase().includes('mac') || (product.title || product.name || '').toLowerCase().includes('ipad'))) {
+      message += `💻 *Chip & Processor:* ${processorVal}\n`;
+    }
+    if (selectedAppleCare) message += `🛡️ *Protection:* AppleCare+ Included (₹2,900.00)\n`;
+    message += `📊 *Quantity Required:* ${quantity} unit(s)\n`;
+    message += `💰 *Total Estimated Price:* ₹${totalPrice.toLocaleString('en-IN')}\n\n`;
+    message += `Please provide availability and best B2B pricing. Thank you!`;
 
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/919999999999?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/918607222417?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -524,6 +816,67 @@ export default function ProductDetails() {
   }
 
   const colorName = selectedColor?.name || (colors[0]?.name || 'Standard');
+
+  const getIpadModelName = () => {
+    const titleStr = (product?.title || product?.name || id || '').toLowerCase();
+    if (titleStr.includes('ipad pro') || (titleStr.includes('ipad') && titleStr.includes('pro'))) return 'iPad Pro';
+    if (titleStr.includes('ipad air') || (titleStr.includes('ipad') && titleStr.includes('air'))) return 'iPad Air';
+    if (titleStr.includes('ipad mini') || (titleStr.includes('ipad') && titleStr.includes('mini'))) return 'iPad mini';
+    return 'iPad Air';
+  };
+
+  const getAllDisplayFeatures = () => {
+    const rawFeats = product?.features && Array.isArray(product.features) && product.features.length > 0
+      ? [...product.features]
+      : [];
+
+    const isMacProduct = (product?.name || product?.title || '').toLowerCase().includes('mac') ||
+                         (product?.category?.name || product?.category || '').toString().toLowerCase().includes('mac') ||
+                         (product?.category?.name || product?.category || '').toString().toLowerCase().includes('laptop') ||
+                         (product?.category?.name || product?.category || '').toString().toLowerCase().includes('pc');
+
+    const result = [];
+
+    // 1. Chip & Processor for Mac/PC or custom processor saved in Admin Panel
+    if (isMacProduct || (product?.processors && product.processors.length > 0) || getActiveVariant()?.processor) {
+      const hasChipInFeats = rawFeats.some(f => {
+        const fLower = (f || '').toLowerCase();
+        return fLower.includes('chip') || fLower.includes('processor') || fLower.includes('cpu');
+      });
+      if (!hasChipInFeats) {
+        result.push(`Chip & Processor: ${getProcessorSpec()}`);
+      }
+    }
+
+    // 2. Memory / RAM
+    if (!rawFeats.some(f => (f || '').toLowerCase().includes('memory:'))) {
+      if (selectedRam || (product?.ram && product.ram.length > 0)) {
+        result.push(`Memory: ${selectedRam || product.ram[0]} unified memory`);
+      }
+    }
+
+    // 3. Storage
+    if (!rawFeats.some(f => (f || '').toLowerCase().includes('storage:'))) {
+      if (selectedStorage || (product?.storage && product.storage.length > 0)) {
+        result.push(`Storage: ${selectedStorage || product.storage[0]} storage`);
+      }
+    }
+
+    // Add all existing features
+    rawFeats.forEach(f => {
+      let displayF = f;
+      if (f.toLowerCase().includes('memory:') && selectedRam) {
+        displayF = `Memory: ${selectedRam} unified memory`;
+      } else if (f.toLowerCase().includes('storage:') && selectedStorage) {
+        displayF = `Storage: ${selectedStorage} storage`;
+      } else if ((f.toLowerCase().includes('chip') || f.toLowerCase().includes('processor') || f.toLowerCase().includes('cpu')) && (isMacProduct || product?.processors?.length > 0)) {
+        displayF = `Chip & Processor: ${getProcessorSpec()}`;
+      }
+      result.push(displayF);
+    });
+
+    return result;
+  };
 
   return (
     <div className="min-h-screen bg-white text-[#1D1D1F] font-sans pb-12">
@@ -545,13 +898,16 @@ export default function ProductDetails() {
 
         .gallery { position: sticky; top: 90px; align-self: start; }
         .gallery-main {
-          aspect-ratio: 1/1; border-radius: 18px; background: var(--ink-2);
+          width: 100%; height: 460px; aspect-ratio: 1/1; border-radius: 18px; background: #ffffff;
           display: flex; align-items: center; justify-content: center;
-          border: 1px solid var(--line); overflow: hidden;
+          border: 1px solid var(--line); overflow: hidden; padding: 20px;
           transition: background .3s ease;
         }
-        .gallery-thumbs { display: flex; gap: 10px; margin-top: 14px; }
-        .gthumb { width: 64px; height: 64px; border-radius: 8px; border: 1px solid var(--line); background: var(--ink-2); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; }
+        .gallery-main img {
+          max-width: 90%; max-height: 90%; object-fit: contain; width: auto; height: auto; display: block; margin: 0 auto;
+        }
+        .gallery-thumbs { display: flex; gap: 10px; margin-top: 14px; overflow-x: auto; padding-bottom: 4px; }
+        .gthumb { width: 64px; height: 64px; shrink: 0; border-radius: 8px; border: 1px solid var(--line); background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; flex-shrink: 0; }
         .gthumb img { object-fit: contain; width: 100%; height: 100%; }
         .gthumb.active { border-color: var(--paper); border-width: 2px; }
 
@@ -562,9 +918,11 @@ export default function ProductDetails() {
 
         .optgroup { margin-bottom: 28px; }
         .optgroup label { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; margin-bottom: 12px; }
-        .swatches { display: flex; gap: 10px; }
-        .swatch { width: 34px; height: 34px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; position: relative; box-shadow: 0 0 0 1px var(--line); }
-        .swatch.active { border-color: var(--blue); }
+        .swatches { display: flex; gap: 12px; }
+        .swatch { width: 38px; height: 38px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; position: relative; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .swatch:hover { transform: scale(1.15); box-shadow: 0 0 0 2px rgba(0,0,0,0.3), 0 0 0 4px #ffffff !important; }
+        .swatch.active { border-color: transparent; }
+        .swatch.active:hover { box-shadow: 0 0 0 2px #0071E3, 0 0 0 4px #ffffff !important; }
 
         .optrow { display: flex; gap: 10px; flex-wrap: wrap; }
         .opt { border: 1px solid var(--line); padding: 12px 18px; border-radius: 8px; font-size: 13.5px; cursor: pointer; transition: all .15s ease; background: #fff; text-align: left; min-width: 110px; }
@@ -627,12 +985,29 @@ export default function ProductDetails() {
         <div className="pdp">
           {/* Gallery Column */}
           <div className="gallery">
-            <div className="gallery-main">
+            <div
+              className="gallery-main relative cursor-zoom-in overflow-hidden select-none"
+              onMouseMove={handleGalleryMouseMove}
+              onMouseEnter={handleGalleryMouseEnter}
+              onMouseLeave={handleGalleryMouseLeave}
+            >
               <img
-                src={activeImage}
+                src={activeImage || product.images?.[0] || '/iphone17p_orange.jpg'}
                 alt={product.name}
-                className="object-contain max-h-[85%] max-w-[85%] mix-blend-multiply"
+                className="mix-blend-multiply transition-transform duration-150 ease-out pointer-events-none"
+                style={{
+                  transform: isZoomed ? 'scale(2.4)' : 'scale(1)',
+                  transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`
+                }}
+                onError={(e) => {
+                  e.currentTarget.src = '/iphone17p_orange.jpg';
+                }}
               />
+              {isZoomed && (
+                <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider pointer-events-none z-10 animate-in fade-in duration-200">
+                  🔍 Hover Zoom Active
+                </div>
+              )}
             </div>
             <div className="gallery-thumbs">
               {galleryImages.map((imgUrl, idx) => (
@@ -641,7 +1016,13 @@ export default function ProductDetails() {
                   onClick={() => setActiveImage(imgUrl)}
                   className={`gthumb ${activeImage === imgUrl ? 'active' : ''}`}
                 >
-                  <img src={imgUrl} alt={`Thumbnail ${idx}`} />
+                  <img 
+                    src={imgUrl} 
+                    alt={`Thumbnail ${idx}`} 
+                    onError={(e) => {
+                      e.currentTarget.parentElement.style.display = 'none';
+                    }}
+                  />
                 </div>
               ))}
             </div>
@@ -651,67 +1032,18 @@ export default function ProductDetails() {
           <div className="pinfo">
 
 
-            {/* Title with Inline Dynamic Apple Part Number */}
+            {/* Title (Clean Product Name) */}
             {(() => {
-              const activeColorStr = (selectedColor?.name || colorName || '').toString().trim().toLowerCase();
-              const activeStorageStr = (selectedStorage || '').toString().trim().toLowerCase();
-              const activeRamStr = (selectedRam || '').toString().trim().toLowerCase();
-              const activeSizeStr = (selectedSize || '').toString().trim().toLowerCase();
-
-              // 1. Try exact match on Color + Storage + RAM + Size
-              let activeVar = product.variants?.find(v => {
-                const vColorStr = (v.color || '').toString().trim().toLowerCase();
-                const vStorageStr = (v.storage || '').toString().trim().toLowerCase();
-                const vRamStr = (v.ram || '').toString().trim().toLowerCase();
-                const vSizeStr = (v.size || '').toString().trim().toLowerCase();
-
-                const cMatch = !activeColorStr || !vColorStr || vColorStr === activeColorStr;
-                const sMatch = !activeStorageStr || !vStorageStr || vStorageStr === activeStorageStr;
-                const rMatch = !activeRamStr || !vRamStr || vRamStr === activeRamStr;
-                const zMatch = !activeSizeStr || !vSizeStr || vSizeStr === activeSizeStr;
-
-                return cMatch && sMatch && rMatch && zMatch;
-              });
-
-              // 2. Fallback: match Color + Storage + RAM
-              if (!activeVar) {
-                activeVar = product.variants?.find(v => {
-                  const vColorStr = (v.color || '').toString().trim().toLowerCase();
-                  const vStorageStr = (v.storage || '').toString().trim().toLowerCase();
-                  const vRamStr = (v.ram || '').toString().trim().toLowerCase();
-
-                  return (vColorStr === activeColorStr || !vColorStr) &&
-                         (vStorageStr === activeStorageStr || !vStorageStr) &&
-                         (vRamStr === activeRamStr || !vRamStr);
-                });
-              }
-
-              // 3. Fallback: match Color + Storage
-              if (!activeVar) {
-                activeVar = product.variants?.find(v => {
-                  const vColorStr = (v.color || '').toString().trim().toLowerCase();
-                  const vStorageStr = (v.storage || '').toString().trim().toLowerCase();
-                  return (vColorStr === activeColorStr || !vColorStr) && (vStorageStr === activeStorageStr || !vStorageStr);
-                });
-              }
-
-              // 4. Fallback: match Color only
-              if (!activeVar && activeColorStr) {
-                activeVar = product.variants?.find(v => (v.color || '').toString().trim().toLowerCase() === activeColorStr);
-              }
-
+              const activeVar = getActiveVariant();
               const partNum = activeVar?.partNumber || product.partNumber || null;
               const modelNum = activeVar?.modelNumber || product.modelNumber || null;
+              const rawTitle = activeVar?.displayTitle || activeVar?.title || (product.name || product.title);
+              const displayTitle = cleanProductTitle(rawTitle);
 
               return (
                 <>
                   <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-900 tracking-tight text-left leading-snug">
-                    <span>{product.name || product.title}</span>
-                    {partNum && (
-                      <span className="font-mono font-extrabold text-black ml-3 inline-block">
-                        {partNum}
-                      </span>
-                    )}
+                    {displayTitle}
                   </h1>
 
                   {modelNum && (
@@ -721,45 +1053,133 @@ export default function ProductDetails() {
                       </span>
                     </div>
                   )}
+
+                  <div className="price text-3xl font-black text-zinc-950 mt-4 mb-6 text-left tracking-tight">
+                    ₹{totalPrice.toLocaleString('en-IN')}
+                  </div>
                 </>
               );
             })()}
-
-            <div className="price text-3xl font-black text-zinc-950 mt-5 mb-8 text-left tracking-tight">
-              ₹{totalPrice.toLocaleString('en-IN')}
-            </div>
-
-            {/* Dynamic static Description Block */}
-            {(product.description) && (
-              <div className="my-8 text-sm text-zinc-600 leading-relaxed text-left border-b border-zinc-150 pb-6 font-sans" style={{ whiteSpace: 'pre-line' }}>
+            {(product.description && product.description.trim() !== '.' && product.description.trim() !== '') && (
+              <div className="my-6 text-sm text-zinc-600 leading-relaxed text-left font-sans" style={{ whiteSpace: 'pre-line' }}>
                 {product.description}
               </div>
             )}
 
             {/* Color swatches */}
             <div className="optgroup mb-8">
-              <label className="block text-[11px] font-extrabold text-zinc-400 uppercase tracking-widest mb-3">Colour — <span className="text-zinc-900">{colorName}</span></label>
-              <div className="swatches flex items-center gap-3.5">
+              <label className="block text-base font-semibold text-zinc-900 mb-3 text-left">
+                Colour – <span className="text-zinc-700 font-normal">{colorName}</span>
+              </label>
+              <div className="swatches flex items-center gap-2">
                 {colors.map((cObj) => {
-                  const isSelected = selectedColor?.name === cObj.name;
+                  const isSelected = (selectedColor?.name || '').toString().trim().toLowerCase() === (cObj.name || '').toString().trim().toLowerCase();
+                  let bgVal = cObj.value;
+                  const cNameLower = (cObj.name || '').toLowerCase();
+                  const isSpaceBlack = cNameLower.includes('space black');
+                  const isPinkBlush = cNameLower.includes('pink') || cNameLower.includes('blush') || cNameLower.includes('rose');
+                  const isYellowCitrus = cNameLower.includes('yellow') || cNameLower.includes('citrus') || cNameLower.includes('lime') || cNameLower.includes('gold') || cNameLower.includes('light gold');
+                  const isBlueSlate = cNameLower.includes('sky blue') || cNameLower.includes('blue') || cNameLower.includes('slate') || cNameLower.includes('indigo');
+                  const isCloudWhite = cNameLower.includes('cloud white') || cNameLower.includes('silver') || (cNameLower.includes('white') && !cNameLower.includes('titanium'));
+
+                  if (!bgVal || !bgVal.startsWith('#')) {
+                    if (cNameLower.includes('space black')) bgVal = '#1F2022';
+                    else if (cNameLower.includes('cloud white') || cNameLower.includes('white') || cNameLower.includes('silver')) bgVal = '#E5E6E8';
+                    else if (cNameLower.includes('blush') || cNameLower.includes('pink')) bgVal = '#E8D4D4';
+                    else if (cNameLower.includes('citrus') || cNameLower.includes('yellow')) bgVal = '#E1E49C';
+                    else if (cNameLower.includes('indigo') || cNameLower.includes('blue')) bgVal = '#5E6B82';
+                    else if (cNameLower.includes('starlight')) bgVal = '#F2E7D5';
+                    else if (cNameLower.includes('midnight')) bgVal = '#2E3641';
+                    else if (cNameLower.includes('space grey') || cNameLower.includes('space gray')) bgVal = '#7D7E80';
+                    else bgVal = cObj.name || '#1D1D1F';
+                  }
+
+                  let swatchBgImage = 'none';
+                  if (cObj.swatchImage || cObj.swatch) {
+                    swatchBgImage = `url(${cObj.swatchImage || cObj.swatch})`;
+                  } else if (isSpaceBlack) {
+                    swatchBgImage = 'url(/space_black_swatch.png)';
+                  } else if (isPinkBlush) {
+                    swatchBgImage = 'url(/neo_pink.png)';
+                  } else if (isYellowCitrus) {
+                    swatchBgImage = 'url(/neo_yellow.png)';
+                  } else if (isBlueSlate) {
+                    swatchBgImage = 'url(/neo_blue.png)';
+                  } else if (isCloudWhite) {
+                    swatchBgImage = 'url(/neo_silver.png)';
+                  }
+
                   return (
-                    <div
+                    <button
                       key={cObj.name}
+                      type="button"
                       onClick={() => handleColorSelect(cObj)}
-                      className="swatch active cursor-pointer transition-transform hover:scale-105"
-                      style={{
-                        backgroundColor: cObj.value,
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '50%',
-                        boxShadow: isSelected ? '0 0 0 2px #0071E3, 0 0 0 4px #fff' : '0 0 0 1px rgba(0,0,0,0.12)'
-                      }}
+                      className="relative w-11 h-11 flex items-center justify-center cursor-pointer group focus:outline-hidden border-0 bg-transparent p-0 transition-transform duration-200"
                       title={cObj.name}
-                    ></div>
+                    >
+                      {/* Outer Double Blue Concentric Ring when Selected */}
+                      {isSelected ? (
+                        <>
+                          <span
+                            className="absolute rounded-full pointer-events-none transition-all duration-200"
+                            style={{
+                              inset: '0px',
+                              border: '2px solid #0071e3'
+                            }}
+                          />
+                          <span
+                            className="absolute rounded-full pointer-events-none transition-all duration-200"
+                            style={{
+                              inset: '2.5px',
+                              border: '2px solid #ffffff'
+                            }}
+                          />
+                          <span
+                            className="absolute rounded-full pointer-events-none transition-all duration-200"
+                            style={{
+                              inset: '4.5px',
+                              border: '2px solid #0071e3'
+                            }}
+                          />
+                        </>
+                      ) : (
+                        /* Subtle Outer Ring on Hover when Unselected */
+                        <span className="absolute inset-1 rounded-full border border-transparent group-hover:border-zinc-300 transition-all duration-200 pointer-events-none" />
+                      )}
+
+                      {/* Inner Swatch Circle */}
+                      <span
+                        className="w-7 h-7 rounded-full shadow-2xs transition-transform duration-200 group-hover:scale-105"
+                        style={{
+                          backgroundColor: bgVal,
+                          backgroundImage: swatchBgImage,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          backgroundRepeat: 'no-repeat'
+                        }}
+                      />
+                    </button>
                   );
                 })}
               </div>
             </div>
+
+            {/* SKU / Part Number option group (placed right below Colour) */}
+            {(() => {
+              const activeVar = getActiveVariant();
+              const partNum = activeVar?.partNumber || product.partNumber || null;
+              if (!partNum) return null;
+              return (
+                <div className="optgroup mb-8 text-left">
+                  <label className="block text-[11px] font-extrabold text-zinc-400 uppercase tracking-widest mb-3">SKU / Part Number</label>
+                  <div className="optrow flex flex-wrap gap-3">
+                    <div className="opt active font-mono">
+                      {partNum}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Size / Model options */}
             {sizes && sizes.length > 0 && (
@@ -779,6 +1199,24 @@ export default function ProductDetails() {
               </div>
             )}
 
+            {/* RAM options */}
+            {rams && rams.length > 0 && (
+              <div className="optgroup mb-8">
+                <label className="block text-[11px] font-extrabold text-zinc-400 uppercase tracking-widest mb-3">RAM (Memory)</label>
+                <div className="optrow flex flex-wrap gap-3">
+                  {rams.map((r) => (
+                    <div
+                      key={r}
+                      onClick={() => handleRamSelect(r)}
+                      className={`opt ${selectedRam === r ? 'active' : ''}`}
+                    >
+                      {r}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Storage options */}
             {storages && storages.length > 0 && (
               <div className="optgroup mb-8">
@@ -787,7 +1225,7 @@ export default function ProductDetails() {
                   {storages.map((st) => (
                     <div
                       key={st}
-                      onClick={() => setSelectedStorage(st)}
+                      onClick={() => handleStorageSelect(st)}
                       className={`opt ${selectedStorage === st ? 'active' : ''}`}
                     >
                       {st}
@@ -797,18 +1235,20 @@ export default function ProductDetails() {
               </div>
             )}
 
-            {/* RAM options */}
-            {rams && rams.length > 0 && (
+
+
+            {/* Finish / Connectivity Options */}
+            {glasses && glasses.length > 0 && (
               <div className="optgroup mb-8">
-                <label className="block text-[11px] font-extrabold text-zinc-400 uppercase tracking-widest mb-3">RAM (Memory)</label>
+                <label className="block text-[11px] font-extrabold text-zinc-400 uppercase tracking-widest mb-3">Connectivity / Glass Finish</label>
                 <div className="optrow flex flex-wrap gap-3">
-                  {rams.map((r) => (
+                  {glasses.map((gl) => (
                     <div
-                      key={r}
-                      onClick={() => setSelectedRam(r)}
-                      className={`opt ${selectedRam === r ? 'active' : ''}`}
+                      key={gl}
+                      onClick={() => handleGlassSelect(gl)}
+                      className={`opt ${selectedGlass === gl ? 'active' : ''}`}
                     >
-                      {r}
+                      {gl}
                     </div>
                   ))}
                 </div>
@@ -830,7 +1270,9 @@ export default function ProductDetails() {
             {/* Action Buttons */}
             <div className="btnrow">
               <button onClick={handleAddToCart} className="btn btn-dark">Add to Order →</button>
-              <button onClick={handleRequestBulkQuote} className="btn btn-line">Request Bulk Quote</button>
+              <button onClick={handleRequestBulkQuote} className="btn btn-line flex items-center justify-center gap-2">
+                Request to WhatsApp
+              </button>
             </div>
 
             {/* PDP Notes */}
@@ -901,41 +1343,110 @@ export default function ProductDetails() {
           </div>
 
           {activeTab === 'specs' ? (
-            <div className="spectable grid grid-cols-1 md:grid-cols-2 gap-4 border border-zinc-200 rounded-2xl overflow-hidden p-6 bg-zinc-50/50">
-              <div className="grid grid-cols-3 border-b border-zinc-100 pb-2">
-                <span className="font-bold text-xs text-zinc-400 uppercase">Brand</span>
-                <span className="col-span-2 text-sm text-zinc-800 font-medium">{product.brand || 'Apple'}</span>
-              </div>
-              <div className="grid grid-cols-3 border-b border-zinc-100 pb-2">
-                <span className="font-bold text-xs text-zinc-400 uppercase">Category</span>
-                <span className="col-span-2 text-sm text-zinc-800 font-medium">{product.category?.name || product.category || 'Tech'}</span>
-              </div>
-              <div className="grid grid-cols-3 border-b border-zinc-100 pb-2">
-                <span className="font-bold text-xs text-zinc-400 uppercase">Stock</span>
-                <span className="col-span-2 text-sm text-zinc-800 font-medium">{product.stock > 0 ? `${product.stock} units available` : 'Out of Stock'}</span>
-              </div>
+            <div className="border border-zinc-200 rounded-2xl overflow-hidden p-6 bg-zinc-50/50 space-y-6">
+              {/* Single Unified Technical & Hardware Specifications Box */}
               {(() => {
-                const activeColorStr = (selectedColor?.name || colorName || '').toString().trim().toLowerCase();
-                let activeVar = product.variants?.find(v => (v.color || '').toString().trim().toLowerCase() === activeColorStr);
-                const currentPart = activeVar?.partNumber || product.partNumber || product.variants?.find(v => v.partNumber)?.partNumber;
-                if (!currentPart) return null;
+                const featsList = getAllDisplayFeatures();
+                const isIpadProduct = (product?.title || product?.name || '').toLowerCase().includes('ipad') ||
+                                      (product?.category?.name || product?.category || '').toString().toLowerCase().includes('ipad') ||
+                                      (id || '').toLowerCase().includes('ipad');
+
+                if (featsList.length === 0 && !isIpadProduct) return null;
+
                 return (
-                  <div className="grid grid-cols-3 border-b border-zinc-100 pb-2">
-                    <span className="font-bold text-xs text-zinc-400 uppercase">Part Number</span>
-                    <span className="col-span-2 text-sm text-[#0071e3] font-mono font-bold">{currentPart}</span>
+                  <div className="text-left">
+                    <h3 className="text-xs font-extrabold text-zinc-900 uppercase tracking-widest mb-4">Technical & Hardware Specifications</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {/* Specifications items */}
+                      {featsList.map((displayFeat, fIdx) => {
+                        const parts = displayFeat.includes(':') ? displayFeat.split(':') : [null, displayFeat];
+                        return (
+                          <div key={fIdx} className="flex items-start gap-2.5 p-3.5 rounded-xl bg-white border border-zinc-200/80 shadow-2xs">
+                            <div className="h-2 w-2 rounded-full bg-[#0071e3] mt-1.5 shrink-0" />
+                            <div className="text-xs text-left">
+                              {parts[0] ? (
+                                <>
+                                  <span className="font-bold text-zinc-900 mr-1.5">{parts[0].trim()}:</span>
+                                  <span className="text-zinc-700 font-medium">{parts.slice(1).join(':').trim()}</span>
+                                </>
+                              ) : (
+                                <span className="font-semibold text-zinc-800">{displayFeat}</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* AppleCare+ Dedicated Protection Specs for iPad Pro / iPad Air / iPad (Inside same box grid) */}
+                      {isIpadProduct && (() => {
+                        const ipadModel = getIpadModelName();
+                        return (
+                          <div className="col-span-1 md:col-span-2 p-4 rounded-xl bg-white border border-blue-200/90 shadow-2xs text-left space-y-3">
+                            <div className="flex items-center justify-between border-b border-zinc-100 pb-2.5">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-[#0071e3] shrink-0" />
+                                <span className="font-bold text-xs text-zinc-900 uppercase tracking-wider">
+                                  AppleCare+ for {ipadModel} Coverage
+                                </span>
+                              </div>
+                              <span className="font-extrabold text-[10px] text-[#0071e3] bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Apple Official Warranty</span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-zinc-700 font-medium pt-0.5">
+                              <p className="flex items-center gap-2">
+                                <span className="text-[#0071e3] font-extrabold text-sm shrink-0">✓</span>
+                                <span>Unlimited repairs for accidental damage protection</span>
+                              </p>
+                              <p className="flex items-center gap-2">
+                                <span className="text-[#0071e3] font-extrabold text-sm shrink-0">✓</span>
+                                <span>Apple-certified service and support</span>
+                              </p>
+                              <p className="flex items-center gap-2">
+                                <span className="text-[#0071e3] font-extrabold text-sm shrink-0">✓</span>
+                                <span>Pickup and delivery service</span>
+                              </p>
+                              <p className="flex items-center gap-2">
+                                <span className="text-[#0071e3] font-extrabold text-sm shrink-0">✓</span>
+                                <span>Priority access to Apple experts</span>
+                              </p>
+                              <p className="flex items-center gap-2 md:col-span-2">
+                                <span className="text-[#0071e3] font-extrabold text-sm shrink-0">✓</span>
+                                <span>Coverage for your {ipadModel}, Apple Pencil, and Apple keyboard, all for a single price</span>
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
                 );
               })()}
-              {(product.modelNumber || product.variants?.find(v => v.modelNumber)?.modelNumber) && (
-                <div className="grid grid-cols-3 border-b border-zinc-100 pb-2">
-                  <span className="font-bold text-xs text-zinc-400 uppercase">Model Number</span>
-                  <span className="col-span-2 text-sm text-zinc-800 font-mono font-medium">{product.modelNumber || product.variants?.find(v => v.modelNumber)?.modelNumber}</span>
+
+              {/* 3. AppleCare+ Dedicated Plan Banner for Apple TV */}
+              {(product.title?.toLowerCase().includes('apple tv') || product.name?.toLowerCase().includes('apple tv') || product.title?.toLowerCase().includes('tv 4k')) && (
+                <div className="p-5 rounded-2xl bg-white border border-blue-200/90 shadow-2xs text-left space-y-3 mt-6">
+                  <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#0071e3]" />
+                      <span className="font-extrabold text-sm text-zinc-900">Add AppleCare+ for Apple TV for ₹2,900.00</span>
+                    </div>
+                    <span className="font-extrabold text-sm text-[#0071e3]">₹2,900.00</span>
+                  </div>
+                  <div className="space-y-2 text-xs text-zinc-700 font-medium pt-1">
+                    <p className="flex items-center gap-2">
+                      <span className="text-[#0071e3] font-bold text-sm">✓</span>
+                      Unlimited repairs for accidental damage protection<sup className="text-[9px]">◊</sup>
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <span className="text-[#0071e3] font-bold text-sm">✓</span>
+                      Apple-certified repairs using genuine Apple parts
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <span className="text-[#0071e3] font-bold text-sm">✓</span>
+                      Priority access to Apple experts
+                    </p>
+                  </div>
                 </div>
               )}
-              <div className="grid grid-cols-3 border-b border-zinc-100 pb-2">
-                <span className="font-bold text-xs text-zinc-400 uppercase">Warranty</span>
-                <span className="col-span-2 text-sm text-zinc-800 font-medium">1 Year Manufacturer Warranty</span>
-              </div>
             </div>
           ) : (
             <div className="space-y-8 animate-in fade-in duration-300">
@@ -1102,7 +1613,7 @@ export default function ProductDetails() {
 
       {/* Floating WhatsApp Widget */}
       <a
-        href="https://wa.me/919999999999"
+        href="https://wa.me/918607222417"
         target="_blank"
         rel="noopener noreferrer"
         style={{
