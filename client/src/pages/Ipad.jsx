@@ -201,6 +201,7 @@ export default function Ipad() {
       return localStorage.getItem('iincept_ipad_applecare_duration_v2') || '2 Years';
     } catch (e) { return '2 Years'; }
   });
+  const [appleCareDuration, setAppleCareDuration] = useState('2');
 
   useEffect(() => {
     dispatch(fetchProducts());
@@ -689,11 +690,44 @@ export default function Ipad() {
                   <div className="text-2xl sm:text-4xl md:text-5xl font-black text-[#FF2D55] tracking-tight py-1">
                     {dbHeaderTitle || 'AppleCare+'}
                   </div>
+                  <p className="text-xs sm:text-sm text-zinc-500 font-medium mt-1">
+                    Choose 1-Year or 2-Year Apple-certified coverage for your iPad.
+                  </p>
+
+                  {/* Duration Selector Pill */}
+                  <div className="flex justify-center mt-4">
+                    <div className="inline-flex p-1.5 bg-zinc-100/90 rounded-2xl border border-zinc-200/80 shadow-2xs">
+                      <button
+                        type="button"
+                        onClick={() => setAppleCareDuration('1')}
+                        className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer border-0 ${
+                          appleCareDuration === '1'
+                            ? 'bg-[#FF2D55] text-white shadow-xs'
+                            : 'text-zinc-600 hover:text-zinc-900 bg-transparent'
+                        }`}
+                      >
+                        1 Year Coverage
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAppleCareDuration('2')}
+                        className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer border-0 ${
+                          appleCareDuration === '2'
+                            ? 'bg-[#FF2D55] text-white shadow-xs'
+                            : 'text-zinc-600 hover:text-zinc-900 bg-transparent'
+                        }`}
+                      >
+                        2 Years Coverage
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Product Box Grid matching reference design */}
                 {(() => {
                   const rows = dbAppleCareRows.length > 0 ? dbAppleCareRows : DEFAULT_IPAD_APPLECARE_ROWS;
+                  const is1Yr = appleCareDuration === '1';
+
                   return (
                     <>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6 items-stretch">
@@ -701,11 +735,31 @@ export default function Ipad() {
                           const itemKey = row.model || row.title;
                           const isSelected = !!selectedAppleCareMap[itemKey];
 
+                          const activeMrp = is1Yr
+                            ? (row.mrp1yr || (row.mrp ? '₹' + Math.round(parseInt(row.mrp.replace(/[^\d]/g, '') || '8000') * 0.58).toLocaleString('en-IN') + '.00' : ''))
+                            : (row.mrp2yr || row.mrp);
+
+                          const activeSalePrice = is1Yr
+                            ? (row.salePrice1yr || (row.salePrice || row.yearly ? '₹' + Math.round(parseInt((row.salePrice || row.yearly).replace(/[^\d]/g, '') || '7000') * 0.58).toLocaleString('en-IN') + '.00' : ''))
+                            : (row.salePrice2yr || row.salePrice || row.yearly);
+
+                          const activeDiscount = is1Yr
+                            ? (row.discount1yr || row.discount || '15% OFF')
+                            : (row.discount2yr || row.discount);
+
+                          const activeSku = is1Yr
+                            ? (row.sku1yr || (row.sku ? `${row.sku}-1YR` : ''))
+                            : (row.sku2yr || row.sku);
+
+                          const activeDescription = is1Yr
+                            ? (row.description1yr || (row.description ? row.description.replace(/2 Years/gi, '1 Year') : '1 Year Apple-certified coverage.'))
+                            : (row.description2yr || row.description);
+
                           return (
                             <div 
                               key={i} 
                               onClick={() => {
-                                toggleAppleCareSelection(row);
+                                toggleAppleCareSelection({ ...row, salePrice: activeSalePrice, mrp: activeMrp, sku: activeSku, duration: is1Yr ? '1 Year' : '2 Years' });
                               }}
                               className={`group bg-white rounded-[24px] sm:rounded-[28px] border transition-all duration-300 relative text-left cursor-pointer p-5 sm:p-6 shadow-xs hover:shadow-md flex flex-col justify-between h-full ${
                                 isSelected 
@@ -724,7 +778,7 @@ export default function Ipad() {
                                     {/* Top Left Badge */}
                                     <div className="w-full flex items-center justify-start z-10 mb-1">
                                       <span className="bg-[#FF2D55] text-white text-[11px] font-bold px-3 py-1 rounded-full tracking-wide">
-                                        Apple Care+
+                                        Apple Care+ ({is1Yr ? '1 Year' : '2 Years'})
                                       </span>
                                     </div>
                                     {/* Main Product Image */}
@@ -750,9 +804,9 @@ export default function Ipad() {
                                         <span></span>
                                         <span>{row.model || row.title}</span>
                                       </div>
-                                      {row.sku ? (
+                                      {activeSku ? (
                                         <p className="text-[11px] text-zinc-500 font-mono font-semibold mt-0.5">
-                                          SKU: {row.sku}
+                                          SKU: {activeSku}
                                         </p>
                                       ) : (
                                         <p className="text-[11px] text-transparent font-mono font-semibold mt-0.5 select-none">
@@ -766,13 +820,13 @@ export default function Ipad() {
                                   <div className="md:col-span-7 space-y-3 flex flex-col justify-between h-full">
                                     <div>
                                       <div className="text-[10px] sm:text-[11px] font-bold tracking-widest uppercase text-[#FF2D55] mb-1">
-                                        APPLE CARE+
+                                        APPLE CARE+ • {is1Yr ? '1 YEAR PLAN' : '2 YEAR PLAN'}
                                       </div>
                                       <h3 className="font-extrabold text-[#1D1D1F] text-lg sm:text-xl leading-snug tracking-tight min-h-[52px] flex items-center">
                                         {row.title || `Apple Care+ ${row.model}`}
                                       </h3>
                                       <p className="text-xs text-zinc-500 font-medium mt-1 leading-relaxed min-h-[36px] flex items-center">
-                                        {row.description || `Extended coverage for your ${row.model}. Peace of mind for what's next.`}
+                                        {activeDescription || `Extended coverage for your ${row.model}. Peace of mind for what's next.`}
                                       </p>
                                     </div>
 
@@ -782,20 +836,20 @@ export default function Ipad() {
                                       <div className="flex items-center justify-between text-xs text-zinc-500">
                                         <span className="font-semibold text-zinc-500">MRP</span>
                                         <div className="flex items-center gap-2">
-                                          {row.mrp && <span className="line-through text-zinc-400 font-medium">{row.mrp}</span>}
-                                          {row.discount && (
+                                          {activeMrp && <span className="line-through text-zinc-400 font-medium">{activeMrp}</span>}
+                                          {activeDiscount && (
                                             <span className="bg-[#FF2D55] text-white font-extrabold text-[10px] px-2 py-0.5 rounded-md shadow-2xs">
-                                              {row.discount.includes('%') ? row.discount : `${row.discount} OFF`}
+                                              {activeDiscount.includes('%') ? activeDiscount : `${activeDiscount} OFF`}
                                             </span>
                                           )}
                                         </div>
                                       </div>
 
                                       {/* Discount Row */}
-                                      {row.discount ? (
+                                      {activeDiscount ? (
                                         <div className="flex items-center justify-between text-xs">
                                           <span className="font-semibold text-zinc-500">Discount</span>
-                                          <span className="font-bold text-[#FF2D55]">-{row.discount.replace(/OFF/i, '').trim()}</span>
+                                          <span className="font-bold text-[#FF2D55]">-{activeDiscount.replace(/OFF/i, '').trim()}</span>
                                         </div>
                                       ) : (
                                         <div className="h-4"></div>
@@ -807,7 +861,7 @@ export default function Ipad() {
                                       <div className="flex items-baseline justify-between">
                                         <span className="font-extrabold text-[#1D1D1F] text-sm sm:text-base">Final Price</span>
                                         <div className="text-xl sm:text-2xl font-extrabold text-[#00875A] tabular-nums tracking-tight">
-                                          {row.salePrice || row.yearly}
+                                          {activeSalePrice}
                                         </div>
                                       </div>
 
@@ -820,7 +874,7 @@ export default function Ipad() {
                                 </div>
 
                                 {/* MIDDLE SECTION: 4 Feature Highlights Grid */}
-                                <AppleCareFeaturesGrid years="2" />
+                                <AppleCareFeaturesGrid years={is1Yr ? '1' : '2'} />
                               </div>
 
                               {/* BOTTOM ACTION BUTTONS */}

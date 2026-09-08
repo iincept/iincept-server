@@ -23,8 +23,11 @@
   --blue: #0071E3;
 }
 
-*, body, button, input, textarea, select {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  overflow-x: hidden !important;
 }
 
 body {

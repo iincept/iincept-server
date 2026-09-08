@@ -72,6 +72,7 @@ const adminChildrenRoutes = [
   { path: 'watch-applecare', element: <Suspense fallback={<LoadingSpinner />}><WatchAppleCareManager /></Suspense> },
   { path: 'airpods-applecare', element: <Suspense fallback={<LoadingSpinner />}><AirpodsAppleCareManager /></Suspense> },
   { path: 'tv-home-applecare', element: <Suspense fallback={<LoadingSpinner />}><TvHomeAppleCareManager /></Suspense> },
+  { path: 'tvhome-applecare', element: <Suspense fallback={<LoadingSpinner />}><TvHomeAppleCareManager /></Suspense> },
   { path: 'product-applecare', element: <Suspense fallback={<LoadingSpinner />}><ProductAppleCareManager /></Suspense> },
   { path: 'footer-menu', element: <Suspense fallback={<LoadingSpinner />}><FooterManager /></Suspense> },
   { path: 'settings', element: <Suspense fallback={<LoadingSpinner />}><Settings /></Suspense> },

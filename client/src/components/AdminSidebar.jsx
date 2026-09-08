@@ -20,22 +20,27 @@ import {
 
 export default function AdminSidebar() {
   const navItems = [
-    { label: 'Dashboard', path: '/dashboard/home', icon: LayoutDashboard },
-    { label: 'Products', path: '/dashboard/products', icon: Package },
-    { label: 'Hero Banners', path: '/dashboard/hero-banners', icon: Home },
-    { label: 'Apple Categories', path: '/dashboard/apple-categories', icon: Grid },
-    { label: 'Navbar Menu', path: '/dashboard/navbar-menu', icon: Navigation },
-    { label: 'Category Icons', path: '/dashboard/category-icons', icon: Layers },
-    { label: 'MacBook AppleCare', path: '/dashboard/applecare', icon: ShieldCheck },
-    { label: 'Product Apple Care', path: '/dashboard/product-applecare', icon: ShieldCheck },
-    { label: 'Footer Menu', path: '/dashboard/footer-menu', icon: LayoutGrid },
-    { label: 'Testimonials', path: '/dashboard/testimonials', icon: Star },
-    { label: 'Product Categories', path: '/dashboard/categories', icon: Tag },
-    { label: 'Orders', path: '/dashboard/orders', icon: ShoppingBag },
-    { label: 'Users', path: '/dashboard/users', icon: Users },
-    { label: 'Enquiries', path: '/dashboard/enquiries', icon: MessageSquare },
-    { label: 'Sales Report', path: '/dashboard/sales-report', icon: TrendingUp },
-    { label: 'Settings', path: '/dashboard/settings', icon: Settings }
+    { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+    { label: 'Products', path: '/admin/products', icon: Package },
+    { label: 'Hero Banners', path: '/admin/hero-banners', icon: Home },
+    { label: 'Apple Categories', path: '/admin/apple-categories', icon: Grid },
+    { label: 'Navbar Menu', path: '/admin/navbar-menu', icon: Navigation },
+    { label: 'Category Icons', path: '/admin/category-icons', icon: Layers },
+    { label: 'MacBook AppleCare', path: '/admin/applecare', icon: ShieldCheck },
+    { label: 'iPad AppleCare', path: '/admin/ipad-applecare', icon: ShieldCheck },
+    { label: 'iPhone AppleCare', path: '/admin/iphone-applecare', icon: ShieldCheck },
+    { label: 'Watch AppleCare', path: '/admin/watch-applecare', icon: ShieldCheck },
+    { label: 'AirPods AppleCare', path: '/admin/airpods-applecare', icon: ShieldCheck },
+    { label: 'TV & Home AppleCare', path: '/admin/tv-home-applecare', icon: ShieldCheck },
+    { label: 'Product Apple Care', path: '/admin/product-applecare', icon: ShieldCheck },
+    { label: 'Footer Menu', path: '/admin/footer-menu', icon: LayoutGrid },
+    { label: 'Testimonials', path: '/admin/testimonials', icon: Star },
+    { label: 'Product Categories', path: '/admin/categories', icon: Tag },
+    { label: 'Orders', path: '/admin/orders', icon: ShoppingBag },
+    { label: 'Users', path: '/admin/users', icon: Users },
+    { label: 'Enquiries', path: '/admin/enquiries', icon: MessageSquare },
+    { label: 'Sales Report', path: '/admin/sales-report', icon: TrendingUp },
+    { label: 'Settings', path: '/admin/settings', icon: Settings }
   ];
 
   return (

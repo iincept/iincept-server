@@ -37,6 +37,11 @@ import Testimonials from '../pages/admin/Testimonials';
 import NavbarManager from '../pages/admin/NavbarManager';
 import CategoryIconsManager from '../pages/admin/CategoryIconsManager';
 import AppleCareManager from '../pages/admin/AppleCareManager';
+import IpadAppleCareManager from '../pages/admin/IpadAppleCareManager';
+import IphoneAppleCareManager from '../pages/admin/IphoneAppleCareManager';
+import WatchAppleCareManager from '../pages/admin/WatchAppleCareManager';
+import AirpodsAppleCareManager from '../pages/admin/AirpodsAppleCareManager';
+import TvHomeAppleCareManager from '../pages/admin/TvHomeAppleCareManager';
 import ProductAppleCareManager from '../pages/admin/ProductAppleCareManager';
 import FooterManager from '../pages/admin/FooterManager';
 import AdminReturns from '../pages/admin/Returns';
@@ -242,6 +247,12 @@ const router = createBrowserRouter([
       { path: 'navbar-menu', element: <NavbarManager /> },
       { path: 'category-icons', element: <CategoryIconsManager /> },
       { path: 'applecare', element: <AppleCareManager /> },
+      { path: 'ipad-applecare', element: <IpadAppleCareManager /> },
+      { path: 'iphone-applecare', element: <IphoneAppleCareManager /> },
+      { path: 'watch-applecare', element: <WatchAppleCareManager /> },
+      { path: 'airpods-applecare', element: <AirpodsAppleCareManager /> },
+      { path: 'tv-home-applecare', element: <TvHomeAppleCareManager /> },
+      { path: 'tvhome-applecare', element: <TvHomeAppleCareManager /> },
       { path: 'product-applecare', element: <ProductAppleCareManager /> },
       { path: 'footer-menu', element: <FooterManager /> },
       { path: 'settings', element: <Settings /> },

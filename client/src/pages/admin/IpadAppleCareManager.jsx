@@ -588,10 +588,44 @@ export default function IpadAppleCareManager() {
                 </div>
               </div>
 
+              {/* Duration Plan Selector Bar for 1-Year vs 2-Year Plan details */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-zinc-50 border border-zinc-200/80 p-3 rounded-2xl mb-4 gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-zinc-600">Select Plan Duration to Edit:</span>
+                  <div className="inline-flex p-1 bg-zinc-200/80 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateRow(idx, 'activePlanTab', '1yr')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border-0 ${
+                        row.activePlanTab === '1yr'
+                          ? 'bg-[#0071e3] text-white shadow-xs'
+                          : 'text-zinc-700 hover:text-zinc-900 bg-transparent'
+                      }`}
+                    >
+                      1-Year Plan Specs
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateRow(idx, 'activePlanTab', '2yr')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border-0 ${
+                        row.activePlanTab !== '1yr'
+                          ? 'bg-[#0071e3] text-white shadow-xs'
+                          : 'text-zinc-700 hover:text-zinc-900 bg-transparent'
+                      }`}
+                    >
+                      2-Year Plan Specs
+                    </button>
+                  </div>
+                </div>
+                <span className="text-xs font-bold px-3 py-1 bg-blue-50 text-[#0071e3] rounded-full border border-blue-100">
+                  Editing: {row.activePlanTab === '1yr' ? '1 Year Coverage Plan' : '2 Years Coverage Plan'}
+                </span>
+              </div>
+
               {/* Form Input Fields Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 
-                {/* 1. Model / Title */}
+                {/* 1. Model Name */}
                 <div>
                   <label className="block text-xs font-bold text-zinc-700 mb-1 flex items-center gap-1">
                     <Tag className="w-3.5 h-3.5 text-[#0071e3]" />
@@ -625,13 +659,19 @@ export default function IpadAppleCareManager() {
                 <div>
                   <label className="block text-xs font-bold text-zinc-700 mb-1 flex items-center gap-1">
                     <Barcode className="w-3.5 h-3.5 text-[#0071e3]" />
-                    SKU Code
+                    SKU Code ({row.activePlanTab === '1yr' ? '1-Yr' : '2-Yr'})
                   </label>
                   <input
                     type="text"
-                    value={row.sku || ''}
-                    onChange={(e) => handleUpdateRow(idx, 'sku', e.target.value)}
-                    placeholder="e.g. AC-IPAD-AIR-11"
+                    value={row.activePlanTab === '1yr' ? (row.sku1yr || '') : (row.sku2yr || row.sku || '')}
+                    onChange={(e) => {
+                      if (row.activePlanTab === '1yr') handleUpdateRow(idx, 'sku1yr', e.target.value);
+                      else {
+                        handleUpdateRow(idx, 'sku2yr', e.target.value);
+                        handleUpdateRow(idx, 'sku', e.target.value);
+                      }
+                    }}
+                    placeholder={row.activePlanTab === '1yr' ? "e.g. AC-IPAD-AIR-11-1YR" : "e.g. AC-IPAD-AIR-11-2YR"}
                     className="w-full px-3 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-900 focus:outline-none focus:border-[#0071e3]"
                   />
                 </div>
@@ -640,13 +680,19 @@ export default function IpadAppleCareManager() {
                 <div>
                   <label className="block text-xs font-bold text-zinc-700 mb-1 flex items-center gap-1">
                     <DollarSign className="w-3.5 h-3.5 text-zinc-500" />
-                    MRP Price
+                    MRP Price ({row.activePlanTab === '1yr' ? '1-Yr' : '2-Yr'})
                   </label>
                   <input
                     type="text"
-                    value={row.mrp || ''}
-                    onChange={(e) => handleUpdateRow(idx, 'mrp', e.target.value)}
-                    placeholder="e.g. ₹10,900.00"
+                    value={row.activePlanTab === '1yr' ? (row.mrp1yr || '') : (row.mrp2yr || row.mrp || '')}
+                    onChange={(e) => {
+                      if (row.activePlanTab === '1yr') handleUpdateRow(idx, 'mrp1yr', e.target.value);
+                      else {
+                        handleUpdateRow(idx, 'mrp2yr', e.target.value);
+                        handleUpdateRow(idx, 'mrp', e.target.value);
+                      }
+                    }}
+                    placeholder={row.activePlanTab === '1yr' ? "e.g. ₹5,900.00" : "e.g. ₹10,900.00"}
                     className="w-full px-3 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-900 focus:outline-none focus:border-[#0071e3]"
                   />
                 </div>
@@ -655,13 +701,19 @@ export default function IpadAppleCareManager() {
                 <div>
                   <label className="block text-xs font-bold text-zinc-700 mb-1 flex items-center gap-1">
                     <Percent className="w-3.5 h-3.5 text-emerald-600" />
-                    Discount Label
+                    Discount ({row.activePlanTab === '1yr' ? '1-Yr' : '2-Yr'})
                   </label>
                   <input
                     type="text"
-                    value={row.discount || ''}
-                    onChange={(e) => handleUpdateRow(idx, 'discount', e.target.value)}
-                    placeholder="e.g. 9% OFF"
+                    value={row.activePlanTab === '1yr' ? (row.discount1yr || '') : (row.discount2yr || row.discount || '')}
+                    onChange={(e) => {
+                      if (row.activePlanTab === '1yr') handleUpdateRow(idx, 'discount1yr', e.target.value);
+                      else {
+                        handleUpdateRow(idx, 'discount2yr', e.target.value);
+                        handleUpdateRow(idx, 'discount', e.target.value);
+                      }
+                    }}
+                    placeholder={row.activePlanTab === '1yr' ? "e.g. 17% OFF" : "e.g. 9% OFF"}
                     className="w-full px-3 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-900 focus:outline-none focus:border-[#0071e3]"
                   />
                 </div>
@@ -670,13 +722,20 @@ export default function IpadAppleCareManager() {
                 <div>
                   <label className="block text-xs font-bold text-zinc-700 mb-1 flex items-center gap-1">
                     <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
-                    Final Sale Price
+                    Final Sale Price ({row.activePlanTab === '1yr' ? '1-Yr' : '2-Yr'})
                   </label>
                   <input
                     type="text"
-                    value={row.salePrice || row.yearly || ''}
-                    onChange={(e) => handleUpdateRow(idx, 'salePrice', e.target.value)}
-                    placeholder="e.g. ₹9,900.00"
+                    value={row.activePlanTab === '1yr' ? (row.salePrice1yr || '') : (row.salePrice2yr || row.salePrice || row.yearly || '')}
+                    onChange={(e) => {
+                      if (row.activePlanTab === '1yr') handleUpdateRow(idx, 'salePrice1yr', e.target.value);
+                      else {
+                        handleUpdateRow(idx, 'salePrice2yr', e.target.value);
+                        handleUpdateRow(idx, 'salePrice', e.target.value);
+                        handleUpdateRow(idx, 'yearly', e.target.value);
+                      }
+                    }}
+                    placeholder={row.activePlanTab === '1yr' ? "e.g. ₹4,900.00" : "e.g. ₹9,900.00"}
                     className="w-full px-3 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-emerald-700 focus:outline-none focus:border-[#0071e3]"
                   />
                 </div>
@@ -700,13 +759,19 @@ export default function IpadAppleCareManager() {
                 <div className="sm:col-span-2 md:col-span-3">
                   <label className="block text-xs font-bold text-zinc-700 mb-1 flex items-center gap-1">
                     <FileText className="w-3.5 h-3.5 text-zinc-500" />
-                    Card Description Paragraph
+                    Card Description Paragraph ({row.activePlanTab === '1yr' ? '1-Year Coverage' : '2-Year Coverage'})
                   </label>
                   <textarea
                     rows={2}
-                    value={row.description || ''}
-                    onChange={(e) => handleUpdateRow(idx, 'description', e.target.value)}
-                    placeholder="e.g. 2 Years Apple-certified coverage for iPad Air 11″. Peace of mind for what's next."
+                    value={row.activePlanTab === '1yr' ? (row.description1yr || '') : (row.description2yr || row.description || '')}
+                    onChange={(e) => {
+                      if (row.activePlanTab === '1yr') handleUpdateRow(idx, 'description1yr', e.target.value);
+                      else {
+                        handleUpdateRow(idx, 'description2yr', e.target.value);
+                        handleUpdateRow(idx, 'description', e.target.value);
+                      }
+                    }}
+                    placeholder={row.activePlanTab === '1yr' ? "1 Year Apple-certified coverage for iPad. Technical support & repairs." : "2 Years Apple-certified coverage for iPad. Unlimited accidental damage protection."}
                     className="w-full px-3 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-medium text-zinc-800 focus:outline-none focus:border-[#0071e3]"
                   />
                 </div>

@@ -60,6 +60,12 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/settings", settingRoutes);
 app.use("/api/enquiries", enquiryRoutes);
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server running`);
-});
+if (require.main === module) {
+  const PORT = process.env.PORT || 5088;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
+

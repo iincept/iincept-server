@@ -85,10 +85,15 @@ const DEFAULT_IPHONE_APPLECARE_ROWS = [
     model: 'iPhone 15 / iPhone 16', 
     title: 'AppleCare+ for iPhone 15 / 16', 
     description: '2 Years Apple-certified coverage for iPhone 15 & 16 with accidental damage protection.', 
+    description1yr: '1 Year Apple-certified coverage for iPhone 15 & 16 with accidental damage protection.', 
     sku: 'AC-IPHONE-15-16', 
+    sku1yr: 'AC-IPHONE-15-16-1YR',
     mrp: '₹16,900.00', 
+    mrp1yr: '₹9,800.00',
     discount: '12% OFF', 
+    discount1yr: '15% OFF',
     salePrice: '₹14,900.00', 
+    salePrice1yr: '₹8,330.00',
     monthly: '₹749.00', 
     yearly: '₹14,900.00', 
     image: '/iphone_nav/iphone_16.png', 
@@ -98,10 +103,15 @@ const DEFAULT_IPHONE_APPLECARE_ROWS = [
     model: 'iPhone 16 Plus / 17', 
     title: 'AppleCare+ for iPhone 16 Plus / 17', 
     description: '2 Years Apple-certified coverage for iPhone 16 Plus & 17 with accidental damage protection.', 
+    description1yr: '1 Year Apple-certified coverage for iPhone 16 Plus & 17 with accidental damage protection.', 
     sku: 'AC-IPHONE-16P-17', 
+    sku1yr: 'AC-IPHONE-16P-17-1YR',
     mrp: '₹19,900.00', 
+    mrp1yr: '₹11,500.00',
     discount: '10% OFF', 
+    discount1yr: '13% OFF',
     salePrice: '₹17,900.00', 
+    salePrice1yr: '₹9,990.00',
     monthly: '₹899.00', 
     yearly: '₹17,900.00', 
     image: '/iphone_nav/iphone_17.png', 
@@ -111,10 +121,15 @@ const DEFAULT_IPHONE_APPLECARE_ROWS = [
     model: 'iPhone 16 Pro / 16 Pro Max', 
     title: 'AppleCare+ for iPhone 16 Pro / Pro Max', 
     description: '2 Years Apple-certified coverage for iPhone 16 Pro & Pro Max with accidental damage protection.', 
+    description1yr: '1 Year Apple-certified coverage for iPhone 16 Pro & Pro Max with accidental damage protection.', 
     sku: 'AC-IPHONE-16PRO', 
+    sku1yr: 'AC-IPHONE-16PRO-1YR',
     mrp: '₹22,900.00', 
+    mrp1yr: '₹13,200.00',
     discount: '10% OFF', 
+    discount1yr: '12% OFF',
     salePrice: '₹20,900.00', 
+    salePrice1yr: '₹11,600.00',
     monthly: '₹1,049.00', 
     yearly: '₹20,900.00', 
     image: '/iphone_nav/iphone_16_pro.png', 
@@ -124,10 +139,15 @@ const DEFAULT_IPHONE_APPLECARE_ROWS = [
     model: 'iPhone 17 Pro / 17 Pro Max', 
     title: 'AppleCare+ for iPhone 17 Pro / Pro Max', 
     description: '2 Years Apple-certified coverage for iPhone 17 Pro & Pro Max with accidental damage protection.', 
+    description1yr: '1 Year Apple-certified coverage for iPhone 17 Pro & Pro Max with accidental damage protection.', 
     sku: 'AC-IPHONE-17PRO', 
+    sku1yr: 'AC-IPHONE-17PRO-1YR',
     mrp: '₹23,900.00', 
+    mrp1yr: '₹13,800.00',
     discount: '9% OFF', 
+    discount1yr: '11% OFF',
     salePrice: '₹21,900.00', 
+    salePrice1yr: '₹12,200.00',
     monthly: '₹1,099.00', 
     yearly: '₹21,900.00', 
     image: '/iphone_nav/iphone_17_pro.png', 
@@ -137,10 +157,15 @@ const DEFAULT_IPHONE_APPLECARE_ROWS = [
     model: 'iPhone SE', 
     title: 'AppleCare+ for iPhone SE', 
     description: '2 Years Apple-certified coverage for iPhone SE with accidental damage protection.', 
+    description1yr: '1 Year Apple-certified coverage for iPhone SE with accidental damage protection.', 
     sku: 'AC-IPHONE-SE', 
+    sku1yr: 'AC-IPHONE-SE-1YR',
     mrp: '₹9,900.00', 
+    mrp1yr: '₹5,800.00',
     discount: '10% OFF', 
+    discount1yr: '14% OFF',
     salePrice: '₹8,900.00', 
+    salePrice1yr: '₹4,990.00',
     monthly: '₹449.00', 
     yearly: '₹8,900.00', 
     image: '/iphone_nav/iphone_se.png', 
@@ -250,12 +275,30 @@ export default function Iphone() {
   const [visibleCount, setVisibleCount] = useState(6);
   const isLoadingMore = useRef(false);
 
-  // iPhone AppleCare Dynamic Data
-  const [dbAppleCareRows, setDbAppleCareRows] = useState(DEFAULT_IPHONE_APPLECARE_ROWS);
-  const [selectedAppleCareModel, setSelectedAppleCareModel] = useState(DEFAULT_IPHONE_APPLECARE_ROWS[0]);
+  // iPhone AppleCare Dynamic Data with LocalStorage Caching
+  const [dbAppleCareRows, setDbAppleCareRows] = useState(() => {
+    try {
+      const cached = localStorage.getItem('iincept_iphone_applecare_rows_v2');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return DEFAULT_IPHONE_APPLECARE_ROWS;
+  });
+  const [selectedAppleCareModel, setSelectedAppleCareModel] = useState(() => dbAppleCareRows[0] || DEFAULT_IPHONE_APPLECARE_ROWS[0]);
   const [selectedAppleCareMap, setSelectedAppleCareMap] = useState({});
-  const [dbHeaderTitle, setDbHeaderTitle] = useState('AppleCare+');
-  const [dbDurationLabel, setDbDurationLabel] = useState('2 Years');
+  const [dbHeaderTitle, setDbHeaderTitle] = useState(() => {
+    try {
+      return localStorage.getItem('iincept_iphone_applecare_title_v2') || 'AppleCare+';
+    } catch (e) { return 'AppleCare+'; }
+  });
+  const [dbDurationLabel, setDbDurationLabel] = useState(() => {
+    try {
+      return localStorage.getItem('iincept_iphone_applecare_duration_v2') || '2 Years';
+    } catch (e) { return '2 Years'; }
+  });
+  const [appleCareDuration, setAppleCareDuration] = useState('2');
 
   useEffect(() => {
     dispatch(fetchProducts());
@@ -294,25 +337,22 @@ export default function Iphone() {
         if (response.data.appleCarePricingTables && response.data.appleCarePricingTables.length > 0) {
           const iphoneTable = response.data.appleCarePricingTables.find(t => t.categoryKey === 'iphone');
           if (iphoneTable) {
-            setDbHeaderTitle(iphoneTable.headerTitle || 'AppleCare+');
-            setDbDurationLabel(iphoneTable.durationLabel || '2 Years');
+            const hTitle = iphoneTable.headerTitle || 'AppleCare+';
+            const dLabel = iphoneTable.durationLabel || '2 Years';
+            setDbHeaderTitle(hTitle);
+            setDbDurationLabel(dLabel);
+            try {
+              localStorage.setItem('iincept_iphone_applecare_title_v2', hTitle);
+              localStorage.setItem('iincept_iphone_applecare_duration_v2', dLabel);
+            } catch (e) {}
+
             if (iphoneTable.rows && iphoneTable.rows.length > 0) {
               const activeRows = iphoneTable.rows.filter(r => r.isActive !== false);
               if (activeRows.length > 0) {
-                const mappedRows = activeRows.map(r => ({
-                  model: r.model || '',
-                  title: r.title || `AppleCare+ for ${r.model}`,
-                  description: r.description || `2 Years Apple-certified coverage for ${r.model}`,
-                  sku: r.sku || '',
-                  mrp: r.mrp || '',
-                  discount: r.discount || '',
-                  salePrice: r.salePrice || r.yearly || '',
-                  monthly: r.monthly || '',
-                  yearly: r.yearly || r.salePrice || '',
-                  image: r.image || getModelImageByName(r.model),
-                  isActive: r.isActive !== false
-                }));
-                setDbAppleCareRows(prev => (JSON.stringify(prev) !== JSON.stringify(mappedRows) ? mappedRows : prev));
+                try {
+                  localStorage.setItem('iincept_iphone_applecare_rows_v2', JSON.stringify(activeRows));
+                } catch (e) {}
+                setDbAppleCareRows(prev => (JSON.stringify(prev) !== JSON.stringify(activeRows) ? activeRows : prev));
                 setSelectedAppleCareModel(activeRows[0]);
               }
             }
@@ -744,15 +784,50 @@ export default function Iphone() {
             <div className="max-w-7xl mx-auto my-6 animate-in fade-in duration-300">
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-zinc-200/60 overflow-hidden shadow-xs p-6 sm:p-10 text-left">
                 {/* Header section */}
-                <div className="border-b border-zinc-100 pb-4 mb-4 text-center">
-                  <div className="text-2xl sm:text-4xl md:text-5xl font-black text-[#FF2D55] tracking-tight py-1">
-                    {dbHeaderTitle || 'AppleCare+'}
+                <div className="border-b border-zinc-100 pb-5 mb-6">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-center sm:text-left">
+                      <div className="text-2xl sm:text-4xl md:text-5xl font-black text-[#FF2D55] tracking-tight py-1">
+                        {dbHeaderTitle || 'AppleCare+'}
+                      </div>
+                      <p className="text-xs sm:text-sm text-zinc-500 font-medium mt-1">
+                        Official Apple-certified protection for your iPhone
+                      </p>
+                    </div>
+
+                    {/* Plan Duration Selector Pills (1 Year vs 2 Years) */}
+                    <div className="bg-zinc-100/90 p-1.5 rounded-2xl flex items-center gap-1 border border-zinc-200/80 shadow-2xs">
+                      <button
+                        type="button"
+                        onClick={() => setAppleCareDuration('1')}
+                        className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer border-0 ${
+                          appleCareDuration === '1'
+                            ? 'bg-[#FF2D55] text-white shadow-xs'
+                            : 'text-zinc-600 hover:text-zinc-900 bg-transparent'
+                        }`}
+                      >
+                        1 Year Coverage
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAppleCareDuration('2')}
+                        className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer border-0 ${
+                          appleCareDuration === '2'
+                            ? 'bg-[#FF2D55] text-white shadow-xs'
+                            : 'text-zinc-600 hover:text-zinc-900 bg-transparent'
+                        }`}
+                      >
+                        2 Years Coverage
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Product Box Grid matching reference design */}
                 {(() => {
                   const rows = dbAppleCareRows.length > 0 ? dbAppleCareRows : DEFAULT_IPHONE_APPLECARE_ROWS;
+                  const is1Yr = appleCareDuration === '1';
+
                   return (
                     <>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6 items-stretch">
@@ -760,11 +835,31 @@ export default function Iphone() {
                           const itemKey = row.model || row.title;
                           const isSelected = !!selectedAppleCareMap[itemKey];
 
+                          const activeMrp = is1Yr
+                            ? (row.mrp1yr || (row.mrp ? '₹' + Math.round(parseInt(row.mrp.replace(/[^\d]/g, '') || '16000') * 0.58).toLocaleString('en-IN') + '.00' : ''))
+                            : (row.mrp2yr || row.mrp);
+
+                          const activeSalePrice = is1Yr
+                            ? (row.salePrice1yr || (row.salePrice || row.yearly ? '₹' + Math.round(parseInt((row.salePrice || row.yearly).replace(/[^\d]/g, '') || '14000') * 0.58).toLocaleString('en-IN') + '.00' : ''))
+                            : (row.salePrice2yr || row.salePrice || row.yearly);
+
+                          const activeDiscount = is1Yr
+                            ? (row.discount1yr || row.discount || '15% OFF')
+                            : (row.discount2yr || row.discount);
+
+                          const activeSku = is1Yr
+                            ? (row.sku1yr || (row.sku ? `${row.sku}-1YR` : ''))
+                            : (row.sku2yr || row.sku);
+
+                          const activeDescription = is1Yr
+                            ? (row.description1yr || (row.description ? row.description.replace(/2 Years/gi, '1 Year') : '1 Year Apple-certified coverage.'))
+                            : (row.description2yr || row.description);
+
                           return (
                             <div 
                               key={i} 
                               onClick={() => {
-                                toggleAppleCareSelection(row);
+                                toggleAppleCareSelection({ ...row, salePrice: activeSalePrice, mrp: activeMrp, sku: activeSku, duration: is1Yr ? '1 Year' : '2 Years' });
                               }}
                               className={`group bg-white rounded-[24px] sm:rounded-[28px] border transition-all duration-300 relative text-left cursor-pointer p-5 sm:p-6 shadow-xs hover:shadow-md flex flex-col justify-between h-full ${
                                 isSelected 
@@ -783,7 +878,7 @@ export default function Iphone() {
                                     {/* Top Left Badge */}
                                     <div className="w-full flex items-center justify-start z-10 mb-1">
                                       <span className="bg-[#FF2D55] text-white text-[11px] font-bold px-3 py-1 rounded-full tracking-wide">
-                                        Apple Care+
+                                        Apple Care+ ({is1Yr ? '1 Year' : '2 Years'})
                                       </span>
                                     </div>
                                     {/* Main Product Image */}
@@ -809,9 +904,9 @@ export default function Iphone() {
                                         <span></span>
                                         <span>{row.model || row.title}</span>
                                       </div>
-                                      {row.sku ? (
+                                      {activeSku ? (
                                         <p className="text-[11px] text-zinc-500 font-mono font-semibold mt-0.5">
-                                          SKU: {row.sku}
+                                          SKU: {activeSku}
                                         </p>
                                       ) : (
                                         <p className="text-[11px] text-transparent font-mono font-semibold mt-0.5 select-none">
@@ -825,13 +920,13 @@ export default function Iphone() {
                                   <div className="md:col-span-7 space-y-3 flex flex-col justify-between h-full">
                                     <div>
                                       <div className="text-[10px] sm:text-[11px] font-bold tracking-widest uppercase text-[#FF2D55] mb-1">
-                                        APPLE CARE+
+                                        APPLE CARE+ • {is1Yr ? '1 YEAR PLAN' : '2 YEAR PLAN'}
                                       </div>
                                       <h3 className="font-extrabold text-[#1D1D1F] text-lg sm:text-xl leading-snug tracking-tight min-h-[52px] flex items-center">
                                         {row.title || `Apple Care+ ${row.model}`}
                                       </h3>
                                       <p className="text-xs text-zinc-500 font-medium mt-1 leading-relaxed min-h-[36px] flex items-center">
-                                        {row.description || `Extended coverage for your ${row.model}. Peace of mind for what's next.`}
+                                        {activeDescription || `Extended coverage for your ${row.model}. Peace of mind for what's next.`}
                                       </p>
                                     </div>
 
@@ -841,20 +936,20 @@ export default function Iphone() {
                                       <div className="flex items-center justify-between text-xs text-zinc-500">
                                         <span className="font-semibold text-zinc-500">MRP</span>
                                         <div className="flex items-center gap-2">
-                                          {row.mrp && <span className="line-through text-zinc-400 font-medium">{row.mrp}</span>}
-                                          {row.discount && (
+                                          {activeMrp && <span className="line-through text-zinc-400 font-medium">{activeMrp}</span>}
+                                          {activeDiscount && (
                                             <span className="bg-[#FF2D55] text-white font-extrabold text-[10px] px-2 py-0.5 rounded-md shadow-2xs">
-                                              {row.discount.includes('%') ? row.discount : `${row.discount} OFF`}
+                                              {activeDiscount.includes('%') ? activeDiscount : `${activeDiscount} OFF`}
                                             </span>
                                           )}
                                         </div>
                                       </div>
 
                                       {/* Discount Row */}
-                                      {row.discount ? (
+                                      {activeDiscount ? (
                                         <div className="flex items-center justify-between text-xs">
                                           <span className="font-semibold text-zinc-500">Discount</span>
-                                          <span className="font-bold text-[#FF2D55]">-{row.discount.replace(/OFF/i, '').trim()}</span>
+                                          <span className="font-bold text-[#FF2D55]">-{activeDiscount.replace(/OFF/i, '').trim()}</span>
                                         </div>
                                       ) : (
                                         <div className="h-4"></div>
@@ -866,7 +961,7 @@ export default function Iphone() {
                                       <div className="flex items-baseline justify-between">
                                         <span className="font-extrabold text-[#1D1D1F] text-sm sm:text-base">Final Price</span>
                                         <div className="text-xl sm:text-2xl font-extrabold text-[#00875A] tabular-nums tracking-tight">
-                                          {row.salePrice || row.yearly}
+                                          {activeSalePrice}
                                         </div>
                                       </div>
 
@@ -879,7 +974,7 @@ export default function Iphone() {
                                 </div>
 
                                 {/* MIDDLE SECTION: 4 Feature Highlights Grid */}
-                                <AppleCareFeaturesGrid years="2" />
+                                <AppleCareFeaturesGrid years={is1Yr ? '1' : '2'} />
                               </div>
 
                               {/* BOTTOM ACTION BUTTONS */}
@@ -888,23 +983,23 @@ export default function Iphone() {
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleAddAppleCareToWishlist(row, i);
+                                    handleAddAppleCareToWishlist({ ...row, salePrice: activeSalePrice, sku: activeSku }, i);
                                   }}
                                   className={`w-full border font-bold py-3 px-4 rounded-xl text-xs transition-all shadow-2xs flex items-center justify-center gap-2 cursor-pointer ${
-                                    localWishlist[`ac-iphone-${row.sku || i}`]
+                                    localWishlist[`ac-iphone-${activeSku || i}`]
                                       ? 'bg-rose-50 border-rose-200 text-rose-600'
                                       : 'bg-[#1D1D1F] text-white border-zinc-900 hover:bg-zinc-800'
                                   }`}
                                 >
-                                  <Heart className={`w-4 h-4 ${localWishlist[`ac-iphone-${row.sku || i}`] ? 'fill-current text-rose-500' : 'text-white'}`} />
-                                  <span>{localWishlist[`ac-iphone-${row.sku || i}`] ? 'Wishlisted' : 'Add to Wishlist'}</span>
+                                  <Heart className={`w-4 h-4 ${localWishlist[`ac-iphone-${activeSku || i}`] ? 'fill-current text-rose-500' : 'text-white'}`} />
+                                  <span>{localWishlist[`ac-iphone-${activeSku || i}`] ? 'Wishlisted' : 'Add to Wishlist'}</span>
                                 </button>
 
                                 <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleAddAppleCareToCart(row, i);
+                                    handleAddAppleCareToCart({ ...row, salePrice: activeSalePrice, sku: activeSku }, i);
                                   }}
                                   className="w-full bg-black hover:bg-zinc-900 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                                 >

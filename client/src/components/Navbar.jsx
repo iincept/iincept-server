@@ -70,15 +70,16 @@ export default function Navbar() {
         align-items: center !important;
       }
 
-      /* FLOATING PILL NAV */
+      /* FULL WIDTH NAVBAR STRETCHED TO MATCH BANNER */
       .pill-nav-stage {
         position: sticky;
-        top: 14px;
+        top: 0;
         z-index: 100;
         display: flex;
         justify-content: center;
-        padding: 0 20px;
+        padding: 0;
         width: 100%;
+        max-width: 100%;
         pointer-events: none;
         will-change: transform;
         transform: translateZ(0);
@@ -86,26 +87,29 @@ export default function Navbar() {
       }
       .pill-nav-container {
         width: 100%;
-        max-width: 1440px;
+        max-width: 100%;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 32px;
-        padding: 8px 28px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.82) !important;
-        backdrop-filter: blur(16px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(0, 0, 0, 0.04) !important;
-        border: 1px solid rgba(255, 255, 255, 0.75) !important;
+        padding: 8px 32px;
+        border-radius: 0 !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
         transition: background 0.2s ease, box-shadow 0.2s ease, padding 0.2s ease;
-        height: 56px;
+        height: 58px;
         pointer-events: auto;
       }
       .pill-nav-stage.shrink .pill-nav-container {
-        padding: 6px 20px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-        background: rgba(255, 255, 255, 0.92) !important;
+        padding: 6px 28px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.09) !important;
+        background: rgba(255, 255, 255, 0.98) !important;
       }
       
       .pill-nav-container .cta-btn-pill {
@@ -1074,7 +1078,7 @@ export default function Navbar() {
             </div>
           )}
 
-          <div className="max-w-[1440px] w-full mx-auto px-2 sm:px-4 h-16 flex items-center justify-between gap-6">
+          <div className="w-full mx-auto px-4 sm:px-8 md:px-12 h-16 flex items-center justify-between gap-6">
 
             {/* Left: Logo */}
             <Link to="/" className="flex items-center gap-2 shrink-0 group pl-1">

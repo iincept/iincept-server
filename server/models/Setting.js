@@ -23,6 +23,81 @@ const settingSchema = new mongoose.Schema(
       instagram: { type: String, default: "" },
       twitter: { type: String, default: "" },
     },
+    // New IndiaStore Style Home Banner Settings
+    homeHeroBadge: {
+      type: String,
+      default: "Apple Authorised Resellers across India",
+    },
+    homeHeroTitle: {
+      type: String,
+      default: "The latest.\nThe best. Authorised.",
+    },
+    homeHeroSubtitle: {
+      type: String,
+      default: "Genuine Apple products from India’s trusted mono-brand premium resellers. Exclusive offers, EMI & expert support.",
+    },
+    homeHeroPrimaryBtnText: {
+      type: String,
+      default: "Shop Now",
+    },
+    homeHeroPrimaryBtnLink: {
+      type: String,
+      default: "/iphone",
+    },
+    homeHeroSecondaryBtnText: {
+      type: String,
+      default: "Find Nearest Store",
+    },
+    homeHeroSecondaryBtnLink: {
+      type: String,
+      default: "#store-locator",
+    },
+    homeHeroImage: {
+      type: String,
+      default: "",
+    },
+    // Deal of the Week Banner Settings
+    dealEyebrow: {
+      type: String,
+      default: "Deal of the Week",
+    },
+    dealTitle: {
+      type: String,
+      default: "MacBook Neo – Stock Clearance",
+    },
+    dealDesc: {
+      type: String,
+      default: "Amazing Mac at a surprising price. Limited stock this week. Exclusive bank offers + free AppleCare+ for first 50 buyers.",
+    },
+    dealPrice: {
+      type: String,
+      default: "₹72,900",
+    },
+    dealOldPrice: {
+      type: String,
+      default: "₹79,900",
+    },
+    dealButtonText: {
+      type: String,
+      default: "Grab the Deal",
+    },
+    dealButtonLink: {
+      type: String,
+      default: "/macbook",
+    },
+    dealImage: {
+      type: String,
+      default: "/mac_nav/macbook_neo.png",
+    },
+    homeCategoryIcons: [
+      {
+        name: { type: String, default: "" },
+        label: { type: String, default: "" },
+        image: { type: String, default: "" },
+        path: { type: String, default: "" },
+        isActive: { type: Boolean, default: true },
+      },
+    ],
     heroTitle1: {
       type: String,
       default: "Apple devices for your business, sourced right, delivered anywhere in India.",

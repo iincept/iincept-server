@@ -8,17 +8,17 @@ export default defineConfig({
   resolve: {
     dedupe: ['react', 'react-dom', 'react-router-dom', 'react-redux', 'lucide-react'],
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      'react': path.resolve(__dirname, './node_modules/react'),
-      'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
-      'react-router-dom': path.resolve(__dirname, './node_modules/react-router-dom'),
-      'react-redux': path.resolve(__dirname, './node_modules/react-redux'),
-      'lucide-react': path.resolve(__dirname, './node_modules/lucide-react'),
+      '@': path.resolve(import.meta.dirname, './src'),
+      'react': path.resolve(import.meta.dirname, './node_modules/react'),
+      'react-dom': path.resolve(import.meta.dirname, './node_modules/react-dom'),
+      'react-router-dom': path.resolve(import.meta.dirname, './node_modules/react-router-dom'),
+      'react-redux': path.resolve(import.meta.dirname, './node_modules/react-redux'),
+      'lucide-react': path.resolve(import.meta.dirname, './node_modules/lucide-react'),
       // Point to client admin pages to avoid duplicating large files
-      '@admin-pages': path.resolve(__dirname, '../client/src/pages/admin'),
+      '@admin-pages': path.resolve(import.meta.dirname, '../client/src/pages/admin'),
       // Services and redux from THIS admin project (correct standalone imports)
-      '@admin-services': path.resolve(__dirname, './src/services'),
-      '@admin-redux': path.resolve(__dirname, './src/redux'),
+      '@admin-services': path.resolve(import.meta.dirname, './src/services'),
+      '@admin-redux': path.resolve(import.meta.dirname, './src/redux'),
     }
   },
   server: {

@@ -9,6 +9,49 @@ const getSettings = async (req, res) => {
       settings = await Setting.create({});
     }
 
+    if (!settings.homeHeroBadge) settings.homeHeroBadge = "Apple Authorised Resellers across India";
+    if (!settings.homeHeroTitle) settings.homeHeroTitle = "The latest.\nThe best. Authorised.";
+    if (!settings.homeHeroSubtitle) settings.homeHeroSubtitle = "Genuine Apple products from India’s trusted mono-brand premium resellers. Exclusive offers, EMI & expert support.";
+    if (!settings.homeHeroPrimaryBtnText) settings.homeHeroPrimaryBtnText = "Shop Now";
+    if (!settings.homeHeroPrimaryBtnLink) settings.homeHeroPrimaryBtnLink = "/iphone";
+    if (!settings.homeHeroSecondaryBtnText) settings.homeHeroSecondaryBtnText = "Find Nearest Store";
+    if (!settings.homeHeroSecondaryBtnLink) settings.homeHeroSecondaryBtnLink = "#store-locator";
+
+    if (!settings.homeCategoryIcons || settings.homeCategoryIcons.length === 0) {
+      settings.homeCategoryIcons = [
+        { name: 'Mac', label: 'Mac', image: 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-mac-nav-202410?wid=200&hei=130&fmt=png-alpha&.v=1728342368663', path: '/macbook', isActive: true },
+        { name: 'iPhone', label: 'iPhone', image: 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-iphone-nav-202409?wid=200&hei=130&fmt=png-alpha&.v=1724258295052', path: '/iphone', isActive: true },
+        { name: 'iPad', label: 'iPad', image: '/ipad_nav/ipad_pro.png', path: '/ipad', isActive: true },
+        { name: 'Watch', label: 'Watch', image: '/watch_category_uploaded.png', path: '/watch', isActive: true },
+        { name: 'AirPods', label: 'AirPods', image: '/airpods_category_uploaded.png', path: '/airpods', isActive: true },
+        { name: 'AirTag', label: 'AirTag', image: '/iphone_nav/airtag.png', path: '/iphone?search=AirTag', isActive: true },
+        { name: 'Apple TV 4K', label: 'Apple TV 4K', image: '/tvhome_category_uploaded.png', path: '/tv-home', isActive: true },
+        { name: 'HomePod', label: 'HomePod', image: '/tvhome_nav/homepod.png', path: '/tv-home?search=HomePod', isActive: true },
+        { name: 'Accessories', label: 'Accessories', image: '/accessories_category_uploaded.png', path: '/accessories', isActive: true },
+        { name: 'Gift Card', label: 'Gift Card', image: '/gift_card_icon.png', path: '/shop', isActive: true },
+      ];
+      await settings.save();
+    } else {
+      // Update existing Mac & iPhone category icons if using old images
+      let updated = false;
+      settings.homeCategoryIcons = settings.homeCategoryIcons.map(item => {
+        let obj = item.toObject ? item.toObject() : item;
+        if ((obj.name === 'Mac' || obj.label === 'Mac') && (obj.image === '/mac_nav/macbook_pro.png' || !obj.image)) {
+          updated = true;
+          return { ...obj, image: 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-mac-nav-202410?wid=200&hei=130&fmt=png-alpha&.v=1728342368663' };
+        }
+        if ((obj.name === 'iPhone' || obj.label === 'iPhone') && (obj.image === '/iphone_nav/iphone_17_pro.png' || !obj.image)) {
+          updated = true;
+          return { ...obj, image: 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-iphone-nav-202409?wid=200&hei=130&fmt=png-alpha&.v=1724258295052' };
+        }
+        return item;
+      });
+      if (updated) {
+        settings.markModified('homeCategoryIcons');
+        await settings.save();
+      }
+    }
+
     if (!settings.heroSlides || settings.heroSlides.length === 0) {
       settings.heroSlides = [
         {
@@ -518,6 +561,15 @@ const updateSettings = async (req, res) => {
       businessPhone,
       supportHours,
       socialLinks,
+      homeHeroBadge,
+      homeHeroTitle,
+      homeHeroSubtitle,
+      homeHeroPrimaryBtnText,
+      homeHeroPrimaryBtnLink,
+      homeHeroSecondaryBtnText,
+      homeHeroSecondaryBtnLink,
+      homeHeroImage,
+      homeCategoryIcons,
       heroTitle1,
       heroSubtitle1,
       heroButtonText1,
@@ -546,6 +598,14 @@ const updateSettings = async (req, res) => {
       announcement,
       announcementBold,
       announcementNormal,
+      dealEyebrow,
+      dealTitle,
+      dealDesc,
+      dealPrice,
+      dealOldPrice,
+      dealButtonText,
+      dealButtonLink,
+      dealImage,
     } = req.body;
 
     if (logo !== undefined) settings.logo = logo;
@@ -553,6 +613,25 @@ const updateSettings = async (req, res) => {
     if (businessPhone !== undefined) settings.businessPhone = businessPhone;
     if (supportHours !== undefined) settings.supportHours = supportHours;
     if (socialLinks !== undefined) settings.socialLinks = socialLinks;
+
+    if (homeHeroBadge !== undefined) settings.homeHeroBadge = homeHeroBadge;
+    if (homeHeroTitle !== undefined) settings.homeHeroTitle = homeHeroTitle;
+    if (homeHeroSubtitle !== undefined) settings.homeHeroSubtitle = homeHeroSubtitle;
+    if (homeHeroPrimaryBtnText !== undefined) settings.homeHeroPrimaryBtnText = homeHeroPrimaryBtnText;
+    if (homeHeroPrimaryBtnLink !== undefined) settings.homeHeroPrimaryBtnLink = homeHeroPrimaryBtnLink;
+    if (homeHeroSecondaryBtnText !== undefined) settings.homeHeroSecondaryBtnText = homeHeroSecondaryBtnText;
+    if (homeHeroSecondaryBtnLink !== undefined) settings.homeHeroSecondaryBtnLink = homeHeroSecondaryBtnLink;
+    if (homeHeroImage !== undefined) settings.homeHeroImage = homeHeroImage;
+    if (homeCategoryIcons !== undefined) settings.homeCategoryIcons = homeCategoryIcons;
+
+    if (dealEyebrow !== undefined) settings.dealEyebrow = dealEyebrow;
+    if (dealTitle !== undefined) settings.dealTitle = dealTitle;
+    if (dealDesc !== undefined) settings.dealDesc = dealDesc;
+    if (dealPrice !== undefined) settings.dealPrice = dealPrice;
+    if (dealOldPrice !== undefined) settings.dealOldPrice = dealOldPrice;
+    if (dealButtonText !== undefined) settings.dealButtonText = dealButtonText;
+    if (dealButtonLink !== undefined) settings.dealButtonLink = dealButtonLink;
+    if (dealImage !== undefined) settings.dealImage = dealImage;
 
     if (heroTitle1 !== undefined) settings.heroTitle1 = heroTitle1;
     if (heroSubtitle1 !== undefined) settings.heroSubtitle1 = heroSubtitle1;
