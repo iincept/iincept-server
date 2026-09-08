@@ -1,0 +1,48 @@
+@import url("https://cdn.jsdelivr.net/gh/mailtoharshit/San-Francisco-Font-/sanfrancisco.css");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+}
+
+:root {
+  --font-apple: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --main-bg: #FFFFFF;
+  --primary-text: #1D1D1F;
+  --secondary-text: #6E6E73;
+  --light-bg: #F5F5F7;
+  --border: #D2D2D7;
+  --apple-blue: #0071E3;
+  --hover-blue: #0077ED;
+}
+
+*, body, button, input, textarea, select {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+}
+
+body {
+  background: #f8fafc;
+  color: #1e293b;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
