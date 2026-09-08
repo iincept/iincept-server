@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
   Tag, 
-  Plus, 
   Trash2, 
   Upload, 
   X, 
@@ -126,204 +125,132 @@ export default function Categories() {
   };
 
   return (
-    <div>
-      {/* Alert toast notification */}
+    <div className="space-y-6 text-left">
+      {/* Notifications */}
       {success && (
-        <div className="fixed bottom-6 right-6 bg-zinc-900 text-white py-3.5 px-5 rounded-2xl shadow-xl flex items-center gap-3 border border-zinc-805 animate-in fade-in slide-in-from-bottom-5 duration-300 z-50">
+        <div className="fixed bottom-6 right-6 bg-zinc-900 text-white py-3.5 px-5 rounded-2xl shadow-xl flex items-center gap-3 border border-zinc-800 animate-in fade-in slide-in-from-bottom-5 duration-300 z-50">
           <Check className="h-5 w-5 text-emerald-400" />
           <span className="text-sm font-medium">{success}</span>
         </div>
       )}
 
-      {/* Global error banner */}
       {error && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-2xl mb-6 flex items-start gap-3 text-sm text-left">
-          <AlertCircle className="h-5 w-5 text-rose-500 shrink-0 mt-0.5" />
-          <div>
-            <p className="font-semibold">Operation Error</p>
-            <p className="text-rose-600 mt-0.5">{error}</p>
+        <div className="bg-rose-50 border border-rose-200 text-rose-800 py-3.5 px-4 rounded-xl flex items-center justify-between text-xs font-semibold">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-rose-600" />
+            <span>{error}</span>
           </div>
-          <button onClick={() => setError(null)} className="ml-auto text-rose-400 hover:text-rose-600 cursor-pointer">
+          <button onClick={() => setError(null)} className="text-rose-500 hover:text-rose-800">
             <X className="h-4 w-4" />
           </button>
         </div>
       )}
 
-      {!showCategoryForm ? (
+      {/* Header */}
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 text-left">
-            <div>
-              <h1 className="text-2xl font-bold font-sans tracking-tight text-zinc-900">Manage Categories</h1>
-              <p className="text-zinc-500 mt-1 text-sm">Add groupings for iPhone, Mac, Watch, AirPods, etc.</p>
-            </div>
-            <button
-              onClick={() => setShowCategoryForm(true)}
-              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-2xl text-sm font-medium tracking-wide shadow-sm hover:shadow-md transition-all cursor-pointer border-0"
-            >
-              <FolderPlus className="h-4.5 w-4.5" />
-              Add Category
-            </button>
-          </header>
-
-          {/* Categories Table List */}
-          <div className="bg-white rounded-3xl border border-zinc-150 shadow-sm overflow-hidden text-left">
-            {loading ? (
-              <div className="p-12 flex flex-col items-center justify-center text-zinc-400">
-                <Loader2 className="h-8 w-8 animate-spin text-[#0071e3] mb-3" />
-                <span className="text-sm">Fetching categories...</span>
-              </div>
-            ) : categories.length === 0 ? (
-              <div className="p-12 text-center text-zinc-400">
-                <Tag className="h-10 w-10 mx-auto text-zinc-300 mb-3" />
-                <span className="text-sm">No categories found. Click "Add Category" to create one.</span>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm border-collapse">
-                  <thead>
-                    <tr className="bg-zinc-50 text-zinc-500 uppercase text-[10px] tracking-widest font-extrabold border-b border-zinc-100">
-                      <th className="py-4 px-6">Category</th>
-                      <th className="py-4 px-6">Slug</th>
-                      <th className="py-4 px-6">Description</th>
-                      <th className="py-4 px-6 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-100">
-                    {categories.map((cat) => (
-                      <tr key={cat._id} className="hover:bg-zinc-50/50 transition-colors">
-                        <td className="py-4 px-6 flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center overflow-hidden shrink-0">
-                            {cat.image ? (
-                              <img src={cat.image} alt="" className="object-cover h-full w-full" />
-                            ) : (
-                              <Tag className="h-4 w-4 text-zinc-400" />
-                            )}
-                          </div>
-                          <span className="font-semibold text-zinc-900">{cat.name}</span>
-                        </td>
-                        <td className="py-4 px-6 text-zinc-500 font-medium font-mono text-xs">
-                          {cat.slug}
-                        </td>
-                        <td className="py-4 px-6 text-zinc-500 text-xs max-w-xs truncate">
-                          {cat.description || 'No description provided'}
-                        </td>
-                        <td className="py-4 px-6 text-right">
-                          <button
-                            onClick={() => handleCategoryDelete(cat._id)}
-                            className="p-2 rounded-xl hover:bg-rose-50 text-zinc-500 hover:text-rose-600 transition-all cursor-pointer inline-block border-0 bg-transparent"
-                            title="Delete category"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 font-sans flex items-center gap-2.5">
+            <Tag className="h-6 w-6 text-zinc-800" />
+            Product Catalog Categories
+          </h1>
+          <p className="text-zinc-500 mt-1 text-sm">Create and manage store product categories used for catalog filtering and product assignments.</p>
         </div>
-      ) : (
-        // Add Category Form UI
-        <div className="bg-white rounded-3xl border border-zinc-150 shadow-sm p-8 text-left max-w-2xl mx-auto animate-in fade-in duration-200">
-          <header className="flex items-center justify-between border-b border-zinc-100 pb-5 mb-6">
-            <div>
-              <h2 className="text-xl font-bold font-sans text-zinc-900">Add New Category</h2>
-              <p className="text-zinc-500 text-xs mt-0.5">Define a group tag for your products.</p>
-            </div>
-            <button 
-              onClick={resetCategoryForm}
-              className="p-2 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-zinc-700 cursor-pointer border-0 bg-transparent"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </header>
 
-          <form onSubmit={handleCategorySubmit} className="space-y-6">
+        <button
+          onClick={() => setShowCategoryForm(!showCategoryForm)}
+          className="flex items-center gap-2 bg-[#0071e3] hover:bg-[#005bb5] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer border-0"
+        >
+          {showCategoryForm ? <X className="h-4 w-4" /> : <FolderPlus className="h-4 w-4" />}
+          {showCategoryForm ? 'Cancel' : 'Create Product Category'}
+        </button>
+      </header>
+
+      {/* Form to Add New Category */}
+      {showCategoryForm && (
+        <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm space-y-4 max-w-xl">
+          <h3 className="font-bold text-sm text-zinc-900 border-b border-zinc-100 pb-2">Add New Product Category</h3>
+          <form onSubmit={handleCategorySubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Category Name</label>
+              <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Category Name</label>
               <input
                 type="text"
                 required
-                placeholder="e.g. iPad"
                 value={categoryForm.name}
                 onChange={(e) => setCategoryForm({...categoryForm, name: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:border-purple-650 focus:ring-1 focus:ring-purple-650 outline-none text-sm transition-all"
+                placeholder="e.g. iPhone 17 Pro, MacBook Air, Audio"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-sm font-semibold focus:border-[#0071e3] outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Description</label>
+              <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Description (Optional)</label>
               <textarea
-                rows="3"
-                placeholder="Enter a brief summary for items in this category..."
+                rows={2}
                 value={categoryForm.description}
                 onChange={(e) => setCategoryForm({...categoryForm, description: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:border-purple-650 focus:ring-1 focus:ring-purple-650 outline-none text-sm transition-all resize-none"
+                placeholder="Category description..."
+                className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 text-xs focus:border-[#0071e3] outline-none resize-none"
               />
             </div>
 
-            {/* Category Image upload widget */}
             <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
-                Category Icon/Image
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-                <div className="border-2 border-dashed border-zinc-200 hover:border-purple-600 rounded-2xl p-6 transition-all relative flex flex-col items-center justify-center bg-zinc-50/50">
-                  {uploadingCatImage ? (
-                    <div className="flex flex-col items-center justify-center text-zinc-500">
-                      <Loader2 className="h-5 w-5 animate-spin text-purple-650 mb-1" />
-                      <span className="text-[10px] font-semibold">Uploading...</span>
-                    </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center cursor-pointer">
-                      <Upload className="h-5 w-5 text-zinc-400 mb-1" />
-                      <span className="text-[11px] font-bold text-zinc-700">Upload Category Pic</span>
-                      <input 
-                        type="file" 
-                        accept="image/*"
-                        onChange={handleCategoryImageUpload}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
-
-                {categoryForm.image && (
-                  <div className="relative aspect-video sm:aspect-square rounded-2xl bg-white border border-zinc-150 overflow-hidden flex items-center justify-center p-1.5 max-h-32">
-                    <img src={categoryForm.image} alt="" className="object-cover h-full w-full rounded-lg" />
-                    <button
-                      type="button"
-                      onClick={() => setCategoryForm(prev => ({...prev, image: ''}))}
-                      className="absolute top-1.5 right-1.5 h-5 w-5 bg-black/75 text-white rounded-full flex items-center justify-center cursor-pointer transition-all hover:bg-black border-0"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                )}
+              <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Category Image / Icon</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  required
+                  value={categoryForm.image}
+                  onChange={(e) => setCategoryForm({...categoryForm, image: e.target.value})}
+                  placeholder="Image URL or upload..."
+                  className="flex-1 px-3.5 py-2 rounded-xl border border-zinc-200 text-xs focus:border-[#0071e3] outline-none"
+                />
+                <label className="flex items-center gap-1 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer">
+                  {uploadingCatImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                  Upload
+                  <input type="file" accept="image/*" className="hidden" onChange={handleCategoryImageUpload} />
+                </label>
               </div>
             </div>
 
-            {/* Actions buttons */}
-            <div className="flex justify-end gap-3 border-t border-zinc-100 pt-5 mt-8">
-              <button
-                type="button"
-                onClick={resetCategoryForm}
-                className="px-5 py-3 rounded-xl text-sm font-semibold border border-zinc-200 text-zinc-600 hover:bg-zinc-50 cursor-pointer bg-transparent text-center"
-              >
-                Cancel
-              </button>
+            <div className="flex justify-end pt-2">
               <button
                 type="submit"
-                disabled={loading || uploadingCatImage}
-                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/60 text-white px-6 py-3 rounded-xl text-sm font-semibold tracking-wide shadow-sm hover:shadow-md transition-all cursor-pointer border-0"
+                disabled={loading}
+                className="bg-[#0071e3] hover:bg-[#005bb5] text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border-0"
               >
-                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                Create Category
+                {loading ? 'Creating...' : 'Save Product Category'}
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Categories Grid */}
+      {loading && categories.length === 0 ? (
+        <div className="flex items-center justify-center py-12 text-zinc-400">
+          <Loader2 className="h-6 w-6 animate-spin mr-2 text-[#0071e3]" />
+          <span>Loading product categories...</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {categories.map((cat) => (
+            <div key={cat._id} className="bg-white border border-zinc-200 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-3 overflow-hidden">
+                <img src={cat.image} alt={cat.name} className="h-10 w-10 rounded-xl object-cover bg-zinc-100 shrink-0" />
+                <div className="truncate">
+                  <h4 className="font-bold text-xs text-zinc-900 truncate">{cat.name}</h4>
+                  <p className="text-[10px] text-zinc-400 truncate">{cat.slug}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => handleCategoryDelete(cat._id)}
+                className="p-1.5 text-rose-500 hover:text-rose-700 bg-rose-50 rounded-lg shrink-0 cursor-pointer"
+                title="Delete Category"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </div>

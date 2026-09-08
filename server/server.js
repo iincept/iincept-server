@@ -32,6 +32,7 @@ const path = require("path");
 
 app.use("/uploads", express.static(path.join(__dirname, "../client/public/uploads")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(express.static(path.join(__dirname, "../client/public")));
 
 // Routes
 const authRoutes = require("./routes/authRoutes");

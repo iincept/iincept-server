@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "admin:dev": "vite --config vite.admin.config.js",
+    "admin:build": "vite build --config vite.admin.config.js"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.12.0",

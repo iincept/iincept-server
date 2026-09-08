@@ -9,6 +9,7 @@ import { logout } from '../redux/authSlice';
 import { fetchProducts } from '../redux/productSlice';
 import { openCart, fetchCart } from '../redux/cartSlice';
 import { fetchWishlist } from '../redux/wishlistSlice';
+import axiosClient from '../services/axiosClient';
 
 const AppleIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -72,14 +73,16 @@ export default function Navbar() {
       /* FLOATING PILL NAV */
       .pill-nav-stage {
         position: sticky;
-        top: 20px;
+        top: 14px;
         z-index: 100;
         display: flex;
         justify-content: center;
         padding: 0 20px;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         width: 100%;
         pointer-events: none;
+        will-change: transform;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
       }
       .pill-nav-container {
         width: 100%;
@@ -88,25 +91,21 @@ export default function Navbar() {
         align-items: center;
         justify-content: space-between;
         gap: 32px;
-        padding: 10px 36px;
+        padding: 8px 28px;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.78) !important;
+        background: rgba(255, 255, 255, 0.82) !important;
         backdrop-filter: blur(16px) saturate(180%) !important;
         -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(0, 0, 0, 0.04) !important;
-        border: 1px solid rgba(255, 255, 255, 0.7) !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        height: 60px;
+        border: 1px solid rgba(255, 255, 255, 0.75) !important;
+        transition: background 0.2s ease, box-shadow 0.2s ease, padding 0.2s ease;
+        height: 56px;
         pointer-events: auto;
       }
-      .pill-nav-stage.shrink {
-        top: 12px;
-      }
       .pill-nav-stage.shrink .pill-nav-container {
-        padding: 6px 18px 6px 14px;
-        height: 52px;
-        box-shadow: 0 6px 20px rgba(20, 20, 20, 0.12);
-        background: rgba(255, 255, 255, 0.85) !important;
+        padding: 6px 20px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        background: rgba(255, 255, 255, 0.92) !important;
       }
       
       .pill-nav-container .cta-btn-pill {
@@ -145,13 +144,14 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 40) {
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      if (scrollY > 60) {
         setIsShrunk(true);
-      } else {
+      } else if (scrollY < 20) {
         setIsShrunk(false);
       }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -363,6 +363,55 @@ export default function Navbar() {
     });
   };
 
+  const resolveProductImage = (prod) => {
+    if (!prod) return '/iphone_category_v2.jpg';
+
+    let raw = null;
+
+    if (typeof prod.image === 'string' && prod.image.trim() && !prod.image.includes('mock-cloud') && prod.image !== '/avatar.png') {
+      raw = prod.image.trim();
+    } else if (Array.isArray(prod.images) && prod.images.length > 0) {
+      const validImg = prod.images.find(img => typeof img === 'string' && img.trim() && !img.includes('mock-cloud') && img !== '/avatar.png');
+      if (validImg) raw = validImg.trim();
+    }
+
+    if (!raw && Array.isArray(prod.variants) && prod.variants.length > 0) {
+      for (const v of prod.variants) {
+        if (!v) continue;
+        if (typeof v.image === 'string' && v.image.trim() && !v.image.includes('mock-cloud')) {
+          raw = v.image.trim();
+          break;
+        }
+        if (Array.isArray(v.images) && v.images.length > 0) {
+          const validVImg = v.images.find(img => typeof img === 'string' && img.trim() && !img.includes('mock-cloud'));
+          if (validVImg) {
+            raw = validVImg.trim();
+            break;
+          }
+        }
+      }
+    }
+
+    if (raw) {
+      if (!raw.startsWith('http://') && !raw.startsWith('https://') && !raw.startsWith('/')) {
+        return '/' + raw;
+      }
+      return raw;
+    }
+
+    const titleLower = (prod.title || prod.name || '').toLowerCase();
+    const catLower = (prod.category?.name || prod.category || '').toLowerCase();
+
+    if (titleLower.includes('mac') || catLower.includes('mac')) return '/macbook_category_v3.jpg';
+    if (titleLower.includes('ipad') || catLower.includes('ipad')) return '/ipad_category_v3.png';
+    if (titleLower.includes('watch') || catLower.includes('watch')) return '/watch_category_uploaded.png';
+    if (titleLower.includes('airpod') || catLower.includes('airpod')) return '/airpods_category_uploaded.png';
+    if (titleLower.includes('tv') || titleLower.includes('homepod') || catLower.includes('tv')) return '/tvhome_category_uploaded.png';
+    if (titleLower.includes('case') || titleLower.includes('charger') || catLower.includes('accessori') || titleLower.includes('power') || titleLower.includes('magsafe')) return '/accessories_category_uploaded.png';
+
+    return '/iphone_category_v2.jpg';
+  };
+
   const getCategoryProducts = (catKey) => {
     if (!products || products.length === 0) return [];
     const k = (catKey || '').toLowerCase();
@@ -455,45 +504,81 @@ export default function Navbar() {
   };
 
   const renderProductCategoryList = (catKey, catTitle, catPath, closeDropdown) => {
-    const config = CATEGORY_MODEL_MAP[catKey];
+    // Find matching item in dynamicNavItems
+    const matchedNavItem = dynamicNavItems.find(item => {
+      const nLower = (item.name || '').toLowerCase();
+      const kLower = (catKey || '').toLowerCase();
+      if (kLower === 'mac') return nLower.includes('mac');
+      if (kLower === 'ipad') return nLower.includes('ipad');
+      if (kLower === 'iphone') return nLower.includes('iphone');
+      if (kLower === 'watch') return nLower.includes('watch');
+      if (kLower === 'airpods') return nLower.includes('airpod');
+      if (kLower === 'tv-home') return nLower.includes('tv') || nLower.includes('home');
+      if (kLower === 'accessories') return nLower.includes('accessori');
+      if (kLower === 'applecare') return nLower.includes('applecare');
+      return false;
+    });
+
+    let config = null;
+    if (matchedNavItem && matchedNavItem.dropdownItems && matchedNavItem.dropdownItems.length > 0) {
+      const activeItems = matchedNavItem.dropdownItems.filter(d => d.isActive !== false);
+      if (activeItems.length > 0) {
+        config = {
+          title: `Explore ${matchedNavItem.name}`,
+          items: activeItems.map(d => ({
+            label: d.label,
+            path: d.path || catPath,
+            query: d.query || d.label,
+            image: d.image || '',
+            price: d.price || ''
+          }))
+        };
+      }
+    }
+
+    if (!config) {
+      config = CATEGORY_MODEL_MAP[catKey];
+    }
+
     const catProds = getCategoryProducts(catKey);
 
-    const handleItemHover = (queryStr, defaultLabel) => {
-      const explicitPreview = productPreviews[defaultLabel] || productPreviews[queryStr];
-
-      const matched = products?.find(p => {
-        const title = (p.title || p.name || '').toLowerCase();
-        const q = (queryStr || defaultLabel || '').toLowerCase();
-        return title.includes(q);
-      });
-
-      let img = null;
+    const handleItemHover = (queryStr, defaultLabel, customItem) => {
+      let img = customItem?.image || null;
       let name = defaultLabel;
-      let price = '';
-
-      if (matched) {
-        img = matched.images?.[0] || matched.image;
-        if (img?.includes('mock-cloud')) img = null;
-        name = matched.title || matched.name;
-        if (matched.price) price = `₹${matched.price.toLocaleString('en-IN')}`;
-      }
-
-      if (!img && explicitPreview) {
-        img = explicitPreview.image;
-        if (!price && explicitPreview.price) price = explicitPreview.price;
-        if (explicitPreview.name) name = explicitPreview.name;
-      }
+      let price = customItem?.price || '';
 
       if (!img) {
-        const qLower = (queryStr || defaultLabel || '').toLowerCase();
-        if (qLower.includes('neo')) img = '/mac_nav/macbook_neo.png';
-        else if (qLower.includes('air')) img = '/mac_nav/macbook_air.png';
-        else if (qLower.includes('pro') && (qLower.includes('mac') || qLower.includes('laptop'))) img = '/macbook_user_pro.png';
-        else if (qLower.includes('imac')) img = '/imac_studio_lifestyle.jpg';
-        else if (qLower.includes('mini')) img = '/mac_nav/mac_mini.png';
-        else if (qLower.includes('studio') && !qLower.includes('display')) img = '/mac_nav/mac_studio.png';
-        else if (qLower.includes('display')) img = '/mac_nav/mac_displays.png';
-        else img = '/macbook_category_v3.jpg';
+        const explicitPreview = productPreviews[defaultLabel] || productPreviews[queryStr];
+        const matched = products?.find(p => {
+          const title = (p.title || p.name || '').toLowerCase();
+          const q = (queryStr || defaultLabel || '').toLowerCase();
+          return title.includes(q);
+        });
+
+        if (matched) {
+          img = matched.images?.[0] || matched.image;
+          if (img?.includes('mock-cloud')) img = null;
+          if (!name) name = matched.title || matched.name;
+          if (!price && matched.price) price = `₹${matched.price.toLocaleString('en-IN')}`;
+        }
+
+        if (!img && explicitPreview) {
+          img = explicitPreview.image;
+          if (!price && explicitPreview.price) price = explicitPreview.price;
+          if (explicitPreview.name) name = explicitPreview.name;
+        }
+
+        if (!img) {
+          const qLower = (queryStr || defaultLabel || '').toLowerCase();
+          if (qLower.includes('neo')) img = '/mac_nav/macbook_neo.png';
+          else if (qLower.includes('air')) img = '/mac_nav/macbook_air.png';
+          else if (qLower.includes('pro') && (qLower.includes('mac') || qLower.includes('laptop'))) img = '/macbook_user_pro.png';
+          else if (qLower.includes('imac')) img = '/imac_studio_lifestyle.jpg';
+          else if (qLower.includes('mini')) img = '/mac_nav/mac_mini.png';
+          else if (qLower.includes('studio') && !qLower.includes('display')) img = '/mac_nav/mac_studio.png';
+          else if (qLower.includes('display')) img = '/mac_nav/mac_displays.png';
+          else img = '/macbook_category_v3.jpg';
+        }
       }
 
       setHoveredProduct({
@@ -512,23 +597,25 @@ export default function Navbar() {
         <div className="flex flex-col gap-1 max-h-[380px] overflow-y-auto pr-2">
           {config ? (
             <>
-              <Link
-                to={config.mainLink.path}
-                onMouseEnter={() => handleItemHover(catKey, config.mainLink.label)}
-                onClick={() => {
-                  closeDropdown();
-                  setHoveredProduct(null);
-                }}
-                className="text-[22px] md:text-[24px] font-bold text-[#1D1D1F] dark:text-white leading-tight tracking-tight hover:text-[#0071e3] transition-colors block py-0.5"
-              >
-                {config.mainLink.label}
-              </Link>
+              {config.mainLink && (
+                <Link
+                  to={config.mainLink.path}
+                  onMouseEnter={() => handleItemHover(catKey, config.mainLink.label, config.mainLink)}
+                  onClick={() => {
+                    closeDropdown();
+                    setHoveredProduct(null);
+                  }}
+                  className="text-[22px] md:text-[24px] font-bold text-[#1D1D1F] dark:text-white leading-tight tracking-tight hover:text-[#0071e3] transition-colors block py-0.5"
+                >
+                  {config.mainLink.label}
+                </Link>
+              )}
 
               {config.items.map((item, idx) => (
                 <Link
                   key={idx}
                   to={item.path}
-                  onMouseEnter={() => handleItemHover(item.query, item.label)}
+                  onMouseEnter={() => handleItemHover(item.query, item.label, item)}
                   onClick={() => {
                     closeDropdown();
                     setHoveredProduct(null);
@@ -686,7 +773,7 @@ export default function Navbar() {
     setIsProfileOpen(false);
     dispatch(logout());
     alert('Logged out successfully!');
-    navigate('/login');
+    navigate('/');
   };
 
   const handleSearchSubmit = (e) => {
@@ -803,7 +890,44 @@ export default function Navbar() {
     );
   };
 
-  const menuItems = [
+  const [dynamicNavItems, setDynamicNavItems] = useState(null);
+
+  useEffect(() => {
+    fetchHeaderCategories();
+  }, []);
+
+  const fetchHeaderCategories = async () => {
+    try {
+      const response = await axiosClient.get('/settings');
+      if (response.data && response.data.navbarMenuItems && response.data.navbarMenuItems.length > 0) {
+        setDynamicNavItems(response.data.navbarMenuItems.filter(c => c.isActive !== false));
+      } else if (response.data && response.data.appleCategories && response.data.appleCategories.length > 0) {
+        setDynamicNavItems(response.data.appleCategories.filter(c => c.isActive !== false));
+      } else {
+        // API returned no items — fall back to defaults
+        setDynamicNavItems([]);
+      }
+    } catch (err) {
+      console.error('Failed to load header categories:', err);
+      setDynamicNavItems([]);
+    }
+  };
+
+  const getCategoryPath = (name, customLink) => {
+    const lower = (name || '').toLowerCase();
+    if (lower.includes('applecare')) return '/applecare';
+    if (lower.includes('accessories')) return '/accessories';
+    if (lower.includes('iphone')) return '/iphone';
+    if (lower.includes('mac')) return '/macbook';
+    if (lower.includes('ipad')) return '/ipad';
+    if (lower.includes('watch')) return '/watch';
+    if (lower.includes('airpod')) return '/airpods';
+    if (lower.includes('tv')) return '/tv-home';
+    return customLink || '/shop';
+  };
+
+  const defaultMenuItems = [
+    { label: 'New Arrivals', path: '/shop?sort=newest' },
     { label: 'Mac', path: '/macbook' },
     { label: 'iPad', path: '/ipad' },
     { label: 'iPhone', path: '/iphone' },
@@ -811,10 +935,21 @@ export default function Navbar() {
     { label: 'AirPods', path: '/airpods' },
     { label: 'TV & Home', path: '/tv-home' },
     { label: 'Accessories', path: '/accessories' },
-    { label: 'AppleCare', path: '/applecare' },
-    { label: 'Compare', path: '/compare' },
-    { label: 'Bulk Orders', path: '/bulk-orders' }
+    { label: 'AppleCare+', path: '/applecare' }
   ];
+
+  // null = loading (show nothing), [] = loaded but empty (show defaults), [...] = admin items
+  const activeMenuItems = dynamicNavItems === null
+    ? [] // still loading — render nothing to avoid flash of defaults + admin items
+    : dynamicNavItems.length > 0
+      ? dynamicNavItems.map(c => ({
+          label: c.name,
+          path: c.link || getCategoryPath(c.name, c.link)
+        }))
+      : defaultMenuItems;
+
+  const matchedProducts = getMatchingProducts(searchQuery);
+  const displayProducts = matchedProducts.slice(0, 6);
 
   return (
     <>
@@ -882,7 +1017,7 @@ export default function Navbar() {
                   <div className="space-y-4 text-left">
                     <div className="flex items-center justify-between border-b border-zinc-150 pb-3">
                       <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
-                        Products Matching "{searchQuery}" ({getMatchingProducts(searchQuery).length})
+                        Products Matching "{searchQuery}" ({matchedProducts.length})
                       </span>
                       <Link
                         to={`/search?q=${encodeURIComponent(searchQuery)}`}
@@ -893,36 +1028,27 @@ export default function Navbar() {
                       </Link>
                     </div>
 
-                    {getMatchingProducts(searchQuery).length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
-                        {getMatchingProducts(searchQuery).map((prod) => {
-                          const partNum = prod.partNumber || prod.variants?.[0]?.partNumber || null;
-                          const prodImage = prod.images?.[0] || prod.image || '/iphone_category_v2.jpg';
+                    {displayProducts.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-h-[460px] overflow-y-auto pr-1.5">
+                        {displayProducts.map((prod) => {
+                          const prodImage = resolveProductImage(prod);
                           return (
                             <Link
                               key={prod._id || prod.id}
                               to={`/product/${prod._id || prod.id}`}
                               onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
-                              className="group p-3 rounded-2xl border border-zinc-200/70 hover:border-zinc-900 bg-white hover:bg-zinc-50/80 transition-all flex items-center gap-3.5 shadow-2xs"
+                              className="group p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-zinc-200/80 hover:border-zinc-900 bg-white hover:bg-zinc-50/90 transition-all flex items-center gap-4 sm:gap-5 shadow-xs hover:shadow-md"
                             >
-                              <div className="h-14 w-14 rounded-xl bg-zinc-50 border border-zinc-150 p-1 flex items-center justify-center shrink-0 overflow-hidden">
-                                <img src={prodImage} alt="" className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform" />
+                              <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl bg-white border border-zinc-200 p-2 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs group-hover:border-zinc-300">
+                                <img src={prodImage} alt="" className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" />
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="text-xs font-extrabold text-zinc-900 truncate leading-snug">
-                                  <span>{prod.title || prod.name}</span>
-                                  {partNum && (
-                                    <span className="font-mono font-extrabold text-black ml-1.5 inline-block">
-                                      {partNum}
-                                    </span>
-                                  )}
+                              <div className="flex-1 min-w-0 space-y-1.5">
+                                <div className="text-sm sm:text-base font-extrabold text-zinc-900 leading-snug line-clamp-2">
+                                  {prod.title || prod.name}
                                 </div>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider bg-zinc-100 px-2 py-0.5 rounded-md">
                                     {prod.category?.name || prod.category || prod.brand || 'Apple'}
-                                  </span>
-                                  <span className="text-xs font-bold text-zinc-900 font-sans">
-                                    ₹{(prod.price || prod.variants?.[0]?.price || 0).toLocaleString('en-IN')}
                                   </span>
                                 </div>
                               </div>
@@ -960,8 +1086,10 @@ export default function Navbar() {
 
             {/* Center: Navigation Menu (Spacious Khule Khule Layout) */}
             <div className="hidden lg:flex items-center justify-center gap-7 xl:gap-11 2xl:gap-14 text-[11px] font-extrabold tracking-widest relative flex-1 mx-2">
-              {menuItems.map((item, idx) => {
-                if (item.label === 'Mac') {
+              {activeMenuItems.map((item, idx) => {
+                const labelLower = (item.label || '').toLowerCase();
+
+                if (labelLower.includes('mac')) {
                   return (
                     <button
                       key={idx}
@@ -969,15 +1097,15 @@ export default function Navbar() {
                       onMouseLeave={handleMacMouseLeave}
                       onClick={() => {
                         closeAllDropdowns();
-                        navigate(item.path);
+                        navigate('/macbook');
                       }}
-                      className={getNavBtnClass(isMacDropdownOpen)}
+                      className={getNavBtnClass(isMacDropdownOpen || location.pathname === '/macbook')}
                     >
-                      Mac
+                      {item.label}
                     </button>
                   );
                 }
-                if (item.label === 'iPad') {
+                if (labelLower.includes('ipad')) {
                   return (
                     <button
                       key={idx}
@@ -985,15 +1113,15 @@ export default function Navbar() {
                       onMouseLeave={handleIpadMouseLeave}
                       onClick={() => {
                         closeAllDropdowns();
-                        navigate(item.path);
+                        navigate('/ipad');
                       }}
-                      className={getNavBtnClass(isIpadDropdownOpen)}
+                      className={getNavBtnClass(isIpadDropdownOpen || location.pathname === '/ipad')}
                     >
-                      iPad
+                      {item.label}
                     </button>
                   );
                 }
-                if (item.label === 'iPhone') {
+                if (labelLower.includes('iphone')) {
                   return (
                     <button
                       key={idx}
@@ -1001,15 +1129,15 @@ export default function Navbar() {
                       onMouseLeave={handleIphoneMouseLeave}
                       onClick={() => {
                         closeAllDropdowns();
-                        navigate(item.path);
+                        navigate('/iphone');
                       }}
-                      className={getNavBtnClass(isIphoneDropdownOpen)}
+                      className={getNavBtnClass(isIphoneDropdownOpen || location.pathname === '/iphone')}
                     >
-                      iPhone
+                      {item.label}
                     </button>
                   );
                 }
-                if (item.label === 'Watch') {
+                if (labelLower.includes('watch')) {
                   return (
                     <button
                       key={idx}
@@ -1017,15 +1145,15 @@ export default function Navbar() {
                       onMouseLeave={handleWatchMouseLeave}
                       onClick={() => {
                         closeAllDropdowns();
-                        navigate(item.path);
+                        navigate('/watch');
                       }}
-                      className={getNavBtnClass(isWatchDropdownOpen)}
+                      className={getNavBtnClass(isWatchDropdownOpen || location.pathname === '/watch')}
                     >
-                      Watch
+                      {item.label}
                     </button>
                   );
                 }
-                if (item.label === 'AirPods') {
+                if (labelLower.includes('airpod')) {
                   return (
                     <button
                       key={idx}
@@ -1033,15 +1161,15 @@ export default function Navbar() {
                       onMouseLeave={handleAirpodsMouseLeave}
                       onClick={() => {
                         closeAllDropdowns();
-                        navigate(item.path);
+                        navigate('/airpods');
                       }}
-                      className={getNavBtnClass(isAirpodsDropdownOpen)}
+                      className={getNavBtnClass(isAirpodsDropdownOpen || location.pathname === '/airpods')}
                     >
-                      AirPods
+                      {item.label}
                     </button>
                   );
                 }
-                if (item.label === 'TV & Home') {
+                if (labelLower.includes('tv') || labelLower.includes('home')) {
                   return (
                     <button
                       key={idx}
@@ -1049,31 +1177,15 @@ export default function Navbar() {
                       onMouseLeave={handleTvMouseLeave}
                       onClick={() => {
                         closeAllDropdowns();
-                        navigate(item.path);
+                        navigate('/tv-home');
                       }}
-                      className={getNavBtnClass(isTvDropdownOpen)}
+                      className={getNavBtnClass(isTvDropdownOpen || location.pathname === '/tv-home')}
                     >
-                      TV & Home
+                      {item.label}
                     </button>
                   );
                 }
-                if (item.label === 'Entertainment') {
-                  return (
-                    <button
-                      key={idx}
-                      onMouseEnter={handleEntertainmentMouseEnter}
-                      onMouseLeave={handleEntertainmentMouseLeave}
-                      onClick={() => {
-                        closeAllDropdowns();
-                        navigate(item.path);
-                      }}
-                      className={getNavBtnClass(isEntertainmentDropdownOpen)}
-                    >
-                      Entertainment
-                    </button>
-                  );
-                }
-                if (item.label === 'Accessories') {
+                if (labelLower.includes('accessori')) {
                   return (
                     <button
                       key={idx}
@@ -1081,33 +1193,15 @@ export default function Navbar() {
                       onMouseLeave={handleAccessoriesMouseLeave}
                       onClick={() => {
                         closeAllDropdowns();
-                        navigate(item.path);
+                        navigate('/accessories');
                       }}
-                      className={getNavBtnClass(isAccessoriesDropdownOpen)}
+                      className={getNavBtnClass(isAccessoriesDropdownOpen || location.pathname === '/accessories')}
                     >
-                      Accessories
+                      {item.label}
                     </button>
                   );
                 }
-                if (item.label === 'AppleCare') {
-                  return (
-                    <button
-                      key={idx}
-                      onMouseEnter={() => {
-                        clearAllTimeouts();
-                        closeAllDropdowns();
-                      }}
-                      onClick={() => {
-                        closeAllDropdowns();
-                        navigate(item.path);
-                      }}
-                      className={getNavBtnClass(location.pathname === '/applecare')}
-                    >
-                      AppleCare
-                    </button>
-                  );
-                }
-                if (item.label === 'Bulk Pricing') {
+                if (labelLower.includes('bulk pricing')) {
                   return (
                     <a
                       key={idx}
@@ -1127,11 +1221,11 @@ export default function Navbar() {
                       }}
                       className="cta-btn-pill"
                     >
-                      Bulk Pricing
+                      {item.label}
                     </a>
                   );
                 }
-                if (item.label === 'Support') {
+                if (labelLower.includes('support')) {
                   return (
                     <button
                       key={idx}
@@ -1143,11 +1237,28 @@ export default function Navbar() {
                       }}
                       className={getNavBtnClass(isSupportDropdownOpen)}
                     >
-                      Support
+                      {item.label}
                     </button>
                   );
                 }
-                return null;
+
+                // Fallback for ANY custom/new category added in Admin Panel (e.g. New Arrivals, Offers, etc.)
+                return (
+                  <button
+                    key={idx}
+                    onMouseEnter={() => {
+                      clearAllTimeouts();
+                      closeAllDropdowns();
+                    }}
+                    onClick={() => {
+                      closeAllDropdowns();
+                      navigate(item.path || '/shop');
+                    }}
+                    className={getNavBtnClass(location.pathname === item.path)}
+                  >
+                    {item.label}
+                  </button>
+                );
               })}
 
             </div>
@@ -1169,89 +1280,7 @@ export default function Navbar() {
               </button>
 
 
-              {/* Profile settings dropdown / Login button */}
-              {isAuthenticated ? (
-                <div className="relative">
-                  <button
-                    onClick={() => { setIsProfileOpen(!isProfileOpen); closeAllDropdowns(); }}
-                    onMouseEnter={() => {
-                      clearAllTimeouts();
-                      closeAllDropdowns();
-                    }}
-                    className={`flex items-center gap-1 p-1 rounded-full transition-all duration-200 focus:outline-none cursor-pointer bg-transparent border-0 ${isIphonePage ? 'text-zinc-700 hover:text-black hover:bg-zinc-100' : 'text-zinc-350 hover:text-white hover:bg-zinc-900'}`}
-                  >
-                    <div className={`h-7 w-7 rounded-full flex items-center justify-center font-bold text-xs ${isIphonePage ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-950'}`}>
-                      {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </div>
-                    <ChevronDown className={`h-3.5 w-3.5 text-zinc-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
-                  </button>
 
-                  {isProfileOpen && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setIsProfileOpen(false)} />
-                      <div className="absolute right-0 mt-3 w-52 rounded-2xl bg-zinc-900 border border-zinc-800 p-2 shadow-2xl z-20 animate-in fade-in slide-in-from-top-2 duration-200 text-left">
-                        <div className="px-3 py-2 border-b border-zinc-800 text-zinc-500 text-[10px] font-extrabold uppercase tracking-wider">
-                          Settings
-                        </div>
-                        <Link
-                          to="/profile"
-                          onClick={() => setIsProfileOpen(false)}
-                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-zinc-300 hover:text-white rounded-lg hover:bg-zinc-805/60 rounded-xl transition-colors"
-                        >
-                          <User className="h-4 w-4 text-zinc-400" />
-                          My Profile
-                        </Link>
-                        <Link
-                          to="/profile?tab=orders"
-                          onClick={() => setIsProfileOpen(false)}
-                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-zinc-300 hover:text-white rounded-lg hover:bg-zinc-805/60 rounded-xl transition-colors"
-                        >
-                          <Package className="h-4 w-4 text-zinc-400" />
-                          Track Orders
-                        </Link>
-                        <Link
-                          to="/checkout"
-                          onClick={() => setIsProfileOpen(false)}
-                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-zinc-300 hover:text-white rounded-lg hover:bg-zinc-805/60 rounded-xl transition-colors"
-                        >
-                          <ShieldCheck className="h-4 w-4 text-zinc-400" />
-                          Checkout
-                        </Link>
-                        {user?.role === 'admin' && (
-                          <Link
-                            to="/admin/dashboard"
-                            onClick={() => setIsProfileOpen(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-amber-400 hover:text-amber-350 rounded-lg hover:bg-amber-950/20 transition-colors"
-                          >
-                            <Settings className="h-4 w-4 text-amber-400" />
-                            Admin Panel
-                          </Link>
-                        )}
-                        <hr className="my-1 border-zinc-800" />
-                        <button
-                          onClick={handleLogout}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-rose-400 hover:text-rose-350 rounded-lg hover:bg-rose-950/20 transition-colors text-left cursor-pointer bg-transparent border-0"
-                        >
-                          <LogOut className="h-4 w-4" />
-                          Logout Account
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <Link
-                  to="/login"
-                  onMouseEnter={() => {
-                    clearAllTimeouts();
-                    closeAllDropdowns();
-                  }}
-                  className={`p-1.5 rounded-full transition-colors ${isIphonePage ? 'hover:text-black hover:bg-zinc-150 hover:bg-zinc-100' : 'hover:text-white hover:bg-zinc-900'}`}
-                  aria-label="Login"
-                >
-                  <User className="h-5 w-5" />
-                </Link>
-              )}
 
               {/* Cart Icon with count badge */}
               <button

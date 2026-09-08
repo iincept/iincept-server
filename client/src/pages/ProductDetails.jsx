@@ -51,15 +51,29 @@ export default function ProductDetails() {
   const [newComment, setNewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
 
-  // Pincode and Recents states
+  // Pincode states
   const [pincode, setPincode] = useState('');
   const [pincodeStatus, setPincodeStatus] = useState(null);
   const [pincodeMessage, setPincodeMessage] = useState('');
-  const [recentlyViewed, setRecentlyViewed] = useState([]);
+
+  // Product AppleCare state
+  const [productAppleCare, setProductAppleCare] = useState(null);
 
   useEffect(() => {
     fetchReviews();
+    fetchAppleCareSettings();
   }, [id]);
+
+  const fetchAppleCareSettings = async () => {
+    try {
+      const response = await axiosClient.get('/settings');
+      if (response.data?.productAppleCare) {
+        setProductAppleCare(response.data.productAppleCare);
+      }
+    } catch (err) {
+      console.error('Failed to load Product AppleCare settings:', err);
+    }
+  };
 
   const fetchReviews = async () => {
     try {
@@ -101,33 +115,6 @@ export default function ProductDetails() {
       dispatch(fetchProducts());
     }
   }, [dispatch, products]);
-
-  // Track recently viewed products
-  useEffect(() => {
-    if (currentProduct && currentProduct._id) {
-      const stored = localStorage.getItem('iincept_recent_views');
-      let recents = stored ? JSON.parse(stored) : [];
-      recents = recents.filter(x => x !== currentProduct._id);
-      recents.unshift(currentProduct._id);
-      recents = recents.slice(0, 8); // Keep last 8 unique IDs
-      localStorage.setItem('iincept_recent_views', JSON.stringify(recents));
-    }
-  }, [currentProduct]);
-
-  // Filter recently viewed details locally from catalog
-  useEffect(() => {
-    if (products && products.length > 0) {
-      const stored = localStorage.getItem('iincept_recent_views');
-      if (stored) {
-        const ids = JSON.parse(stored);
-        const filtered = ids
-          .map(recentId => products.find(p => (p._id || p.id) === recentId))
-          .filter(Boolean)
-          .filter(p => (p._id || p.id) !== id);
-        setRecentlyViewed(filtered.slice(0, 4));
-      }
-    }
-  }, [products, id]);
 
   // Pincode calculation helper
   const checkPincodeDelivery = () => {
@@ -207,6 +194,72 @@ export default function ProductDetails() {
     return matchedProduct || null;
   };
 
+  const getCategoryGroup = (prod) => {
+    if (!prod) return 'other';
+    const catObj = prod.category;
+    const catId = (catObj && typeof catObj === 'object') ? (catObj._id || catObj.id || '') : (typeof catObj === 'string' ? catObj : '');
+    const catName = (catObj && typeof catObj === 'object') ? (catObj.name || catObj.title || '') : (typeof catObj === 'string' ? catObj : '');
+    const catSlug = (catObj && typeof catObj === 'object') ? (catObj.slug || '') : '';
+
+    const directTitle = prod.title || prod.name || '';
+    const variantTitles = (prod.variants || []).map(v => `${v.title || ''} ${v.displayTitle || ''} ${v.name || ''}`).join(' ');
+    const desc = prod.description || '';
+    const brand = prod.brand || '';
+
+    const fullText = `${catId} ${catName} ${catSlug} ${directTitle} ${variantTitles} ${desc} ${brand}`.toLowerCase();
+
+    // 1. Check for accessories FIRST (keyboards, power adapters, chargers, cables, cases, sleeve, magsafe, etc.)
+    const accessoryKeywords = [
+      'keyboard', 'keypad', 'mouse', 'trackpad', 'adapter', 'charger', 'charging', 
+      'cable', 'cord', 'connector', 'case', 'sleeve', 'cover', 'bag', 'backpack', 
+      'folio', 'display', 'monitor', 'screen protector', 'guard', 'protector', 
+      'film', 'skin', 'stand', 'mount', 'hub', 'dock', 'dongle', 'converter', 
+      'pencil', 'stylus', 'strap', 'band', 'loop', 'magsafe', 'power', 'accessories', 
+      'audio', 'headphone', 'earphone', 'earbuds', 'speaker'
+    ];
+
+    const isAccessory = accessoryKeywords.some(kw => fullText.includes(kw)) ||
+                        catName.toLowerCase().includes('accessories') ||
+                        catSlug.toLowerCase().includes('accessories');
+
+    if (isAccessory) {
+      return 'accessories';
+    }
+
+    // 2. Pure Mac Laptops & Computers
+    if (
+      fullText.includes('macbook') ||
+      fullText.includes('mac mini') ||
+      fullText.includes('imac') ||
+      fullText.includes('mac studio') ||
+      fullText.includes('mac pro') ||
+      fullText.includes('laptops & pcs') ||
+      fullText.includes('laptops-pcs') ||
+      fullText.includes('macbook air') ||
+      fullText.includes('macbook pro') ||
+      fullText.includes('macbook neo')
+    ) {
+      return 'mac';
+    }
+
+    if (fullText.includes('iphone') || fullText.includes('smartphones')) {
+      return 'iphone';
+    }
+    if (fullText.includes('ipad') || fullText.includes('tablets')) {
+      return 'ipad';
+    }
+    if (fullText.includes('watch') || fullText.includes('wearable')) {
+      return 'watch';
+    }
+    if (fullText.includes('airpod') || fullText.includes('premium audio')) {
+      return 'airpods';
+    }
+    if (fullText.includes('tv') || fullText.includes('homepod')) {
+      return 'tv-home';
+    }
+    return catId || catName || 'other';
+  };
+
   const localProduct = getProductFromStore(id);
   const product = currentProduct || localProduct;
 
@@ -227,26 +280,34 @@ export default function ProductDetails() {
       "titanium": "#cbd5e1",
       "white": "#ffffff",
       "gold": "#e5c158",
-      "pink": "#ec4899",
+      "pink": "#f4a2b2",
       "black": "#111111",
-      "orange": "#ff9f68",
-      "orenge": "#ff9f68",
+      "orange": "#f4aa7a",
+      "orenge": "#f4aa7a",
       "cosmic orange": "#d9a07a",
-      "blue": "#0071E3",
+      "blue": "#6ea3d9",
       "red": "#e0115f",
       "midnight": "#1e293b",
       "light blue": "#bfdbfe",
       "sky blue": "#bae6fd",
-      "lavender": "#e9d5ff",
-      "green": "#bbf7d0",
+      "lavender": "#c5b8e8",
+      "green": "#78c59b",
       "dark gray": "#3f3f46",
       "natural titanium": "#a39e99",
       "natural": "#a39e99",
       "black titanium": "#232426",
       "white titanium": "#f2f1ed",
       "deep purple": "#3b224c",
-      "purple": "#a855f7",
-      "yellow": "#eab308"
+      "purple": "#a98ed4",
+      "yellow": "#f0d17b",
+      // iMac M4 specific
+      "imac blue": "#6ea3d9",
+      "imac green": "#78c59b",
+      "imac pink": "#f4a2b2",
+      "imac purple": "#a98ed4",
+      "imac yellow": "#f0d17b",
+      "imac orange": "#f4aa7a",
+      "imac silver": "#e0e0e2"
     };
     const lowerVal = cValStr.toLowerCase().replace(/\s+/g, ' ').trim();
     return PDP_COLOR_MAP[lowerVal] || '#cbd5e1';
@@ -595,6 +656,7 @@ export default function ProductDetails() {
     }
 
     // 3. Dynamic default fallback
+    const pTitle = (product?.name || product?.title || '').toLowerCase();
     const rStr = (selectedRam || '').toString().toLowerCase();
     const sStr = (selectedStorage || '').toString().toLowerCase();
 
@@ -603,23 +665,30 @@ export default function ProductDetails() {
     const is512 = sStr.includes('512');
     const is1TB = sStr.includes('1tb') || sStr.includes('1024') || sStr.includes('1 tb');
 
+    if (pTitle.includes('imac') || pTitle.includes('24-inch')) {
+      if (is24 || is1TB || (is16 && is512)) {
+        return 'Apple M4 chip with 10‑core CPU and 10‑core GPU';
+      }
+      return 'Apple M4 chip with 8‑core CPU and 8‑core GPU';
+    }
+
     if (is24 && is1TB) {
-      return 'Apple M5 chip with 10‑core CPU and 10‑core GPU';
+      return 'Apple M4 chip with 10‑core CPU and 10‑core GPU';
     }
 
     if (is16 && is1TB) {
-      return 'Apple M5 chip with 10‑core CPU and 10‑core GPU';
+      return 'Apple M4 chip with 10‑core CPU and 10‑core GPU';
     }
 
     if (is16 && is512) {
-      return 'Apple M5 chip with 10‑core CPU and 10‑core GPU';
+      return 'Apple M4 chip with 10‑core CPU and 10‑core GPU';
     }
 
     if (is24 || is16 || is1TB || sStr.includes('2tb')) {
-      return 'Apple M5 chip with 10‑core CPU and 10‑core GPU';
+      return 'Apple M4 chip with 10‑core CPU and 10‑core GPU';
     }
 
-    return 'Apple M5 chip with 8‑core CPU and 8‑core GPU';
+    return 'Apple M4 chip with 8‑core CPU and 8‑core GPU';
   };
 
   // Helper to extract active variant based on current selectors
@@ -777,7 +846,6 @@ export default function ProductDetails() {
       appleCare: selectedAppleCare,
       stock: product.stock || 10
     }));
-    alert(`Added ${cleanProductTitle(product.name || product.title)} (${nameDetails}) to Order!`);
   };
 
   const handleRequestBulkQuote = () => {
@@ -924,9 +992,36 @@ export default function ProductDetails() {
         .swatch.active { border-color: transparent; }
         .swatch.active:hover { box-shadow: 0 0 0 2px #0071E3, 0 0 0 4px #ffffff !important; }
 
-        .optrow { display: flex; gap: 10px; flex-wrap: wrap; }
-        .opt { border: 1px solid var(--line); padding: 12px 18px; border-radius: 8px; font-size: 13.5px; cursor: pointer; transition: all .15s ease; background: #fff; text-align: left; min-width: 110px; }
-        .opt.active, .opt:hover { border-color: var(--paper); background: var(--ink-2); font-weight: 600; }
+        .optrow { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .opt {
+          border: 1.5px solid rgba(0, 0, 0, 0.14);
+          padding: 12px 18px;
+          border-radius: 12px;
+          font-size: 13.5px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+          background: #ffffff;
+          color: #1d1d1f;
+          text-align: center;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          box-sizing: border-box;
+          user-select: none;
+          min-height: 48px;
+        }
+        .opt:hover {
+          border-color: #1d1d1f;
+          background: #f5f5f7;
+        }
+        .opt.active {
+          border-color: #1d1d1f;
+          background: #f5f5f7;
+          color: #1d1d1f;
+          font-weight: 700;
+          box-shadow: 0 0 0 1px #1d1d1f;
+        }
         .opt .sub { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
 
         .acplans { display: flex; flex-direction: column; gap: 10px; }
@@ -1094,9 +1189,21 @@ export default function ProductDetails() {
                     else bgVal = cObj.name || '#1D1D1F';
                   }
 
+                  // Detect if this is an iMac product for two-tone Apple swatch chips
+                  const isImacProduct = (product?.title || product?.name || '').toLowerCase().includes('imac');
+
                   let swatchBgImage = 'none';
                   if (cObj.swatchImage || cObj.swatch) {
                     swatchBgImage = `url(${cObj.swatchImage || cObj.swatch})`;
+                  } else if (isImacProduct) {
+                    // iMac M4 two-tone swatch SVGs
+                    if (cNameLower.includes('blue')) swatchBgImage = 'url(/imac_blue_swatch.svg)';
+                    else if (cNameLower.includes('pink')) swatchBgImage = 'url(/imac_pink_swatch.svg)';
+                    else if (cNameLower.includes('purple') || cNameLower.includes('lavender')) swatchBgImage = 'url(/imac_purple_swatch.svg)';
+                    else if (cNameLower.includes('green')) swatchBgImage = 'url(/imac_green_swatch.svg)';
+                    else if (cNameLower.includes('yellow') || cNameLower.includes('citrus')) swatchBgImage = 'url(/imac_yellow_swatch.svg)';
+                    else if (cNameLower.includes('orange')) swatchBgImage = 'url(/imac_orange_swatch.svg)';
+                    else if (cNameLower.includes('silver') || cNameLower.includes('white')) swatchBgImage = 'url(/imac_silver_swatch.svg)';
                   } else if (isSpaceBlack) {
                     swatchBgImage = 'url(/space_black_swatch.png)';
                   } else if (isPinkBlush) {
@@ -1267,58 +1374,84 @@ export default function ProductDetails() {
               </div>
             </div>
 
+            {/* Add AppleCare+ Official Card Widget */}
+            {productAppleCare?.isEnabled !== false && (() => {
+              const catName = product?.category?.name || 'Mac';
+              const hasSettings = productAppleCare !== null;
+
+              const title = hasSettings 
+                ? (productAppleCare.title ?? 'Add AppleCare+') 
+                : 'Add AppleCare+';
+
+              const override = productAppleCare?.categoryPrices?.find(
+                c => c.categoryName && c.categoryName.toLowerCase() === catName.toLowerCase()
+              );
+
+              const monthlyText = (override && override.monthlyPrice !== '')
+                ? override.monthlyPrice
+                : (hasSettings ? (productAppleCare.monthlyPriceText ?? '') : 'From ₹2817.00/mo.◊');
+
+              const mrpText = (override && override.mrpPrice !== '')
+                ? override.mrpPrice
+                : (hasSettings ? (productAppleCare.mrpText ?? '') : 'or MRP ₹16900.00 (inclusive of all taxes)');
+
+              const features = hasSettings && Array.isArray(productAppleCare.features)
+                ? productAppleCare.features
+                : [
+                    'Unlimited repairs for accidental damage protection‡',
+                    'Apple-certified repairs using genuine Apple parts',
+                    '{category}, battery and included accessories covered',
+                    'Priority access to Apple experts'
+                  ];
+
+              if (hasSettings && !title && !monthlyText && !mrpText && features.length === 0) {
+                return null;
+              }
+
+              return (
+                <div className="bg-white border border-zinc-200 rounded-3xl p-5 sm:p-6 my-5 shadow-xs text-left select-none relative">
+                  {title && (
+                    <div className="flex items-center gap-2 mb-1">
+                      <svg className="w-5 h-5 fill-[#E30000] shrink-0" viewBox="0 0 170 170">
+                        <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.34.13-9.04-1.9-14.1-6.1-3.37-2.73-7.29-7.38-11.77-13.97-6.53-9.59-11.75-20.47-15.66-32.65-3.92-12.18-5.88-23.75-5.88-34.7 0-14.4 3.73-26.17 11.19-35.31 7.46-9.14 16.82-13.82 28.08-14.04 4.58 0 9.77 1.19 15.58 3.58 5.81 2.39 9.87 3.58 12.18 3.58 2.12 0 6.28-1.25 12.48-3.75 6.2-2.5 11.21-3.64 15.03-3.41 12.18.54 21.84 5.35 28.98 14.42-10.77 6.53-16.03 15.45-15.78 26.77.25 8.92 3.82 16.5 10.72 22.74 6.9 6.24 15.08 9.71 24.54 10.42-2.39 7.07-5.55 14.1-9.48 21.09zM119.22 31.62c0-7.39 2.65-14.46 7.95-21.21 5.3-6.75 11.95-10.41 19.95-10.98.22.98.33 1.96.33 2.94 0 7.29-2.72 14.37-8.17 21.24-5.45 6.87-12.14 10.59-20.06 11.16-.07-1.04-.1-2.09-.1-3.15z" />
+                      </svg>
+                      <h3 className="text-xl sm:text-2xl font-bold text-zinc-900 leading-tight tracking-tight">
+                        {title}
+                      </h3>
+                    </div>
+                  )}
+
+                  {(monthlyText || mrpText) && (
+                    <div className="mt-1.5 space-y-0.5">
+                      {monthlyText && <p className="text-sm sm:text-base font-bold text-zinc-900">{monthlyText}</p>}
+                      {mrpText && <p className="text-xs sm:text-sm text-zinc-600 font-medium">{mrpText}</p>}
+                    </div>
+                  )}
+
+                  {features.length > 0 && (
+                    <>
+                      <hr className="my-4 border-zinc-200" />
+
+                      <ul className="space-y-2.5 text-xs sm:text-sm text-zinc-800 font-medium">
+                        {features.map((ft, idx) => (
+                          <li key={idx} className="flex items-start gap-2.5">
+                            <span className="text-zinc-900 font-bold">•</span>
+                            <span>{ft.replace('{category}', catName)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+
             {/* Action Buttons */}
             <div className="btnrow">
               <button onClick={handleAddToCart} className="btn btn-dark">Add to Order →</button>
               <button onClick={handleRequestBulkQuote} className="btn btn-line flex items-center justify-center gap-2">
                 Request to WhatsApp
               </button>
-            </div>
-
-            {/* PDP Notes */}
-            <div className="pdp-note">
-              <span className="dot"></span>
-              <span>Bulk pricing automatically applies at checkout for 10+ units.</span>
-            </div>
-            <div className="pdp-note">
-              <span className="dot"></span>
-              <span>Delivered pan India, tracked door to door, 2–4 business days.</span>
-            </div>
-            <div className="pdp-note">
-              <span className="dot"></span>
-              <span>GST invoice and Apple Authorised Reseller warranty included.</span>
-            </div>
-
-            {/* Pincode Checker Card */}
-            <div className="mt-6 p-4 border border-zinc-150 rounded-2xl bg-zinc-50/50 space-y-3">
-              <label className="text-[10px] font-extrabold uppercase text-zinc-450 tracking-wider block">Pincode Delivery Eligibility</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  maxLength={6}
-                  value={pincode}
-                  onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-                  placeholder="Enter 6-digit Pincode"
-                  className="bg-white border border-zinc-200 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-800 flex-grow focus:outline-none focus:border-zinc-450"
-                />
-                <button
-                  type="button"
-                  onClick={checkPincodeDelivery}
-                  className="bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer border-0"
-                >
-                  Verify
-                </button>
-              </div>
-              {pincodeStatus && (
-                <div className={`p-2.5 rounded-xl text-[11px] font-semibold border ${pincodeStatus === 'error'
-                  ? 'bg-rose-50 text-rose-700 border-rose-100'
-                  : pincodeStatus === 'metro'
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                    : 'bg-blue-50 text-[#0071e3] border-blue-100'
-                  }`}>
-                  {pincodeMessage}
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -1513,50 +1646,44 @@ export default function ProductDetails() {
                 )}
               </div>
 
-              {/* Write a review form for logged in users */}
-              {isAuthenticated ? (
-                <form onSubmit={handleReviewSubmit} className="p-6 border border-zinc-200 rounded-2xl bg-zinc-50/50 space-y-4 text-left">
-                  <h3 className="font-bold text-sm text-zinc-900 uppercase tracking-wide">Write a Customer Review</h3>
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider block">Select Star Rating</label>
-                    <div className="flex gap-1.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          type="button"
-                          key={star}
-                          onClick={() => setNewRating(star)}
-                          className="text-zinc-300 hover:text-amber-500 cursor-pointer p-0 bg-transparent border-none"
-                        >
-                          <Star className={`h-6 w-6 ${star <= newRating ? 'fill-amber-500 text-amber-500' : 'text-zinc-300'}`} />
-                        </button>
-                      ))}
-                    </div>
+              {/* Write a review form */}
+              <form onSubmit={handleReviewSubmit} className="p-6 border border-zinc-200 rounded-2xl bg-zinc-50/50 space-y-4 text-left">
+                <h3 className="font-bold text-sm text-zinc-900 uppercase tracking-wide">Write a Customer Review</h3>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider block">Select Star Rating</label>
+                  <div className="flex gap-1.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        type="button"
+                        key={star}
+                        onClick={() => setNewRating(star)}
+                        className="text-zinc-300 hover:text-amber-500 cursor-pointer p-0 bg-transparent border-none"
+                      >
+                        <Star className={`h-6 w-6 ${star <= newRating ? 'fill-amber-500 text-amber-500' : 'text-zinc-300'}`} />
+                      </button>
+                    ))}
                   </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider block">Write your Comment</label>
-                    <textarea
-                      rows="3"
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Tell us what you like or dislike about this product..."
-                      className="w-full bg-white border border-zinc-200 text-xs rounded-xl p-3 text-zinc-900 focus:outline-none focus:border-zinc-500 transition-colors"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={submittingReview}
-                    className="bg-black hover:bg-zinc-900 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    {submittingReview ? 'Submitting...' : 'Submit Review'}
-                  </button>
-                </form>
-              ) : (
-                <div className="p-5 border border-dashed border-zinc-200 rounded-2xl text-center text-zinc-500 bg-zinc-50 text-xs">
-                  Please <Link to="/login" className="text-zinc-900 font-bold hover:underline">Login</Link> to share your review comment with other customers.
                 </div>
-              )}
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider block">Write your Comment</label>
+                  <textarea
+                    rows="3"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Tell us what you like or dislike about this product..."
+                    className="w-full bg-white border border-zinc-200 text-xs rounded-xl p-3 text-zinc-900 focus:outline-none focus:border-zinc-500 transition-colors"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submittingReview}
+                  className="bg-black hover:bg-zinc-900 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {submittingReview ? 'Submitting...' : 'Submit Review'}
+                </button>
+              </form>
 
             </div>
           )}
@@ -1565,51 +1692,59 @@ export default function ProductDetails() {
 
       {/* Recommended Related Products */}
       {(() => {
-        const relatedList = (products || []).filter(p => p.category === currentProduct?.category && (p._id || p.id) !== id).slice(0, 4);
+        const targetProd = currentProduct || localProduct;
+        if (!targetProd || !products || products.length === 0) return null;
+
+        const currentGroup = getCategoryGroup(targetProd);
+        const currentProdId = targetProd._id || targetProd.id;
+
+        const relatedList = products.filter(p => {
+          const pId = p._id || p.id;
+          if (pId === currentProdId) return false;
+          return getCategoryGroup(p) === currentGroup;
+        }).slice(0, 4);
+
         if (relatedList.length === 0) return null;
+
+        const categoryTitles = {
+          'mac': 'Recommended Mac Lineup',
+          'iphone': 'Recommended iPhone Lineup',
+          'ipad': 'Recommended iPad Lineup',
+          'watch': 'Recommended Apple Watch Models',
+          'airpods': 'Recommended AirPods & Audio',
+          'tv-home': 'Recommended TV & Home Gear',
+          'accessories': 'Recommended Accessories'
+        };
+
         return (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 border-t border-zinc-100 pt-12 text-left">
             <span className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-widest block">Explore Similar Gear</span>
-            <h2 className="text-xl font-black text-zinc-900 tracking-tight mt-2 mb-6">Recommended For You</h2>
+            <h2 className="text-xl font-black text-zinc-900 tracking-tight mt-2 mb-6">
+              You may also like
+            </h2>
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {relatedList.map((p) => (
-                <Link key={p._id} to={`/product/${p._id}`} className="group space-y-3 block">
-                  <div className="aspect-[4/3] w-full rounded-2xl bg-zinc-50 border border-zinc-100 p-3 flex items-center justify-center overflow-hidden">
-                    <img src={p.images?.[0]} alt="" className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-350" />
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{p.brand}</span>
-                    <h4 className="font-bold text-xs text-zinc-900 leading-snug line-clamp-1 group-hover:text-zinc-650 transition-colors">{p.title}</h4>
-                    <p className="font-extrabold text-xs text-zinc-900 font-sans">₹{p.price?.toLocaleString('en-IN')}</p>
-                  </div>
-                </Link>
-              ))}
+              {relatedList.map((p) => {
+                const prodImg = (p.images && p.images[0]) || p.image || '/macbook_category_v3.jpg';
+                return (
+                  <Link key={p._id || p.id} to={`/product/${p._id || p.id}`} className="group space-y-3 block">
+                    <div className="aspect-[4/3] w-full rounded-2xl bg-zinc-50 border border-zinc-100 p-3 flex items-center justify-center overflow-hidden">
+                      <img src={prodImg} alt="" className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-350" />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{p.brand || 'Apple'}</span>
+                      <h4 className="font-bold text-xs text-zinc-900 leading-snug line-clamp-2 group-hover:text-zinc-650 transition-colors">{p.title || p.name}</h4>
+                      <p className="font-extrabold text-xs text-zinc-900 font-sans">
+                        ₹{(p.price || p.variants?.[0]?.price || 0).toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         );
       })()}
 
-      {/* Recently Viewed Products */}
-      {recentlyViewed.length > 0 && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 border-t border-zinc-100 pt-12 text-left">
-          <span className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-widest block">Based on your visits</span>
-          <h2 className="text-xl font-black text-zinc-900 tracking-tight mt-2 mb-6">Recently Viewed</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {recentlyViewed.map((p) => (
-              <Link key={p._id} to={`/product/${p._id}`} className="group space-y-3 block">
-                <div className="aspect-[4/3] w-full rounded-2xl bg-zinc-50 border border-zinc-100 p-3 flex items-center justify-center overflow-hidden">
-                  <img src={p.images?.[0]} alt="" className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-350" />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{p.brand}</span>
-                  <h4 className="font-bold text-xs text-zinc-900 leading-snug line-clamp-1 group-hover:text-zinc-650 transition-colors">{p.title}</h4>
-                  <p className="font-extrabold text-xs text-zinc-900 font-sans">₹{p.price?.toLocaleString('en-IN')}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Floating WhatsApp Widget */}
       <a

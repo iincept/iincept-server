@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Heart, ShoppingBag, Loader2, ChevronDown, Search, Laptop, Tablet, Smartphone, Watch, Headphones, Tv, Sparkles, Plug, CircleDot, Keyboard, Accessibility, Gamepad, Camera, PenTool, Activity, Home } from 'lucide-react';
@@ -6,8 +6,92 @@ import { addToCart } from '../redux/cartSlice';
 import { addToWishlist } from '../redux/wishlistSlice';
 import { fetchProducts } from '../redux/productSlice';
 import { matchesProductSearch } from '../utils/searchUtils';
+import CleanProductImage from '../components/CleanProductImage';
 
 // Products are loaded dynamically from e-commerce database API
+
+const ACCESSORIES_CHAPTER_NAV_ITEMS = [
+  {
+    id: 'all',
+    name: 'All Accessories',
+    query: '',
+    icon: (
+      <svg className="w-9 h-9 text-zinc-900 stroke-[1.6]" viewBox="0 0 36 36" fill="none" stroke="currentColor">
+        <rect x="5" y="5" width="11" height="11" rx="2.5" />
+        <rect x="20" y="5" width="11" height="11" rx="2.5" />
+        <rect x="5" y="20" width="11" height="11" rx="2.5" />
+        <rect x="20" y="20" width="11" height="11" rx="2.5" />
+      </svg>
+    )
+  },
+  {
+    id: 'mac',
+    name: 'Mac',
+    query: 'mac',
+    icon: (
+      <svg className="w-10 h-10 text-zinc-900 stroke-[1.6]" viewBox="0 0 40 40" fill="none" stroke="currentColor">
+        <rect x="6" y="8" width="28" height="18" rx="2" />
+        <path d="M4 30H36V32H4V30Z" fill="currentColor" stroke="none" />
+      </svg>
+    )
+  },
+  {
+    id: 'ipad',
+    name: 'iPad',
+    query: 'ipad',
+    icon: (
+      <svg className="w-8 h-10 text-zinc-900 stroke-[1.6]" viewBox="0 0 32 40" fill="none" stroke="currentColor">
+        <rect x="4" y="4" width="24" height="32" rx="4" />
+        <circle cx="16" cy="32" r="1" fill="currentColor" />
+      </svg>
+    )
+  },
+  {
+    id: 'iphone',
+    name: 'iPhone',
+    query: 'iphone',
+    icon: (
+      <svg className="w-7 h-10 text-zinc-900 stroke-[1.6]" viewBox="0 0 28 40" fill="none" stroke="currentColor">
+        <rect x="4" y="4" width="20" height="32" rx="4" />
+        <path d="M11 7H17" strokeLinecap="round" />
+      </svg>
+    )
+  },
+  {
+    id: 'watch',
+    name: 'Watch',
+    query: 'watch',
+    icon: (
+      <svg className="w-7 h-10 text-zinc-900 stroke-[1.6]" viewBox="0 0 28 40" fill="none" stroke="currentColor">
+        <path d="M9 8V2C9 1.4 9.4 1 10 1H18C18.6 1 19 1.4 19 2V8" strokeLinecap="round" />
+        <rect x="5" y="8" width="18" height="24" rx="6" />
+        <path d="M9 32V38C9 38.6 9.4 39 10 39H18C18.6 39 19 38.6 19 38V32" strokeLinecap="round" />
+      </svg>
+    )
+  },
+  {
+    id: 'airpods',
+    name: 'AirPods',
+    query: 'airpods',
+    icon: (
+      <svg className="w-9 h-9 text-zinc-900" viewBox="0 0 36 36" fill="currentColor">
+        <path d="M13 9c-2 0-3.5 1.5-3.5 3.5 0 1.8 1.2 3.2 2.8 3.5V25c0 .8.7 1.5 1.5 1.5s1.5-.7 1.5-1.5V16c1.6-.3 2.8-1.7 2.8-3.5C18.1 10.5 16.6 9 14.6 9z" />
+        <path d="M23 9c-2 0-3.5 1.5-3.5 3.5 0 1.8 1.2 3.2 2.8 3.5V25c0 .8.7 1.5 1.5 1.5s1.5-.7 1.5-1.5V16c1.6-.3 2.8-1.7 2.8-3.5C28.1 10.5 26.6 9 24.6 9z" />
+      </svg>
+    )
+  },
+  {
+    id: 'tv-home',
+    name: 'TV & Home',
+    query: 'tv-home',
+    icon: (
+      <svg className="w-9 h-9 text-zinc-900 stroke-[1.6]" viewBox="0 0 36 36" fill="none" stroke="currentColor">
+        <rect x="4" y="8" width="28" height="18" rx="3" />
+        <path d="M12 30L18 26L24 30" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    )
+  }
+];
 
 export default function Accessories() {
   const dispatch = useDispatch();
@@ -18,14 +102,38 @@ export default function Accessories() {
   const [localWishlist, setLocalWishlist] = useState({});
   const [showBrowseMenu, setShowBrowseMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [browseMode, setBrowseMode] = useState('product'); // 'product' or 'category'
   const [selectedProductFilter, setSelectedProductFilter] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
-  const [showExpandedFilter, setShowExpandedFilter] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(6);
+  const isLoadingMore = useRef(false);
 
   useEffect(() => {
     dispatch(fetchProducts());
   }, [dispatch]);
+
+  useEffect(() => {
+    setVisibleCount(6);
+  }, [activeTab, searchQuery, selectedProductFilter, selectedCategoryFilter, searchParams]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isLoadingMore.current) return;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
+
+      if (scrollTop > 150 && (clientHeight + scrollTop >= scrollHeight - 120)) {
+        isLoadingMore.current = true;
+        setVisibleCount(prev => prev + 6);
+        setTimeout(() => {
+          isLoadingMore.current = false;
+        }, 600);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const urlSearch = searchParams.get('search');
@@ -95,7 +203,6 @@ export default function Accessories() {
       if (foundColor && foundColor.image) {
         return foundColor.image;
       }
-      // Fallback: match index of color name with index of image in images array
       const colorIdx = prod.colors.findIndex((c) => (c.name || c) === selectedColorName);
       if (colorIdx !== -1 && prod.images && prod.images[colorIdx]) {
         return prod.images[colorIdx];
@@ -124,38 +231,32 @@ export default function Accessories() {
       image: getProductImage(prod),
       rating: prod.rating
     }));
-    alert(`Added ${prod.name} to Wishlist!`);
   };
 
-  // Merge database accessories (where category contains accessories or it is a specific accessory)
   const dbAccessories = products.filter(p => {
     const catName = (p.category?.name || p.category?.toString() || '').toLowerCase();
     const catSlug = (p.category?.slug || '').toLowerCase();
     const titleLower = (p.title || p.name || '').toLowerCase();
 
-    // Check if category is strictly accessories
-    const isAccessoriesCat = catName.includes('accessories') || catSlug.includes('accessories');
-
-    // Check if title has accessory keyword
+    const isAccessoriesCat = catName === 'accessories' || catSlug === 'accessories' || catName.includes('accessori');
     const isAccessoryKeyword = titleLower.includes('case') || 
+                               titleLower.includes('charger') || 
+                               titleLower.includes('adapter') || 
+                               titleLower.includes('cable') || 
+                               titleLower.includes('magsafe') || 
+                               titleLower.includes('pencil') || 
+                               titleLower.includes('keyboard') || 
+                               titleLower.includes('mouse') || 
+                               titleLower.includes('strap') || 
                                titleLower.includes('band') || 
                                titleLower.includes('loop') ||
-                               titleLower.includes('charger') ||
-                               titleLower.includes('pencil') ||
-                               titleLower.includes('adapter') ||
-                               titleLower.includes('charm') ||
-                               titleLower.includes('strap') ||
-                               titleLower.includes('mount') ||
-                               titleLower.includes('cable') ||
-                               titleLower.includes('sleeve') ||
+                               titleLower.includes('power') ||
                                titleLower.includes('stand') ||
                                titleLower.includes('dock') ||
-                               titleLower.includes('keychain');
+                               titleLower.includes('mount');
 
-    // If it's a main device, we exclude it
     let isMainDevice = false;
 
-    // Exclude iPhones: title contains "iphone" but does not contain accessory keywords
     if (titleLower.includes('iphone') && 
         !titleLower.includes('case') && 
         !titleLower.includes('wallet') && 
@@ -166,7 +267,6 @@ export default function Accessories() {
       isMainDevice = true;
     }
 
-    // Exclude iPads: title contains "ipad" but does not contain pencil, case, cover, keyboard, folio
     if (titleLower.includes('ipad') && 
         !titleLower.includes('pencil') && 
         !titleLower.includes('case') && 
@@ -176,7 +276,6 @@ export default function Accessories() {
       isMainDevice = true;
     }
 
-    // Exclude MacBooks: title contains macbook / laptop (unless it is an accessory like adapter, charger, power, cable, magsafe, sleeve, case)
     if ((titleLower.includes('macbook') || titleLower.includes('laptop') || titleLower.includes('pc ')) &&
         !titleLower.includes('adapter') &&
         !titleLower.includes('charger') &&
@@ -191,7 +290,6 @@ export default function Accessories() {
       isMainDevice = true;
     }
 
-    // Exclude Apple Watches: title contains "watch" but not band, loop, strap, case, charger
     if (titleLower.includes('watch') && 
         !titleLower.includes('band') && 
         !titleLower.includes('loop') && 
@@ -201,7 +299,6 @@ export default function Accessories() {
       isMainDevice = true;
     }
 
-    // Exclude AirPods: title contains "airpods" or "air pods" or "headphone" (unless earpods, plug, adapter, cable, case, charm, strap, stand)
     if ((titleLower.includes('airpods') || titleLower.includes('air pods') || titleLower.includes('headphone') || titleLower.includes('headphones')) && 
         !titleLower.includes('earpods') &&
         !titleLower.includes('plug') &&
@@ -214,7 +311,6 @@ export default function Accessories() {
       isMainDevice = true;
     }
 
-    // Exclude Apple TV: title contains "tv" but not mount, cable, holder
     if (titleLower.includes('tv') && 
         !titleLower.includes('mount') && 
         !titleLower.includes('cable') && 
@@ -224,7 +320,6 @@ export default function Accessories() {
       isMainDevice = true;
     }
 
-    // Exclude HomePods: title contains "homepod" but not mount, stand
     if (titleLower.includes('homepod') && !titleLower.includes('mount') && !titleLower.includes('stand')) {
       isMainDevice = true;
     }
@@ -253,14 +348,13 @@ export default function Accessories() {
   const combinedProducts = dbAccessories;
 
   const filteredProducts = combinedProducts.filter((prod) => {
-    // 1. Availability filter (activeTab)
+    const nameLower = (prod.name || '').toLowerCase();
+
     if (activeTab === 'available' && prod.isSoldOut) return false;
     if (activeTab === 'soldout' && !prod.isSoldOut) return false;
 
-    // 2. Search query filter
     if (searchQuery && !matchesProductSearch(prod, searchQuery)) return false;
 
-    // 3. Product filter (selectedProductFilter)
     if (selectedProductFilter) {
       if (selectedProductFilter === 'mac' && !nameLower.includes('mac') && !nameLower.includes('pencil')) return false;
       if (selectedProductFilter === 'ipad' && !nameLower.includes('ipad') && !nameLower.includes('pencil')) return false;
@@ -268,27 +362,6 @@ export default function Accessories() {
       if (selectedProductFilter === 'watch' && !nameLower.includes('watch') && !nameLower.includes('band') && !nameLower.includes('loop') && !nameLower.includes('strap')) return false;
       if (selectedProductFilter === 'airpods' && !nameLower.includes('airpod') && !nameLower.includes('max') && !nameLower.includes('pro')) return false;
       if (selectedProductFilter === 'tv-home' && !nameLower.includes('tv') && !nameLower.includes('home') && !nameLower.includes('pod')) return false;
-      if (selectedProductFilter === 'beats' && !nameLower.includes('beats')) return false;
-      if (selectedProductFilter === 'vision-pro' && !nameLower.includes('vision') && !nameLower.includes('pro')) return false;
-    }
-
-    // 4. Category filter (selectedCategoryFilter)
-    if (selectedCategoryFilter) {
-      if (selectedCategoryFilter === 'new-arrivals') return true; // mock filter
-      if (selectedCategoryFilter === 'cases' && !nameLower.includes('case')) return false;
-      if (selectedCategoryFilter === 'charging' && !nameLower.includes('charger') && !nameLower.includes('adapter') && !nameLower.includes('power') && !nameLower.includes('cable')) return false;
-      if (selectedCategoryFilter === 'magsafe' && !nameLower.includes('magsafe')) return false;
-      if (selectedCategoryFilter === 'headphones' && !nameLower.includes('audio') && !nameLower.includes('airpod') && !nameLower.includes('speaker') && !nameLower.includes('beats')) return false;
-      if (selectedCategoryFilter === 'bands' && !nameLower.includes('band') && !nameLower.includes('loop') && !nameLower.includes('strap')) return false;
-      if (selectedCategoryFilter === 'vision-pro' && !nameLower.includes('vision') && !nameLower.includes('pro')) return false;
-      if (selectedCategoryFilter === 'home-office' && !nameLower.includes('keyboard') && !nameLower.includes('mouse') && !nameLower.includes('pencil') && !nameLower.includes('trackpad')) return false;
-      if (selectedCategoryFilter === 'mice-keyboards' && !nameLower.includes('keyboard') && !nameLower.includes('mouse') && !nameLower.includes('trackpad')) return false;
-      if (selectedCategoryFilter === 'airtag' && !nameLower.includes('airtag')) return false;
-      if (selectedCategoryFilter === 'health-fitness' && !nameLower.includes('watch') && !nameLower.includes('band')) return false;
-      if (selectedCategoryFilter === 'accessibility' && !nameLower.includes('case') && !nameLower.includes('pencil')) return false;
-      if (selectedCategoryFilter === 'gaming' && !nameLower.includes('game') && !nameLower.includes('controller')) return false;
-      if (selectedCategoryFilter === 'photography' && !nameLower.includes('camera') && !nameLower.includes('lens')) return false;
-      if (selectedCategoryFilter === 'creative-tools' && !nameLower.includes('pencil') && !nameLower.includes('stylus')) return false;
     }
 
     return true;
@@ -297,48 +370,14 @@ export default function Accessories() {
   return (
     <div className="min-h-screen bg-[#fcfcfc] text-[#1d1d1f] py-4 select-none animate-in fade-in duration-300 relative font-sans">
 
-      {/* Accessories Sub-Bar Header */}
-      <div className="w-full border-b border-zinc-200/80 bg-white/85 backdrop-blur-md sticky top-12 z-30 py-3.5 px-4 sm:px-8 md:px-12 lg:px-16 flex items-center justify-between">
-        <h2 className="text-xl font-bold tracking-tight text-zinc-900">Accessories</h2>
-
-        {/* Browse dropdown menu */}
-        <div className="relative">
-          <button
-            onClick={() => setShowBrowseMenu(!showBrowseMenu)}
-            className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-black font-semibold tracking-wide bg-transparent border-0 cursor-pointer"
-          >
-            Browse all <ChevronDown className="h-3 w-3 mt-0.5" />
-          </button>
-
-          {showBrowseMenu && (
-            <div className="absolute right-0 mt-2.5 w-44 bg-white border border-zinc-150 rounded-2xl shadow-xl py-2 z-50 text-left animate-in fade-in slide-in-from-top-1 duration-200">
-              <button
-                onClick={() => { setActiveTab('all'); setShowBrowseMenu(false); }}
-                className="w-full text-left px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 hover:text-black"
-              >
-                All Accessories
-              </button>
-              <button
-                onClick={() => { setActiveTab('available'); setShowBrowseMenu(false); }}
-                className="w-full text-left px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 hover:text-black"
-              >
-                In Stock
-              </button>
-              <button
-                onClick={() => { setActiveTab('soldout'); setShowBrowseMenu(false); }}
-                className="w-full text-left px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 hover:text-black"
-              >
-                Sold Out
-              </button>
-            </div>
-          )}
+      {/* Accessories Title Header matching Mac, iPad, Watch, iPhone, AirPods */}
+      <div className="w-full bg-[#fcfcfc] pt-2 pb-6 select-none font-sans border-b border-zinc-150 mb-8 px-4 sm:px-8 md:px-12 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-zinc-950 text-left">Accessories</h1>
         </div>
       </div>
 
       <div className="px-4 sm:px-8 md:px-12 lg:px-16 py-8">
-
-
-
 
 
         {/* Category Products Grid List */}
@@ -353,7 +392,7 @@ export default function Accessories() {
           </div>
         ) : (
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredProducts.map((prod) => (
+            {filteredProducts.slice(0, visibleCount).map((prod) => (
               <div
                 key={prod.id}
                 className="group bg-white rounded-2xl overflow-hidden flex flex-col justify-between p-6 shadow-sm border border-zinc-100/50 hover:shadow-md hover:border-zinc-200/55 transition-all duration-300 relative text-left"
@@ -379,14 +418,11 @@ export default function Accessories() {
 
                 {/* Clickable Area: Image and Title */}
                 <Link to={`/product/${prod.id}`} className="block cursor-pointer">
-                  {/* Product Visual */}
-                  <div className="w-full h-64 flex items-center justify-center overflow-hidden mb-6 mt-4 p-4">
-                    <img
-                      src={getProductImage(prod)}
-                      alt={prod.name}
-                      className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 select-none animate-in fade-in"
-                    />
-                  </div>
+                  {/* Product Visual - Apple Showcase Background (#f5f5f7) */}
+                  <CleanProductImage
+                    src={getProductImage(prod)}
+                    alt={prod.name}
+                  />
 
                   {/* Title with Dynamic Color Part Number */}
                   <h3 className="font-semibold text-[16px] leading-snug tracking-tight text-zinc-900 group-hover:text-zinc-900 transition-colors min-h-[48px]">
@@ -438,6 +474,18 @@ export default function Accessories() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Infinite Scroll Indicator */}
+        {visibleCount < filteredProducts.length && (
+          <div className="text-center py-10">
+            <button
+              onClick={() => setVisibleCount(prev => prev + 6)}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-zinc-900 text-white text-xs font-bold tracking-wide hover:bg-zinc-800 transition-all cursor-pointer shadow-sm"
+            >
+              <span>Scroll for More Products ({Math.min(visibleCount, filteredProducts.length)} of {filteredProducts.length})</span>
+            </button>
           </div>
         )}
       </div>

@@ -5,26 +5,37 @@ import {
   Tag, 
   ShoppingBag, 
   Users, 
-  Gift, 
+  Home, 
   Settings, 
   ArrowLeft,
-  RotateCcw,
   MessageSquare,
-  TrendingUp
+  TrendingUp,
+  Navigation,
+  Grid,
+  LayoutGrid,
+  Layers,
+  Star,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function AdminSidebar() {
   const navItems = [
-    { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-    { label: 'Products', path: '/admin/products', icon: Package },
-    { label: 'Categories', path: '/admin/categories', icon: Tag },
-    { label: 'Orders', path: '/admin/orders', icon: ShoppingBag },
-    { label: 'Users', path: '/admin/users', icon: Users },
-    { label: 'Coupons', path: '/admin/coupons', icon: Gift },
-    { label: 'Returns', path: '/admin/returns', icon: RotateCcw },
-    { label: 'Enquiries', path: '/admin/enquiries', icon: MessageSquare },
-    { label: 'Sales Report', path: '/admin/sales-report', icon: TrendingUp },
-    { label: 'Settings', path: '/admin/settings', icon: Settings }
+    { label: 'Dashboard', path: '/dashboard/home', icon: LayoutDashboard },
+    { label: 'Products', path: '/dashboard/products', icon: Package },
+    { label: 'Hero Banners', path: '/dashboard/hero-banners', icon: Home },
+    { label: 'Apple Categories', path: '/dashboard/apple-categories', icon: Grid },
+    { label: 'Navbar Menu', path: '/dashboard/navbar-menu', icon: Navigation },
+    { label: 'Category Icons', path: '/dashboard/category-icons', icon: Layers },
+    { label: 'MacBook AppleCare', path: '/dashboard/applecare', icon: ShieldCheck },
+    { label: 'Product Apple Care', path: '/dashboard/product-applecare', icon: ShieldCheck },
+    { label: 'Footer Menu', path: '/dashboard/footer-menu', icon: LayoutGrid },
+    { label: 'Testimonials', path: '/dashboard/testimonials', icon: Star },
+    { label: 'Product Categories', path: '/dashboard/categories', icon: Tag },
+    { label: 'Orders', path: '/dashboard/orders', icon: ShoppingBag },
+    { label: 'Users', path: '/dashboard/users', icon: Users },
+    { label: 'Enquiries', path: '/dashboard/enquiries', icon: MessageSquare },
+    { label: 'Sales Report', path: '/dashboard/sales-report', icon: TrendingUp },
+    { label: 'Settings', path: '/dashboard/settings', icon: Settings }
   ];
 
   return (
@@ -64,13 +75,15 @@ export default function AdminSidebar() {
 
       {/* Back to Shop Storefront Link */}
       <div>
-        <NavLink
-          to="/iphone"
+        <a
+          href="http://localhost:5173"
+          target="_blank"
+          rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900 hover:text-white px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all"
         >
           <ArrowLeft className="h-4 w-4" />
-          Storefront Shop
-        </NavLink>
+          View Storefront ↗
+        </a>
       </div>
     </aside>
   );

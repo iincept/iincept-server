@@ -61,9 +61,10 @@ export default function Cart() {
 
     cartItems.forEach((item, idx) => {
       const itemTitle = item.name || item.title || 'Product';
+      const skuText = (item.sku && !itemTitle.includes('SKU:')) ? ` (SKU: ${item.sku})` : '';
       const itemQty = item.quantity || 1;
       const itemPrice = (item.price || 0) * itemQty;
-      message += `${idx + 1}. *${itemTitle}*\n   Qty: ${itemQty} | Price: ₹${itemPrice.toLocaleString('en-IN')}\n`;
+      message += `${idx + 1}. *${itemTitle}${skuText}*\n   Qty: ${itemQty} | Price: ₹${itemPrice.toLocaleString('en-IN')}\n`;
     });
 
     message += `\n💰 *Total Amount:* ₹${Math.max(0, total).toLocaleString('en-IN')}\n\n`;

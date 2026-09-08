@@ -35,7 +35,6 @@ export default function Search() {
       image: product.image || (product.images && product.images[0]) || '/avatar.png',
       quantity: 1
     }));
-    alert(`Added ${product.name || product.title} to Cart!`);
   };
 
   const handleAddToWishlist = (product) => {
@@ -46,7 +45,6 @@ export default function Search() {
       image: product.image || (product.images && product.images[0]) || '/avatar.png',
       rating: product.rating
     }));
-    alert(`Added ${product.name || product.title} to Wishlist!`);
   };
 
   if (loading && products.length === 0) {

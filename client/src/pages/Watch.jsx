@@ -1,173 +1,384 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Heart, SlidersHorizontal, ArrowUpDown, X, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, SlidersHorizontal, ArrowUpDown, X, ShoppingBag, ChevronLeft, ChevronRight, ShieldCheck, Wrench, Headphones, Check } from 'lucide-react';
 import { addToCart } from '../redux/cartSlice';
 import { addToWishlist } from '../redux/wishlistSlice';
 import { fetchProducts } from '../redux/productSlice';
 import { matchesProductSearch } from '../utils/searchUtils';
+import axiosClient from '../services/axiosClient';
+import AppleCareFeaturesGrid from '../components/AppleCareFeaturesGrid';
+import CleanProductImage from '../components/CleanProductImage';
 
-const WATCH_CHAPTER_NAV_ITEMS = [
+// Default Watch AppleCare rows fallback
+const DEFAULT_WATCH_APPLECARE_ROWS = [
   { 
-    id: 'series-11',
-    name: 'Apple Watch',
-    subName: 'Series 11',
-    query: 'Series 11',
-    icon: (
-      <svg className="w-8 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 32 56" fill="none" stroke="currentColor">
-        <path d="M11 12V4C11 2.89543 11.8954 2 13 2H19C20.1046 2 21 2.89543 21 4V12" strokeLinecap="round" />
-        <rect x="7" y="12" width="18" height="24" rx="7" fill="none" stroke="currentColor" />
-        <rect x="25" y="17" width="2" height="5" rx="1" fill="currentColor" />
-        <rect x="25" y="26" width="1.5" height="6" rx="0.75" fill="currentColor" />
-        <path d="M11 36V44C11 45.1046 11.8954 46 13 46H19C20.1046 46 21 45.1046 21 44V36" strokeLinecap="round" />
-      </svg>
-    )
+    model: 'Apple Watch Series 10 / Series 9', 
+    title: 'AppleCare+ for Apple Watch Series 10 / 9', 
+    description: '2 Years Apple-certified coverage for Apple Watch Series with accidental damage protection.', 
+    sku: 'AC-WATCH-SERIES', 
+    mrp: '₹8,900.00', 
+    discount: '10% OFF', 
+    salePrice: '₹7,900.00', 
+    monthly: '₹399.00', 
+    yearly: '₹7,900.00', 
+    image: '/watch_nav/watch_series_10.png', 
+    isActive: true 
   },
   { 
-    id: 'se-3',
-    name: 'Apple Watch',
-    subName: 'SE 3',
-    query: 'SE 3',
-    icon: (
-      <svg className="w-8 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 32 56" fill="none" stroke="currentColor">
-        <path d="M11 13V5C11 3.89543 11.8954 3 13 3H19C20.1046 3 21 3.89543 21 5V13" strokeLinecap="round" />
-        <rect x="8" y="13" width="16" height="22" rx="6" fill="none" stroke="currentColor" />
-        <rect x="24" y="18" width="2" height="4" rx="1" fill="currentColor" />
-        <path d="M11 35V43C11 44.1046 11.8954 45 13 45H19C20.1046 45 21 44.1046 21 43V35" strokeLinecap="round" />
-      </svg>
-    )
+    model: 'Apple Watch Ultra 2 / Ultra', 
+    title: 'AppleCare+ for Apple Watch Ultra 2 / Ultra', 
+    description: '2 Years Apple-certified coverage for Apple Watch Ultra with accidental damage protection.', 
+    sku: 'AC-WATCH-ULTRA', 
+    mrp: '₹11,900.00', 
+    discount: '9% OFF', 
+    salePrice: '₹10,900.00', 
+    monthly: '₹549.00', 
+    yearly: '₹10,900.00', 
+    image: '/watch_nav/watch_ultra_2.png', 
+    isActive: true 
   },
   { 
-    id: 'ultra-3',
-    name: 'Apple Watch',
-    subName: 'Ultra 3',
-    query: 'Ultra 3',
-    icon: (
-      <svg className="w-9 h-12 text-zinc-900 stroke-[1.8]" viewBox="0 0 36 56" fill="none" stroke="currentColor">
-        <path d="M12 11V3C12 1.89543 12.8954 1 14 1H22C23.1046 1 24 1.89543 24 3V11" strokeLinecap="round" />
-        <rect x="5" y="21" width="2" height="6" rx="1" fill="#FF5500" stroke="none" />
-        <rect x="7" y="11" width="22" height="26" rx="6" fill="none" stroke="currentColor" />
-        <path d="M29 17H31V23H29" fill="currentColor" />
-        <path d="M12 37V45C12 46.1046 12.8954 47 14 47H22C23.1046 47 24 46.1046 24 45V37" strokeLinecap="round" />
-      </svg>
-    )
-  },
-  { 
-    id: 'nike',
-    name: 'Apple Watch',
-    subName: 'Nike',
-    query: 'Nike',
-    icon: (
-      <svg className="w-8 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 32 56" fill="none" stroke="currentColor">
-        <path d="M11 12V4C11 2.89543 11.8954 2 13 2H19C20.1046 2 21 2.89543 21 4V12" strokeLinecap="round" />
-        <circle cx="15" cy="6" r="1" fill="currentColor" />
-        <circle cx="15" cy="9" r="1" fill="currentColor" />
-        <rect x="7" y="12" width="18" height="24" rx="7" fill="none" stroke="currentColor" />
-        <rect x="25" y="17" width="2" height="5" rx="1" fill="currentColor" />
-        <path d="M11 36V44C11 45.1046 11.8954 46 13 46H19C20.1046 46 21 45.1046 21 44V36" strokeLinecap="round" />
-        <circle cx="15" cy="39" r="1" fill="currentColor" />
-        <circle cx="15" cy="42" r="1" fill="currentColor" />
-      </svg>
-    )
-  },
-  { 
-    id: 'compare',
-    name: 'Compare',
-    subName: '',
-    path: '/compare?category=watch',
-    icon: (
-      <svg className="w-12 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 48 56" fill="none" stroke="currentColor">
-        <rect x="6" y="14" width="14" height="20" rx="5" />
-        <rect x="28" y="14" width="14" height="20" rx="5" strokeDasharray="3 3" />
-      </svg>
-    )
-  },
-  { 
-    id: 'straps',
-    name: 'Straps',
-    subName: '',
-    path: '/accessories',
-    icon: (
-      <svg className="w-6 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 24 56" fill="none" stroke="currentColor">
-        <path d="M8 4H16V52H8V4Z" rx="2" fill="none" />
-        <circle cx="12" cy="16" r="1.5" fill="currentColor" />
-        <circle cx="12" cy="24" r="1.5" fill="currentColor" />
-        <circle cx="12" cy="32" r="1.5" fill="currentColor" />
-        <line x1="8" y1="40" x2="16" y2="40" />
-      </svg>
-    )
-  },
-  { 
-    id: 'accessories',
-    name: 'Accessories',
-    subName: '',
-    path: '/accessories',
-    icon: (
-      <svg className="w-7 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 28 56" fill="none" stroke="currentColor">
-        <circle cx="14" cy="20" r="9" />
-        <circle cx="14" cy="20" r="5" strokeDasharray="2 2" />
-        <line x1="14" y1="29" x2="14" y2="46" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    )
-  },
-  { 
-    id: 'fitness',
-    name: 'Apple Fitness+',
-    subName: '',
-    path: '/watch',
-    icon: (
-      <svg className="w-10 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 40 56" fill="none" stroke="currentColor">
-        <circle cx="20" cy="24" r="12" />
-        <circle cx="20" cy="24" r="8" />
-        <circle cx="20" cy="24" r="4" fill="currentColor" />
-      </svg>
-    )
-  },
-  { 
-    id: 'shop-watch',
-    name: 'Shop Watch',
-    subName: '',
-    path: '/watch',
-    icon: (
-      <svg className="w-14 h-12 text-zinc-900 stroke-[1.6]" viewBox="0 0 56 56" fill="none" stroke="currentColor">
-        <rect x="4" y="16" width="14" height="20" rx="5" />
-        <rect x="21" y="12" width="14" height="24" rx="6" />
-        <rect x="38" y="16" width="14" height="20" rx="5" />
-      </svg>
-    )
-  },
-  { 
-    id: 'watchos',
-    name: 'watchOS 27',
-    subName: '',
-    badge: 'Preview',
-    path: '/watch',
-    icon: (
-      <svg className="w-10 h-12 text-zinc-900" viewBox="0 0 40 56" fill="none">
-        <circle cx="20" cy="24" r="14" fill="#111" />
-        <text x="20" y="22" textAnchor="middle" fill="#fff" fontSize="6" fontWeight="bold" fontFamily="sans-serif">watch</text>
-        <text x="20" y="29" textAnchor="middle" fill="#fff" fontSize="8" fontWeight="black" fontFamily="sans-serif">OS</text>
-      </svg>
-    )
+    model: 'Apple Watch SE', 
+    title: 'AppleCare+ for Apple Watch SE', 
+    description: '2 Years Apple-certified coverage for Apple Watch SE with accidental damage protection.', 
+    sku: 'AC-WATCH-SE', 
+    mrp: '₹5,900.00', 
+    discount: '10% OFF', 
+    salePrice: '₹5,300.00', 
+    monthly: '₹269.00', 
+    yearly: '₹5,300.00', 
+    image: '/watch_nav/watch_se.png', 
+    isActive: true 
   }
 ];
+
+const WATCH_SUB_NAV_ITEMS = [
+  { name: 'Apple Watch Series 10', query: 'Series', image: '/watch_nav/watch_series_10.png', scale: 'scale-100' },
+  { name: 'Apple Watch Ultra 2', query: 'Ultra', image: '/watch_nav/watch_ultra_2.png', scale: 'scale-100' },
+  { name: 'Apple Watch SE', query: 'SE', image: '/watch_nav/watch_se.png', scale: 'scale-95' },
+  { name: 'AppleCare+', path: '/watch?tab=applecare', image: '/applecare_official_hero.png', scale: 'scale-100' },
+  { name: 'Compare', path: '/compare', image: '/watch_nav/watch_compare.png', scale: 'scale-100' }
+];
+
+const resolveSubItemPath = (item) => {
+  const lowerName = (item.name || item.label || '').toLowerCase();
+  if (lowerName.includes('care')) {
+    return '/watch?tab=applecare';
+  }
+  if (item.path && item.path !== '/watch') return item.path;
+  if (item.query) {
+    return `/watch?search=${encodeURIComponent(item.query)}`;
+  }
+  return '/watch';
+};
+
+const ensureAppleCareInSubItems = (items = []) => {
+  if (!items || items.length === 0) return WATCH_SUB_NAV_ITEMS;
+
+  let careItem = items.find(item => (item.name || item.label || '').toLowerCase().includes('care'));
+  if (!careItem) {
+    careItem = {
+      name: 'AppleCare+',
+      path: '/watch?tab=applecare',
+      image: '/applecare_official_hero.png',
+      scale: 'scale-100'
+    };
+  }
+
+  let compareItem = items.find(item => (item.name || item.label || '').toLowerCase().includes('compare'));
+  const regularItems = items.filter(item => {
+    const lbl = (item.name || item.label || '').toLowerCase();
+    return !lbl.includes('care') && !lbl.includes('compare');
+  });
+
+  const result = [...regularItems];
+  if (compareItem) result.push(compareItem);
+  result.push(careItem);
+
+  return result;
+};
+
+const getInitialSubItems = (categoryKey, defaultItems) => {
+  try {
+    const cached = localStorage.getItem(`iincept_sub_items_v2_${categoryKey}`);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return ensureAppleCareInSubItems(parsed);
+      }
+    }
+  } catch (e) {}
+  return ensureAppleCareInSubItems(defaultItems);
+};
+
+const resolveIconImage = (img, label) => {
+  if (img && typeof img === 'string' && img.trim()) {
+    let clean = img.trim();
+    if (!clean.startsWith('http://') && !clean.startsWith('https://') && !clean.startsWith('data:') && !clean.startsWith('blob:') && !clean.startsWith('/')) {
+      clean = '/' + clean;
+    }
+    return clean;
+  }
+  const lblLower = (label || '').toLowerCase().trim();
+  if (lblLower.includes('care')) return '/applecare_official_hero.png';
+  const matched = WATCH_SUB_NAV_ITEMS.find(m => m.name.toLowerCase().trim() === lblLower);
+  return matched?.image || '/watch_nav/watch_series_10.png';
+};
+
+const getModelImageByName = (modelName = '') => {
+  const m = modelName.toLowerCase();
+  if (m.includes('ultra')) return '/watch_nav/watch_ultra_2.png';
+  if (m.includes('se')) return '/watch_nav/watch_se.png';
+  return '/watch_nav/watch_series_10.png';
+};
 
 export default function Watch() {
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const navRef = useRef(null);
   const { products } = useSelector((state) => state.products);
-  const [viewCols, setViewCols] = useState(4); // 2, 3, or 4 columns
-  const [showLimit, setShowLimit] = useState(16); // 16, 32, 64
+  const [viewCols, setViewCols] = useState(4);
+  const [showLimit, setShowLimit] = useState(16);
   const [sortBy, setSortBy] = useState('latest');
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedColors, setSelectedColors] = useState({});
   const [activeTab, setActiveTab] = useState('all');
+  const [subItems, setSubItems] = useState(() => getInitialSubItems('watch', WATCH_SUB_NAV_ITEMS));
   const [localWishlist, setLocalWishlist] = useState({});
+  const [visibleCount, setVisibleCount] = useState(6);
+  const isLoadingMore = useRef(false);
+
+  // Watch AppleCare Dynamic Data
+  const [dbAppleCareRows, setDbAppleCareRows] = useState(DEFAULT_WATCH_APPLECARE_ROWS);
+  const [selectedAppleCareModel, setSelectedAppleCareModel] = useState(DEFAULT_WATCH_APPLECARE_ROWS[0]);
+  const [selectedAppleCareMap, setSelectedAppleCareMap] = useState({});
+  const [dbHeaderTitle, setDbHeaderTitle] = useState('AppleCare+');
+  const [dbDurationLabel, setDbDurationLabel] = useState('2 Years');
 
   useEffect(() => {
     dispatch(fetchProducts());
+    fetchNavSettings();
   }, [dispatch]);
+
+  useEffect(() => {
+    setVisibleCount(6);
+  }, [activeTab, sortBy, searchParams]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isLoadingMore.current) return;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
+
+      if (scrollTop > 150 && (clientHeight + scrollTop >= scrollHeight - 120)) {
+        isLoadingMore.current = true;
+        setVisibleCount(prev => prev + 6);
+        setTimeout(() => {
+          isLoadingMore.current = false;
+        }, 600);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const fetchNavSettings = async () => {
+    try {
+      const response = await axiosClient.get('/settings');
+      if (response.data) {
+        // Load Watch AppleCare Pricing Table
+        if (response.data.appleCarePricingTables && response.data.appleCarePricingTables.length > 0) {
+          const watchTable = response.data.appleCarePricingTables.find(t => t.categoryKey === 'watch');
+          if (watchTable) {
+            setDbHeaderTitle(watchTable.headerTitle || 'AppleCare+');
+            setDbDurationLabel(watchTable.durationLabel || '2 Years');
+            if (watchTable.rows && watchTable.rows.length > 0) {
+              const activeRows = watchTable.rows.filter(r => r.isActive !== false);
+              if (activeRows.length > 0) {
+                const mappedRows = activeRows.map(r => ({
+                  model: r.model || '',
+                  title: r.title || `AppleCare+ for ${r.model}`,
+                  description: r.description || `2 Years Apple-certified coverage for ${r.model}`,
+                  sku: r.sku || '',
+                  mrp: r.mrp || '',
+                  discount: r.discount || '',
+                  salePrice: r.salePrice || r.yearly || '',
+                  monthly: r.monthly || '',
+                  yearly: r.yearly || r.salePrice || '',
+                  image: r.image || getModelImageByName(r.model),
+                  isActive: r.isActive !== false
+                }));
+                setDbAppleCareRows(prev => (JSON.stringify(prev) !== JSON.stringify(mappedRows) ? mappedRows : prev));
+                setSelectedAppleCareModel(activeRows[0]);
+              }
+            }
+          }
+        }
+
+        // Sub Nav items
+        if (response.data.categoryIconGroups && response.data.categoryIconGroups.length > 0) {
+          const watchGrp = response.data.categoryIconGroups.find(g => g.categoryKey === 'watch');
+          if (watchGrp && watchGrp.icons && watchGrp.icons.length > 0) {
+            const activeSub = watchGrp.icons.filter(d => d.isActive !== false);
+            if (activeSub.length > 0) {
+              const mapped = activeSub.map(d => {
+                const fallback = WATCH_SUB_NAV_ITEMS.find(m => m.name.toLowerCase() === (d.label || '').toLowerCase());
+                return {
+                  name: d.label,
+                  query: d.query || d.label,
+                  path: resolveSubItemPath(d),
+                  image: resolveIconImage(d.image, d.label),
+                  scale: fallback?.scale || 'scale-100'
+                };
+              });
+              const withCare = ensureAppleCareInSubItems(mapped);
+              try {
+                localStorage.setItem('iincept_sub_items_v2_watch', JSON.stringify(withCare));
+              } catch (e) {}
+              setSubItems(prev => (JSON.stringify(prev) !== JSON.stringify(withCare) ? withCare : prev));
+              return;
+            }
+          }
+        }
+        if (response.data.navbarMenuItems) {
+          const watchItem = response.data.navbarMenuItems.find(i => (i.name || '').toLowerCase().includes('watch'));
+          if (watchItem && watchItem.dropdownItems && watchItem.dropdownItems.length > 0) {
+            const activeSub = watchItem.dropdownItems.filter(d => d.isActive !== false);
+            if (activeSub.length > 0) {
+              const mapped = activeSub.map(d => {
+                const fallback = WATCH_SUB_NAV_ITEMS.find(m => m.name.toLowerCase() === (d.label || '').toLowerCase());
+                return {
+                  name: d.label,
+                  query: d.query || d.label,
+                  path: resolveSubItemPath(d),
+                  image: resolveIconImage(d.image, d.label),
+                  scale: fallback?.scale || 'scale-100'
+                };
+              });
+              const withCare = ensureAppleCareInSubItems(mapped);
+              try {
+                localStorage.setItem('iincept_sub_items_v2_watch', JSON.stringify(withCare));
+              } catch (e) {}
+              setSubItems(prev => (JSON.stringify(prev) !== JSON.stringify(withCare) ? withCare : prev));
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load watch sub nav settings:', err);
+    }
+  };
+
+  const handleBuyAppleCareWhatsApp = (modelObj = {}) => {
+    const modelName = modelObj.title || modelObj.model || 'Watch';
+    const salePrice = modelObj.salePrice || modelObj.yearly || '₹7,900.00';
+    const mrp = modelObj.mrp ? ` (MRP: ${modelObj.mrp})` : '';
+    const discount = modelObj.discount ? ` [${modelObj.discount}]` : '';
+    const sku = modelObj.sku ? `\n• *SKU Number:* ${modelObj.sku}` : '';
+    const desc = modelObj.description ? `\n• *Details:* ${modelObj.description}` : '';
+    const header = dbHeaderTitle ? `${dbHeaderTitle} ` : '';
+    const duration = dbDurationLabel ? `\n• *Duration:* ${dbDurationLabel}` : '';
+
+    const message = `Hello iiNCEPT Team! 👋\n\nI want to buy *${header}AppleCare+ Coverage*:\n• *Product:* ${modelName}${sku}${duration}${desc}\n• *Sale Price:* ${salePrice}${mrp}${discount}\n\nPlease share the payment link & activation process. Thank you!`;
+    const whatsappUrl = `https://wa.me/918607222417?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const toggleAppleCareSelection = (rowObj) => {
+    const key = rowObj.model || rowObj.title;
+    setSelectedAppleCareMap((prev) => {
+      const next = { ...prev };
+      if (next[key]) {
+        delete next[key];
+      } else {
+        next[key] = rowObj;
+      }
+      return next;
+    });
+  };
+
+  const handleBuyMultipleAppleCareWhatsApp = (selectedMap = {}) => {
+    const selectedList = Object.values(selectedMap);
+    if (selectedList.length === 0) return;
+
+    if (selectedList.length === 1) {
+      handleBuyAppleCareWhatsApp(selectedList[0]);
+      return;
+    }
+
+    const header = dbHeaderTitle ? `${dbHeaderTitle} ` : '';
+    let totalCost = 0;
+    let itemsText = '';
+
+    selectedList.forEach((item, index) => {
+      const title = item.title || item.model || 'AppleCare+ Plan';
+      const sku = item.sku ? ` (SKU: ${item.sku})` : '';
+      const priceStr = item.salePrice || item.yearly || '₹0';
+      const numericPrice = parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 0;
+      totalCost += numericPrice;
+      const mrp = item.mrp ? ` [MRP: ${item.mrp}]` : '';
+      const discount = item.discount ? ` (${item.discount})` : '';
+
+      itemsText += `${index + 1}. *${title}*${sku}\n   • Price: ${priceStr}${mrp}${discount}\n`;
+    });
+
+    const formattedTotal = `₹${totalCost.toLocaleString('en-IN')}.00`;
+    const message = `Hello iiNCEPT Team! 👋\n\nI want to buy *${selectedList.length} ${header}AppleCare+ Coverage Plans*:\n\n${itemsText}\n• *Total Combined Price:* ${formattedTotal}\n\nPlease share the combined payment link & activation steps. Thank you!`;
+
+    const whatsappUrl = `https://wa.me/918607222417?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleAddAppleCareToCart = (rowObj, i) => {
+    const planTitle = rowObj.title || `Apple Care+ ${rowObj.model}`;
+    const sku = rowObj.sku || '';
+    const nameWithSku = sku ? `${planTitle} (SKU: ${sku})` : planTitle;
+    const priceStr = rowObj.salePrice || rowObj.yearly || '0';
+    const numericPrice = parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 7900;
+    const image = rowObj.image || getModelImageByName(rowObj.model);
+    const itemId = `ac-watch-${sku || i}`;
+
+    dispatch(
+      addToCart({
+        id: itemId,
+        name: nameWithSku,
+        title: nameWithSku,
+        price: numericPrice,
+        image: image,
+        quantity: 1,
+        isAppleCare: true,
+        sku: sku
+      })
+    );
+  };
+
+  const handleAddAppleCareToWishlist = (rowObj, i) => {
+    const planTitle = rowObj.title || `Apple Care+ ${rowObj.model}`;
+    const sku = rowObj.sku || '';
+    const nameWithSku = sku ? `${planTitle} (SKU: ${sku})` : planTitle;
+    const priceStr = rowObj.salePrice || rowObj.yearly || '0';
+    const numericPrice = parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 7900;
+    const image = rowObj.image || getModelImageByName(rowObj.model);
+    const itemId = `ac-watch-${sku || i}`;
+
+    setLocalWishlist((prev) => ({ ...prev, [itemId]: !prev[itemId] }));
+
+    dispatch(
+      addToWishlist({
+        id: itemId,
+        name: nameWithSku,
+        title: nameWithSku,
+        price: numericPrice,
+        image: image,
+        rating: 5.0,
+        isAppleCare: true,
+        sku: sku
+      })
+    );
+  };
 
   const handleColorChange = (productId, colorVal) => {
     setSelectedColors((prev) => ({ ...prev, [productId]: colorVal }));
@@ -180,7 +391,6 @@ export default function Watch() {
       if (foundColor && foundColor.image) {
         return foundColor.image;
       }
-      // Fallback: match index of color name with index of image in images array
       const colorIdx = prod.colors.findIndex((c) => (c.name || c) === selectedColorName);
       if (colorIdx !== -1 && prod.images && prod.images[colorIdx]) {
         return prod.images[colorIdx];
@@ -209,10 +419,8 @@ export default function Watch() {
       image: getProductImage(prod),
       rating: prod.rating
     }));
-    alert(`Added ${prod.name} to Wishlist!`);
   };
 
-  // Resolve color values to hex code
   const resolveColorValue = (cVal) => {
     if (!cVal) return '#cbd5e1';
     const cValStr = cVal.toString().trim();
@@ -233,21 +441,9 @@ export default function Watch() {
       "pink": "#ec4899",
       "black": "#111111",
       "orange": "#ff9f68",
-      "orenge": "#ff9f68",
-      "cosmic orange": "#d9a07a",
       "blue": "#0071E3",
       "red": "#e0115f",
       "midnight": "#1e293b",
-      "light blue": "#bfdbfe",
-      "sky blue": "#bae6fd",
-      "lavender": "#e9d5ff",
-      "green": "#bbf7d0",
-      "dark gray": "#3f3f46",
-      "natural titanium": "#a39e99",
-      "natural": "#a39e99",
-      "black titanium": "#232426",
-      "white titanium": "#f2f1ed",
-      "deep purple": "#3b224c",
       "purple": "#a855f7",
       "yellow": "#eab308"
     };
@@ -255,7 +451,6 @@ export default function Watch() {
     return COLOR_MAP[lowerVal] || '#cbd5e1';
   };
 
-  // Merge database products with fallback mock data
   const dbWatches = products.filter(p => {
     const catName = p.category?.name || p.category?.toString() || '';
     const catSlug = p.category?.slug || '';
@@ -303,231 +498,457 @@ export default function Watch() {
   });
 
   return (
-    <div className="min-h-screen bg-[#fcfcfc] text-[#1d1d1f] py-4 px-4 sm:px-8 md:px-12 lg:px-16 select-none animate-in fade-in duration-300 relative">
+    <div className="min-h-screen bg-[#fcfcfc] text-[#1d1d1f] py-8 px-4 sm:px-8 md:px-12 lg:px-16 select-none animate-in fade-in duration-300 relative">
       
-      {/* Title & Apple Watch ChapterNav Header */}
-      <div className="w-full bg-[#fcfcfc] pt-2 pb-6 select-none font-sans border-b border-zinc-150 mb-8">
+      {/* Title & Category Sub-Nav Header */}
+      <div className="w-full bg-[#fcfcfc] pt-2 pb-4 select-none font-sans mb-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-zinc-950 text-left mb-6">
+          <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-zinc-950 text-left mb-6">
             Watch
           </h1>
 
-          {/* ChapterNav Horizontal Items Carousel with Nav Paddles */}
-          <div className="relative group/chapternav">
-            {/* Scroll Left Paddle */}
-            <button 
-              onClick={() => navRef.current?.scrollBy({ left: -300, behavior: 'smooth' })}
-              className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 shadow-md border border-zinc-200 items-center justify-center text-zinc-600 hover:text-black hover:scale-110 transition-all cursor-pointer"
-              aria-label="Previous items"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
+          {/* Horizontal Watch Model Selector Row */}
+          <div className="flex items-end gap-7 sm:gap-9 md:gap-11 lg:gap-12 overflow-x-auto no-scrollbar py-3 px-1">
+            {subItems.map((item, idx) => {
+              const currentTab = searchParams.get('tab') || '';
+              const currentSearch = searchParams.get('search') || '';
+              const isAppleCareItem = (item.name || item.label || '').toLowerCase().includes('care');
+              const isAppleCareActive = currentTab.toLowerCase() === 'applecare' || currentSearch.toLowerCase().includes('care');
+              const isActive = isAppleCareActive
+                ? isAppleCareItem
+                : (currentSearch && currentSearch.toLowerCase() === (item.query || '').toLowerCase());
 
-            <div 
-              ref={navRef}
-              className="flex items-start justify-start md:justify-center gap-8 sm:gap-10 overflow-x-auto no-scrollbar py-3 px-2 scroll-smooth"
-            >
-              {WATCH_CHAPTER_NAV_ITEMS.map((item) => {
-                const currentSearch = searchParams.get('search') || '';
-                const isActive = item.query && currentSearch.toLowerCase().includes(item.query.toLowerCase());
-
-                return (
-                  <Link
-                    key={item.id}
-                    to={item.path || (item.query ? `/watch?search=${encodeURIComponent(item.query)}` : '/watch')}
-                    className={`flex flex-col items-center gap-2 shrink-0 group cursor-pointer transition-all duration-200 ${
-                      isActive ? 'scale-105 opacity-100' : 'hover:scale-105 opacity-90 hover:opacity-100'
-                    }`}
-                  >
-                    <div className="h-14 w-16 flex items-center justify-center p-1 transition-transform group-hover:scale-105">
-                      {item.icon}
-                    </div>
-                    <div className="text-center space-y-0.5">
-                      <p className="text-[11px] font-semibold leading-tight text-zinc-900 group-hover:text-[#0071e3] transition-colors">
-                        {item.name}
-                        {item.subName && (
-                          <>
-                            <br />
-                            <span className="font-bold">{item.subName}</span>
-                          </>
-                        )}
-                      </p>
-                      {item.badge && (
-                        <span className="inline-block text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 rounded-full px-2 py-0.5 mt-0.5 tracking-wider">
-                          {item.badge}
-                        </span>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-
-            {/* Scroll Right Paddle */}
-            <button 
-              onClick={() => navRef.current?.scrollBy({ left: 300, behavior: 'smooth' })}
-              className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 shadow-md border border-zinc-200 items-center justify-center text-zinc-600 hover:text-black hover:scale-110 transition-all cursor-pointer"
-              aria-label="Next items"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+              return (
+                <Link
+                  key={item.name || item.query || idx}
+                  to={resolveSubItemPath(item)}
+                  className={`flex flex-col items-center gap-2 shrink-0 group cursor-pointer transition-transform transition-opacity duration-200 ${
+                    isActive ? 'scale-105 opacity-100 font-bold' : 'hover:scale-105 opacity-75 hover:opacity-100'
+                  }`}
+                >
+                  <div className="h-16 w-20 flex items-center justify-center p-1 overflow-visible">
+                    <img
+                      src={resolveIconImage(item.image, item.name)}
+                      alt={item.name}
+                      onError={(e) => {
+                        const lower = (item.name || '').toLowerCase();
+                        if (lower.includes('care')) {
+                          e.currentTarget.src = '/applecare_official_hero.png';
+                        } else {
+                          e.currentTarget.src = '/watch_nav/watch_series_10.png';
+                        }
+                      }}
+                      className={`max-h-full max-w-full object-contain filter drop-shadow-sm transition-transform duration-300 group-hover:scale-110 ${item.scale || 'scale-100'}`}
+                    />
+                  </div>
+                  <span className={`text-xs tracking-tight text-zinc-950 transition-colors ${isActive ? 'font-bold text-zinc-950' : 'font-semibold'}`}>
+                    {item.name}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* Controller Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-150 pb-6 mb-8 text-sm font-sans uppercase font-bold text-zinc-500 tracking-wider">
-        <div className="text-zinc-800 text-xs tracking-widest">
-          SHOWING ALL {filteredProducts.length} RESULTS
-        </div>
-      </div>
+      {/* Conditionally Render Watch AppleCare Grid OR Product Grid */}
+      {(() => {
+        const currentTab = searchParams.get('tab') || '';
+        const currentSearch = searchParams.get('search') || '';
+        const isAppleCareActive = currentTab.toLowerCase() === 'applecare' || currentSearch.toLowerCase().includes('care');
 
-      {/* Filter Drawer */}
-      {filterOpen && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 transition-all duration-300 flex justify-end">
-          <div className="w-80 bg-white h-full p-8 shadow-2xl animate-in slide-in-from-right duration-350 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between border-b pb-4 mb-6">
-                <h3 className="font-bold text-lg tracking-tight">Filter Options</h3>
-                <button
-                  onClick={() => setFilterOpen(false)}
-                  className="p-1 rounded-full hover:bg-zinc-100 text-zinc-500 cursor-pointer"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <h4 className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Availability</h4>
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={() => setActiveTab('all')}
-                      className={`text-left text-sm py-1.5 px-3 rounded-lg ${activeTab === 'all' ? 'bg-zinc-100 font-semibold' : 'text-zinc-600 hover:bg-zinc-50'}`}
-                    >
-                      All Models
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('available')}
-                      className={`text-left text-sm py-1.5 px-3 rounded-lg ${activeTab === 'available' ? 'bg-zinc-100 font-semibold' : 'text-zinc-600 hover:bg-zinc-50'}`}
-                    >
-                      In Stock
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('soldout')}
-                      className={`text-left text-sm py-1.5 px-3 rounded-lg ${activeTab === 'soldout' ? 'bg-zinc-100 font-semibold' : 'text-zinc-600 hover:bg-zinc-50'}`}
-                    >
-                      Sold Out
-                    </button>
+        if (isAppleCareActive) {
+          return (
+            <div className="max-w-7xl mx-auto my-6 animate-in fade-in duration-300">
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-zinc-200/60 overflow-hidden shadow-xs p-6 sm:p-10 text-left">
+                {/* Header section */}
+                <div className="border-b border-zinc-100 pb-4 mb-4 text-center">
+                  <div className="text-2xl sm:text-4xl md:text-5xl font-black text-[#FF2D55] tracking-tight py-1">
+                    {dbHeaderTitle || 'AppleCare+'}
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <button
-              onClick={() => setFilterOpen(false)}
-              className="w-full bg-[#0071e3] hover:bg-[#0077ed] text-white py-3 rounded-xl font-medium tracking-wide shadow-sm hover:shadow-md transition-all cursor-pointer text-center"
-            >
-              Apply Filters
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Grid */}
-      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredProducts.map((prod) => (
-          <div
-            key={prod.id}
-            className="group bg-white rounded-2xl overflow-hidden flex flex-col justify-between p-6 shadow-sm border border-zinc-100/50 hover:shadow-md hover:border-zinc-200/55 transition-all duration-300 relative text-left"
-          >
-            <div className="flex items-center justify-between absolute top-4 left-4 right-4 z-10">
-              {prod.isSoldOut ? (
-                <span className="bg-[#f5f5f7] text-[#1d1d1f] font-bold text-[9px] tracking-widest uppercase px-2.5 py-1 rounded">
-                  SOLD OUT
-                </span>
-              ) : (
-                <div />
-              )}
-
-              <button
-                onClick={() => handleAddToWishlist(prod)}
-                className={`p-2 rounded-full shadow-sm border border-zinc-100/80 bg-white/90 hover:scale-110 transition-all cursor-pointer ${
-                  localWishlist[prod.id] ? 'text-red-500' : 'text-zinc-400 hover:text-zinc-600'
-                }`}
-              >
-                <Heart className={`h-4 w-4 ${localWishlist[prod.id] ? 'fill-current' : ''}`} />
-              </button>
-            </div>
-
-            {/* Clickable Area: Image and Title */}
-            <Link to={`/product/${prod.id}`} className="block cursor-pointer">
-              {/* Product Visual */}
-              <div className="w-full h-64 flex items-center justify-center overflow-hidden mb-6 mt-4 p-4">
-                <img
-                  src={getProductImage(prod)}
-                  alt={prod.name}
-                  className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 select-none"
-                />
-              </div>
-
-              {/* Title (Clean Product Name) */}
-              <h3 className="font-semibold text-[16px] leading-snug tracking-tight text-zinc-900 group-hover:text-zinc-900 transition-colors min-h-[48px]">
+                {/* Product Box Grid matching reference design */}
                 {(() => {
-                  const cleanProductTitle = (rawTitle) => {
-                    if (!rawTitle) return '';
-                    return rawTitle.replace(/\s*[A-Z0-9]{5,9}\/[A-Z]$/i, '').trim();
-                  };
+                  const rows = dbAppleCareRows.length > 0 ? dbAppleCareRows : DEFAULT_WATCH_APPLECARE_ROWS;
                   return (
-                    <span>{cleanProductTitle(prod.name || prod.title)}</span>
+                    <>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6 items-stretch">
+                        {rows.map((row, i) => {
+                          const itemKey = row.model || row.title;
+                          const isSelected = !!selectedAppleCareMap[itemKey];
+
+                          return (
+                            <div 
+                              key={i} 
+                              onClick={() => {
+                                toggleAppleCareSelection(row);
+                              }}
+                              className={`group bg-white rounded-[24px] sm:rounded-[28px] border transition-all duration-300 relative text-left cursor-pointer p-5 sm:p-6 shadow-xs hover:shadow-md flex flex-col justify-between h-full ${
+                                isSelected 
+                                  ? 'border-2 border-black bg-zinc-50/20 ring-1 ring-black/10' 
+                                  : 'border-zinc-200/80 hover:border-zinc-300'
+                              }`}
+                            >
+                              {/* Top & Middle Content Container */}
+                              <div className="flex-1 flex flex-col justify-between">
+                                {/* Top Section: Media Left, Info Right */}
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+                                  
+                                  {/* LEFT COLUMN: Media Container Box */}
+                                  <div className="md:col-span-5 bg-[#F7F7F9] rounded-2xl p-4 sm:p-5 relative flex flex-col items-center justify-between min-h-[260px] sm:min-h-[280px] h-full border border-zinc-100/80">
+                                    
+                                    {/* Top Left Badge */}
+                                    <div className="w-full flex items-center justify-start z-10 mb-1">
+                                      <span className="bg-[#FF2D55] text-white text-[11px] font-bold px-3 py-1 rounded-full tracking-wide">
+                                        Apple Care+
+                                      </span>
+                                    </div>
+                                    {/* Main Product Image */}
+                                    <div className="w-full h-28 sm:h-32 flex items-center justify-center my-1 overflow-hidden">
+                                      <img
+                                        src={row.image || getModelImageByName(row.model)}
+                                        alt={row.title || row.model}
+                                        className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
+                                      />
+                                    </div>
+
+                                    {/* Carousel Dots */}
+                                    <div className="flex items-center justify-center gap-1.5 my-1">
+                                      <span className="w-2 h-2 rounded-full bg-black"></span>
+                                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
+                                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
+                                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
+                                    </div>
+
+                                    {/* Bottom Product Logo & Subtitle */}
+                                    <div className="text-center min-h-[42px] flex flex-col justify-center items-center">
+                                      <div className="flex items-center justify-center gap-1 font-extrabold text-[#1D1D1F] text-sm sm:text-base tracking-tight">
+                                        <span></span>
+                                        <span>{row.model || row.title}</span>
+                                      </div>
+                                      {row.sku ? (
+                                        <p className="text-[11px] text-zinc-500 font-mono font-semibold mt-0.5">
+                                          SKU: {row.sku}
+                                        </p>
+                                      ) : (
+                                        <p className="text-[11px] text-transparent font-mono font-semibold mt-0.5 select-none">
+                                          SKU: N/A
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* RIGHT COLUMN: Info & Pricing Block */}
+                                  <div className="md:col-span-7 space-y-3 flex flex-col justify-between h-full">
+                                    <div>
+                                      <div className="text-[10px] sm:text-[11px] font-bold tracking-widest uppercase text-[#FF2D55] mb-1">
+                                        APPLE CARE+
+                                      </div>
+                                      <h3 className="font-extrabold text-[#1D1D1F] text-lg sm:text-xl leading-snug tracking-tight min-h-[52px] flex items-center">
+                                        {row.title || `Apple Care+ ${row.model}`}
+                                      </h3>
+                                      <p className="text-xs text-zinc-500 font-medium mt-1 leading-relaxed min-h-[36px] flex items-center">
+                                        {row.description || `Extended coverage for your ${row.model}. Peace of mind for what's next.`}
+                                      </p>
+                                    </div>
+
+                                    {/* Pricing Details Block */}
+                                    <div className="space-y-1.5 pt-2.5 border-t border-zinc-100">
+                                      {/* MRP & Discount Pill Row */}
+                                      <div className="flex items-center justify-between text-xs text-zinc-500">
+                                        <span className="font-semibold text-zinc-500">MRP</span>
+                                        <div className="flex items-center gap-2">
+                                          {row.mrp && <span className="line-through text-zinc-400 font-medium">{row.mrp}</span>}
+                                          {row.discount && (
+                                            <span className="bg-[#FF2D55] text-white font-extrabold text-[10px] px-2 py-0.5 rounded-md shadow-2xs">
+                                              {row.discount.includes('%') ? row.discount : `${row.discount} OFF`}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Discount Row */}
+                                      {row.discount ? (
+                                        <div className="flex items-center justify-between text-xs">
+                                          <span className="font-semibold text-zinc-500">Discount</span>
+                                          <span className="font-bold text-[#FF2D55]">-{row.discount.replace(/OFF/i, '').trim()}</span>
+                                        </div>
+                                      ) : (
+                                        <div className="h-4"></div>
+                                      )}
+
+                                      <div className="border-b border-zinc-100 my-1"></div>
+
+                                      {/* Final Price Row */}
+                                      <div className="flex items-baseline justify-between">
+                                        <span className="font-extrabold text-[#1D1D1F] text-sm sm:text-base">Final Price</span>
+                                        <div className="text-xl sm:text-2xl font-extrabold text-[#00875A] tabular-nums tracking-tight">
+                                          {row.salePrice || row.yearly}
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center justify-end gap-1 text-[11px] text-zinc-400 font-medium">
+                                        <span>GST Paid</span>
+                                        <span className="text-xs">ⓘ</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* MIDDLE SECTION: 4 Feature Highlights Grid */}
+                                <AppleCareFeaturesGrid years="2" />
+                              </div>
+
+                              {/* BOTTOM ACTION BUTTONS */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 mt-auto">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddAppleCareToWishlist(row, i);
+                                  }}
+                                  className={`w-full border font-bold py-3 px-4 rounded-xl text-xs transition-all shadow-2xs flex items-center justify-center gap-2 cursor-pointer ${
+                                    localWishlist[`ac-watch-${row.sku || i}`]
+                                      ? 'bg-rose-50 border-rose-200 text-rose-600'
+                                      : 'bg-[#1D1D1F] text-white border-zinc-900 hover:bg-zinc-800'
+                                  }`}
+                                >
+                                  <Heart className={`w-4 h-4 ${localWishlist[`ac-watch-${row.sku || i}`] ? 'fill-current text-rose-500' : 'text-white'}`} />
+                                  <span>{localWishlist[`ac-watch-${row.sku || i}`] ? 'Wishlisted' : 'Add to Wishlist'}</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddAppleCareToCart(row, i);
+                                  }}
+                                  className="w-full bg-black hover:bg-zinc-900 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                                >
+                                  <ShoppingBag className="w-4 h-4 text-white" />
+                                  <span>Add to Cart</span>
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="mt-6 pt-4 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#6E6E73]">
+                        <p>Prices include applicable taxes. Service fees may apply for repairs.</p>
+                      </div>
+
+                      {/* Floating Multi-Selection Action Bar */}
+                      {Object.keys(selectedAppleCareMap).length > 0 && (
+                        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#1D1D1F] text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-zinc-700/80 flex items-center justify-between gap-6 max-w-xl w-[92%] animate-in slide-in-from-bottom-5 duration-300">
+                          <div className="flex items-center gap-3">
+                            <span className="bg-[#FF2D55] text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0">
+                              {Object.keys(selectedAppleCareMap).length}
+                            </span>
+                            <div>
+                              <div className="text-xs font-bold text-white">
+                                {Object.keys(selectedAppleCareMap).length} Watch AppleCare Plans Selected
+                              </div>
+                              <div className="text-[11px] text-zinc-400 font-medium">
+                                Total: ₹{Object.values(selectedAppleCareMap).reduce((acc, curr) => {
+                                  const p = parseFloat((curr.salePrice || curr.yearly || '0').replace(/[^0-9.]/g, '')) || 0;
+                                  return acc + p;
+                                }, 0).toLocaleString('en-IN')}.00
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setSelectedAppleCareMap({})}
+                              className="text-xs text-zinc-400 hover:text-white px-3 py-2 rounded-xl transition-colors cursor-pointer"
+                            >
+                              Clear
+                            </button>
+                            <button
+                              onClick={() => handleBuyMultipleAppleCareWhatsApp(selectedAppleCareMap)}
+                              className="bg-[#0071E3] hover:bg-[#0077ED] text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 transition-all cursor-pointer"
+                            >
+                              <span>Buy on WhatsApp</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   );
                 })()}
-              </h3>
-            </Link>
-
-            {/* Non-clickable configurations / actions */}
-            <div className="space-y-4 pt-2">
-              {/* Color Dot Options Row */}
-              <div className="flex items-center justify-between gap-1.5 border-t border-zinc-100/60 pt-3">
-                <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Colors</span>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {prod.colors.map((color) => {
-                    const isSelected = selectedColors[prod.id] === color.name || (!selectedColors[prod.id] && prod.colors[0]?.name === color.name);
-                    return (
-                      <button
-                        key={color.name}
-                        onClick={() => handleColorChange(prod.id, color.name)}
-                        style={{ backgroundColor: color.value }}
-                        className={`w-3.5 h-3.5 rounded-full cursor-pointer transition-all border ${
-                          isSelected ? 'scale-125 border-zinc-800 ring-1 ring-zinc-400' : 'border-zinc-300 hover:scale-110'
-                        }`}
-                        title={color.name}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-1 border-t border-zinc-100/60">
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Price</span>
-                  <span className="font-semibold text-zinc-900 text-sm">{prod.priceStr}</span>
-                </div>
-
-                {!prod.isSoldOut && (
-                  <button
-                    onClick={() => handleAddToCart(prod)}
-                    className="flex items-center justify-center p-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-900 transition-all cursor-pointer"
-                    title="Add to Cart"
-                  >
-                    <ShoppingBag className="h-4 w-4" />
-                  </button>
-                )}
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          );
+        }
+
+        return (
+          <>
+            {/* Controller Bar */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-150 pb-6 mb-8 text-sm font-sans uppercase font-bold text-zinc-500 tracking-wider">
+              <div className="text-zinc-800 text-xs tracking-widest">
+                SHOWING ALL {filteredProducts.length} RESULTS
+              </div>
+            </div>
+
+            {/* Filter Drawer */}
+            {filterOpen && (
+              <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 transition-all duration-300 flex justify-end">
+                <div className="w-80 bg-white h-full p-8 shadow-2xl animate-in slide-in-from-right duration-350 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between border-b pb-4 mb-6">
+                      <h3 className="font-bold text-lg tracking-tight">Filter Options</h3>
+                      <button
+                        onClick={() => setFilterOpen(false)}
+                        className="p-1 rounded-full hover:bg-zinc-100 text-zinc-500 cursor-pointer"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="space-y-3">
+                        <h4 className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Availability</h4>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => setActiveTab('all')}
+                            className={`text-left text-sm py-1.5 px-3 rounded-lg ${activeTab === 'all' ? 'bg-zinc-100 font-semibold' : 'text-zinc-600 hover:bg-zinc-50'}`}
+                          >
+                            All Models
+                          </button>
+                          <button
+                            onClick={() => setActiveTab('available')}
+                            className={`text-left text-sm py-1.5 px-3 rounded-lg ${activeTab === 'available' ? 'bg-zinc-100 font-semibold' : 'text-zinc-600 hover:bg-zinc-50'}`}
+                          >
+                            In Stock
+                          </button>
+                          <button
+                            onClick={() => setActiveTab('soldout')}
+                            className={`text-left text-sm py-1.5 px-3 rounded-lg ${activeTab === 'soldout' ? 'bg-zinc-100 font-semibold' : 'text-zinc-600 hover:bg-zinc-50'}`}
+                          >
+                            Sold Out
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setFilterOpen(false)}
+                    className="w-full bg-[#0071e3] hover:bg-[#0077ed] text-white py-3 rounded-xl font-medium tracking-wide shadow-sm hover:shadow-md transition-all cursor-pointer text-center"
+                  >
+                    Apply Filters
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Grid */}
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredProducts.slice(0, visibleCount).map((prod) => (
+                <div
+                  key={prod.id}
+                  className="group bg-white rounded-2xl overflow-hidden flex flex-col justify-between p-6 shadow-sm border border-zinc-100/50 hover:shadow-md hover:border-zinc-200/55 transition-all duration-300 relative text-left"
+                >
+                  <div className="flex items-center justify-between absolute top-4 left-4 right-4 z-10">
+                    {prod.isSoldOut ? (
+                      <span className="bg-[#f5f5f7] text-[#1d1d1f] font-bold text-[9px] tracking-widest uppercase px-2.5 py-1 rounded">
+                        SOLD OUT
+                      </span>
+                    ) : (
+                      <div />
+                    )}
+
+                    <button
+                      onClick={() => handleAddToWishlist(prod)}
+                      className={`p-2 rounded-full shadow-sm border border-zinc-100/80 bg-white/90 hover:scale-110 transition-all cursor-pointer ${
+                        localWishlist[prod.id] ? 'text-red-500' : 'text-zinc-400 hover:text-zinc-600'
+                      }`}
+                    >
+                      <Heart className={`h-4 w-4 ${localWishlist[prod.id] ? 'fill-current' : ''}`} />
+                    </button>
+                  </div>
+
+                  {/* Clickable Area: Image and Title */}
+                  <Link to={`/product/${prod.id}`} className="block cursor-pointer">
+                    {/* Product Visual - Apple Showcase Background (#f5f5f7) */}
+                    <CleanProductImage
+                      src={getProductImage(prod)}
+                      alt={prod.name}
+                    />
+
+                    {/* Title */}
+                    <h3 className="font-semibold text-[16px] leading-snug tracking-tight text-zinc-900 group-hover:text-zinc-900 transition-colors min-h-[48px]">
+                      {(() => {
+                        const cleanProductTitle = (rawTitle) => {
+                          if (!rawTitle) return '';
+                          return rawTitle.replace(/\s*[A-Z0-9]{5,9}\/[A-Z]$/i, '').trim();
+                        };
+                        return (
+                          <span>{cleanProductTitle(prod.name || prod.title)}</span>
+                        );
+                      })()}
+                    </h3>
+                  </Link>
+
+                  {/* Non-clickable configurations / actions */}
+                  <div className="space-y-4 pt-2">
+                    {/* Color Dot Options Row */}
+                    <div className="flex items-center justify-between gap-1.5 border-t border-zinc-100/60 pt-3">
+                      <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Colors</span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {prod.colors.map((color) => {
+                          const isSelected = selectedColors[prod.id] === color.name || (!selectedColors[prod.id] && prod.colors[0]?.name === color.name);
+                          return (
+                            <button
+                              key={color.name}
+                              onClick={() => handleColorChange(prod.id, color.name)}
+                              style={{ backgroundColor: color.value }}
+                              className={`w-3.5 h-3.5 rounded-full cursor-pointer transition-all border ${
+                                isSelected ? 'scale-125 border-zinc-800 ring-1 ring-zinc-400' : 'border-zinc-300 hover:scale-110'
+                              }`}
+                              title={color.name}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1 border-t border-zinc-100/60">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Price</span>
+                        <span className="font-semibold text-zinc-900 text-sm">{prod.priceStr}</span>
+                      </div>
+
+                      {!prod.isSoldOut && (
+                        <button
+                          onClick={() => handleAddToCart(prod)}
+                          className="flex items-center justify-center p-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-900 transition-all cursor-pointer"
+                          title="Add to Cart"
+                        >
+                          <ShoppingBag className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Infinite Scroll Indicator */}
+            {visibleCount < filteredProducts.length && (
+              <div className="text-center py-10">
+                <button
+                  onClick={() => setVisibleCount(prev => prev + 6)}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-zinc-900 text-white text-xs font-bold tracking-wide hover:bg-zinc-800 transition-all cursor-pointer shadow-sm"
+                >
+                  <span>Scroll for More Products ({Math.min(visibleCount, filteredProducts.length)} of {filteredProducts.length})</span>
+                </button>
+              </div>
+            )}
+          </>
+        );
+      })()}
     </div>
   );
 }

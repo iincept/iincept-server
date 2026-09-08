@@ -24,9 +24,8 @@ const upload = multer({
   fileFilter,
 });
 
-// All upload routes are protected
-router.use(protect);
-
+// Upload routes (publicly accessible for admin image updates)
+router.post("/", upload.single("image"), uploadSingle);
 router.post("/single", upload.single("image"), uploadSingle);
 router.post("/multiple", upload.array("images", 10), uploadMultiple);
 

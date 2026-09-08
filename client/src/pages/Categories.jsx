@@ -54,7 +54,6 @@ export default function Categories() {
       image: product.image || (product.images && product.images[0]) || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=150&q=80',
       rating: product.rating
     }));
-    alert(`Added ${product.name || product.title} to Wishlist!`);
   };
 
   const activeCategoryDetails = CATEGORY_CARDS.find(c => c.id === selectedCat);

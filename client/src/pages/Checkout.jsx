@@ -14,19 +14,17 @@ export default function Checkout() {
   // Load cart items and auth details from Redux
   const { cartItems } = useSelector((state) => state.cart);
   const { loading } = useSelector((state) => state.orders);
+  const { user } = useSelector((state) => state.auth);
 
   const [shippingAddress, setShippingAddress] = useState({
-    fullName: '',
-    phone: '',
+    fullName: user?.name || user?.fullName || '',
+    email: user?.email || '',
+    phone: user?.phone || user?.phoneNumber || '',
     address: '',
     city: '',
     state: '',
     pincode: ''
   });
-
-  const [savedAddresses, setSavedAddresses] = useState([]);
-  const [selectedAddressId, setSelectedAddressId] = useState('');
-  const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [couponCode, setCouponCode] = useState('');
@@ -39,30 +37,15 @@ export default function Checkout() {
   const [localLoading, setLocalLoading] = useState(false);
 
   useEffect(() => {
-    fetchAddresses();
-  }, []);
-
-  const fetchAddresses = async () => {
-    try {
-      const response = await axiosClient.get('/address');
-      const addresses = response.data || [];
-      setSavedAddresses(addresses);
-      
-      const defaultAddr = addresses.find(addr => addr.isDefault);
-      if (defaultAddr) {
-        setSelectedAddressId(defaultAddr._id);
-        setShippingAddress(defaultAddr);
-      } else if (addresses.length > 0) {
-        setSelectedAddressId(addresses[0]._id);
-        setShippingAddress(addresses[0]);
-      } else {
-        setIsAddingNewAddress(true);
-      }
-    } catch (err) {
-      console.error('Failed to fetch addresses:', err);
-      setIsAddingNewAddress(true);
+    if (user) {
+      setShippingAddress(prev => ({
+        ...prev,
+        fullName: prev.fullName || user.name || user.fullName || '',
+        email: prev.email || user.email || '',
+        phone: prev.phone || user.phone || user.phoneNumber || ''
+      }));
     }
-  };
+  }, [user]);
 
   const handleInputChange = (e) => {
     setShippingAddress({
@@ -98,31 +81,33 @@ export default function Checkout() {
   const sendWhatsAppOrderNotification = (order, items, addressObj, pMethod, finalTotal) => {
     try {
       const orderIdStr = order?.id || order?._id || 'ORD-' + Math.floor(100000 + Math.random() * 900000);
-      const custName = addressObj?.fullName || addressObj?.name || 'Customer';
+      const custName = addressObj?.fullName || addressObj?.name || user?.name || 'Customer';
+      const custEmail = addressObj?.email || user?.email || '';
       const custPhone = addressObj?.phone || addressObj?.phoneNumber || '';
       const street = addressObj?.address || addressObj?.street || addressObj?.addressLine1 || '';
       const city = addressObj?.city || '';
       const state = addressObj?.state || '';
       const pincode = addressObj?.pincode || addressObj?.postalCode || '';
 
-      let message = `🎉 *ORDER CONFIRMATION - iiNCEPT Electronics* 🎉\n\n`;
-      message += `Hello ${custName}! 👋\n`;
-      message += `Aapka order successfully place ho gaya hai. Yahan aapke order ki details hain:\n\n`;
+      let message = `🛒 *NEW ORDER PLACED - iiNCEPT Electronics* 🛒\n\n`;
       message += `🆔 *Order ID:* #${orderIdStr}\n`;
-      if (custPhone) message += `📞 *Mobile:* ${custPhone}\n`;
+      message += `👤 *Customer Name:* ${custName}\n`;
+      if (custEmail) message += `📧 *Email:* ${custEmail}\n`;
+      if (custPhone) message += `📞 *Phone Number:* ${custPhone}\n`;
       message += `📍 *Delivery Address:* ${street}, ${city}, ${state} - ${pincode}\n`;
       message += `💳 *Payment Method:* ${pMethod}\n\n`;
-      message += `📦 *Aapne Ye Products Order Kiye Hain:*\n`;
+      message += `📦 *Ordered Products:*\n`;
 
       (items || []).forEach((item, idx) => {
         const itemTitle = item.name || item.title || 'Product';
+        const skuText = (item.sku && !itemTitle.includes('SKU:')) ? ` (SKU: ${item.sku})` : '';
         const itemQty = item.quantity || 1;
         const itemPrice = (item.price || 0) * itemQty;
-        message += `${idx + 1}. *${itemTitle}*\n   Qty: ${itemQty} | Amount: ₹${itemPrice.toLocaleString('en-IN')}\n`;
+        message += `${idx + 1}. *${itemTitle}${skuText}*\n   Qty: ${itemQty} | Amount: ₹${itemPrice.toLocaleString('en-IN')}\n`;
       });
 
-      message += `\n💰 *Total Order Amount:* ₹${Number(finalTotal).toLocaleString('en-IN')}\n\n`;
-      message += `Thank you for shopping with iiNCEPT! Hum aapka order jald hi process aur dispatch kar denge.`;
+      message += `\n💰 *Total Amount:* ₹${Number(finalTotal).toLocaleString('en-IN')}\n\n`;
+      message += `Thank you for shopping with iiNCEPT! Hum aapka order jald hi process kar denge.`;
 
       const encodedMessage = encodeURIComponent(message);
       const whatsappUrl = `https://wa.me/918607222417?text=${encodedMessage}`;
@@ -133,16 +118,13 @@ export default function Checkout() {
   };
 
   const executeOrderPlacement = () => {
-    const activeAddress = isAddingNewAddress 
-      ? shippingAddress 
-      : (savedAddresses.find(a => (a._id || a.id) === selectedAddressId) || shippingAddress);
-    const pMethod = paymentMethod === 'razorpay' ? 'Razorpay' : 'COD';
+    const activeAddress = shippingAddress;
+    const pMethod = 'COD';
     const finalTotal = Math.max(0, totalAmount);
     const snapshotItems = [...cartItems];
 
     dispatch(placeNewOrder({
-      shippingAddressId: !isAddingNewAddress ? selectedAddressId : undefined,
-      shippingAddressData: isAddingNewAddress ? shippingAddress : undefined,
+      shippingAddressData: shippingAddress,
       paymentMethod: pMethod,
       couponCode: discountAmount > 0 ? couponCode : undefined,
       cartItems,
@@ -152,7 +134,6 @@ export default function Checkout() {
       .then((order) => {
         dispatch(clearCart()); // Empty the cart on successful checkout
         sendWhatsAppOrderNotification(order, snapshotItems, activeAddress, pMethod, finalTotal);
-        alert(`Order placed successfully! Order ID: #${order.id || order._id}`);
         navigate('/orders');
       })
       .catch((err) => {
@@ -262,7 +243,11 @@ export default function Checkout() {
         razorpay_signature: 'mock_sig_' + Math.floor(Math.random() * 1000000)
       });
       if (verifyRes.data.success) {
+        const activeAddress = isAddingNewAddress 
+          ? shippingAddress 
+          : (savedAddresses.find(a => (a._id || a.id) === selectedAddressId) || shippingAddress);
         dispatch(clearCart());
+        sendWhatsAppOrderNotification(mockOrderData, cartItems, activeAddress, 'Razorpay', totalAmount);
         alert('Payment successful (Mock Sandbox)!');
         navigate('/orders');
       } else {
@@ -293,21 +278,12 @@ export default function Checkout() {
     e.preventDefault();
     
     // Validation
-    if (isAddingNewAddress && (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.address || !shippingAddress.city || !shippingAddress.state || !shippingAddress.pincode)) {
-      alert('Please fill out all the shipping address fields.');
+    if (!shippingAddress.fullName || !shippingAddress.email || !shippingAddress.phone || !shippingAddress.address || !shippingAddress.city || !shippingAddress.state || !shippingAddress.pincode) {
+      alert('Please fill out all the shipping address fields (Name, Email, Phone Number, Address, City, State, Pincode).');
       return;
     }
 
-    if (!isAddingNewAddress && !selectedAddressId) {
-      alert('Please select a shipping address.');
-      return;
-    }
-
-    if (paymentMethod === 'razorpay') {
-      handleRazorpayCheckout();
-    } else {
-      executeOrderPlacement(); // COD direct checkout
-    }
+    executeOrderPlacement(); // Direct order placement & WhatsApp redirect
   };
 
   if (cartItems.length === 0) {
@@ -345,193 +321,99 @@ export default function Checkout() {
           
           {/* Shipping Address Section */}
           <div className="bg-white border border-zinc-200 rounded-2xl p-6 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between border-b border-zinc-150 pb-3">
+            <div className="border-b border-zinc-150 pb-3">
               <h2 className="font-bold text-lg flex items-center gap-2 text-zinc-900">
                 <Truck className="h-5 w-5 text-black" />
                 Shipping Address
               </h2>
-              {savedAddresses.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsAddingNewAddress(!isAddingNewAddress);
-                    if (!isAddingNewAddress) {
-                      setSelectedAddressId('');
-                      setShippingAddress({
-                        fullName: '',
-                        phone: '',
-                        address: '',
-                        city: '',
-                        state: '',
-                        pincode: ''
-                      });
-                    } else {
-                      const defaultAddr = savedAddresses.find(addr => addr.isDefault) || savedAddresses[0];
-                      setSelectedAddressId(defaultAddr._id);
-                      setShippingAddress(defaultAddr);
-                      setIsAddingNewAddress(false);
-                    }
-                  }}
-                  className="text-xs font-bold text-[#0071e3] hover:underline bg-transparent border-0 cursor-pointer p-0"
-                >
-                  {isAddingNewAddress ? "← Use Saved Address" : "+ Add New Address"}
-                </button>
-              )}
             </div>
 
-            {/* Saved Address list */}
-            {!isAddingNewAddress && savedAddresses.length > 0 && (
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 gap-3">
-                  {savedAddresses.map((addr) => (
-                    <div
-                      key={addr._id}
-                      onClick={() => {
-                        setSelectedAddressId(addr._id);
-                        setShippingAddress(addr);
-                      }}
-                      className={`p-4 rounded-xl border text-left flex items-start gap-3 transition-colors cursor-pointer ${
-                        selectedAddressId === addr._id
-                          ? 'border-black bg-zinc-50'
-                          : 'border-zinc-200 bg-white hover:bg-zinc-50 hover:border-zinc-300'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        checked={selectedAddressId === addr._id}
-                        onChange={() => {}}
-                        className="mt-1 accent-black"
-                      />
-                      <div className="flex-grow">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-xs text-zinc-900">{addr.fullName}</h3>
-                          {addr.isDefault && (
-                            <span className="text-[8px] bg-zinc-900 text-white font-bold px-1.5 py-0.5 rounded uppercase">Default</span>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-zinc-550 mt-1 leading-relaxed">
-                          {addr.address}, {addr.city}, {addr.state} - {addr.pincode}
-                        </p>
-                        <p className="text-[10px] font-semibold text-zinc-700 mt-1">Phone: {addr.phone}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Add/Edit Address Form */}
-            {isAddingNewAddress && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Full Name</label>
-                  <input 
-                    type="text" 
-                    name="fullName"
-                    value={shippingAddress.fullName}
-                    onChange={handleInputChange}
-                    placeholder="John Doe" 
-                    className="w-full bg-white border border-zinc-200 text-xs rounded-xl py-2.5 px-3.5 text-zinc-900 focus:outline-none focus:border-violet-500 transition-colors"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Phone Number</label>
-                  <input 
-                    type="tel" 
-                    name="phone"
-                    value={shippingAddress.phone}
-                    onChange={handleInputChange}
-                    placeholder="9876543210" 
-                    className="w-full bg-white border border-zinc-200 text-xs rounded-xl py-2.5 px-3.5 text-zinc-900 focus:outline-none focus:border-violet-500 transition-colors"
-                    required
-                  />
-                </div>
-                <div className="space-y-1 sm:col-span-2">
-                  <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Address Details</label>
-                  <input 
-                    type="text" 
-                    name="address"
-                    value={shippingAddress.address}
-                    onChange={handleInputChange}
-                    placeholder="123 Street Name, Area" 
-                    className="w-full bg-white border border-zinc-200 text-xs rounded-xl py-2.5 px-3.5 text-zinc-900 focus:outline-none focus:border-violet-500 transition-colors"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">City</label>
-                  <input 
-                    type="text" 
-                    name="city"
-                    value={shippingAddress.city}
-                    onChange={handleInputChange}
-                    placeholder="City" 
-                    className="w-full bg-white border border-zinc-200 text-xs rounded-xl py-2.5 px-3.5 text-zinc-900 focus:outline-none focus:border-violet-500 transition-colors"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">State</label>
-                  <input 
-                    type="text" 
-                    name="state"
-                    value={shippingAddress.state}
-                    onChange={handleInputChange}
-                    placeholder="State" 
-                    className="w-full bg-white border border-zinc-200 text-xs rounded-xl py-2.5 px-3.5 text-zinc-900 focus:outline-none focus:border-violet-500 transition-colors"
-                    required
-                  />
-                </div>
-                <div className="space-y-1 sm:col-span-2">
-                  <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Pincode</label>
-                  <input 
-                    type="text" 
-                    name="pincode"
-                    value={shippingAddress.pincode}
-                    onChange={handleInputChange}
-                    placeholder="400001" 
-                    className="w-full bg-white border border-zinc-200 text-xs rounded-xl py-2.5 px-3.5 text-zinc-900 focus:outline-none focus:border-violet-500 transition-colors"
-                    required
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Payment Method Section */}
-          <div className="bg-white border border-zinc-200 rounded-2xl p-6 space-y-4 shadow-sm">
-            <h2 className="font-bold text-lg flex items-center gap-2 border-b border-zinc-150 pb-3 text-zinc-900">
-              <CreditCard className="h-5 w-5 text-black" />
-              Payment Method
-            </h2>
-
+            {/* Direct Address Form */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Cash On Delivery */}
-              <button 
-                type="button"
-                onClick={() => setPaymentMethod('cod')}
-                className={`p-4 rounded-xl border text-left flex items-start gap-3 transition-colors cursor-pointer ${paymentMethod === 'cod' ? 'border-black bg-zinc-50' : 'border-zinc-200 bg-white hover:bg-zinc-50 hover:border-zinc-300'}`}
-              >
-                <input type="radio" checked={paymentMethod === 'cod'} onChange={() => {}} className="mt-1 accent-black" />
-                <div>
-                  <h3 className="font-bold text-xs text-zinc-900">Cash On Delivery</h3>
-                  <p className="text-[10px] text-zinc-550 mt-1">Pay with physical currency when courier package arrives at your home address.</p>
-                </div>
-              </button>
-
-              {/* Razorpay Gateway */}
-              <button 
-                type="button"
-                onClick={() => setPaymentMethod('razorpay')}
-                className={`p-4 rounded-xl border text-left flex items-start gap-3 transition-colors cursor-pointer ${paymentMethod === 'razorpay' ? 'border-black bg-zinc-50' : 'border-zinc-200 bg-white hover:bg-zinc-50 hover:border-zinc-300'}`}
-              >
-                <input type="radio" checked={paymentMethod === 'razorpay'} onChange={() => {}} className="mt-1 accent-black" />
-                <div>
-                  <h3 className="font-bold text-xs text-zinc-900">Razorpay Secure Checkout</h3>
-                  <p className="text-[10px] text-zinc-550 mt-1">Pay online instantly using Cards, UPI, Netbanking or Wallet gates.</p>
-                </div>
-              </button>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Full Name</label>
+                <input 
+                  type="text" 
+                  name="fullName"
+                  value={shippingAddress.fullName}
+                  onChange={handleInputChange}
+                  placeholder="John Doe" 
+                  className="w-full bg-white border border-zinc-200 text-xs rounded-xl py-2.5 px-3.5 text-zinc-900 focus:outline-none focus:border-violet-500 transition-colors"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Email Address</label>
+                <input 
+                  type="email" 
+                  name="email"
+                  value={shippingAddress.email || ''}
+                  onChange={handleInputChange}
+                  placeholder="john@example.com" 
+                  className="w-full bg-white border border-zinc-200 text-xs rounded-xl py-2.5 px-3.5 text-zinc-900 focus:outline-none focus:border-violet-500 transition-colors"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Phone Number</label>
+                <input 
+                  type="tel" 
+                  name="phone"
+                  value={shippingAddress.phone}
+                  onChange={handleInputChange}
+                  placeholder="9876543210" 
+                  className="w-full bg-white border border-zinc-200 text-xs rounded-xl py-2.5 px-3.5 text-zinc-900 focus:outline-none focus:border-violet-500 transition-colors"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Pincode</label>
+                <input 
+                  type="text" 
+                  name="pincode"
+                  value={shippingAddress.pincode}
+                  onChange={handleInputChange}
+                  placeholder="400001" 
+                  className="w-full bg-white border border-zinc-200 text-xs rounded-xl py-2.5 px-3.5 text-zinc-900 focus:outline-none focus:border-violet-500 transition-colors"
+                  required
+                />
+              </div>
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Address Details</label>
+                <input 
+                  type="text" 
+                  name="address"
+                  value={shippingAddress.address}
+                  onChange={handleInputChange}
+                  placeholder="123 Street Name, Area" 
+                  className="w-full bg-white border border-zinc-200 text-xs rounded-xl py-2.5 px-3.5 text-zinc-900 focus:outline-none focus:border-violet-500 transition-colors"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">City</label>
+                <input 
+                  type="text" 
+                  name="city"
+                  value={shippingAddress.city}
+                  onChange={handleInputChange}
+                  placeholder="City" 
+                  className="w-full bg-white border border-zinc-200 text-xs rounded-xl py-2.5 px-3.5 text-zinc-900 focus:outline-none focus:border-violet-500 transition-colors"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">State</label>
+                <input 
+                  type="text" 
+                  name="state"
+                  value={shippingAddress.state}
+                  onChange={handleInputChange}
+                  placeholder="State" 
+                  className="w-full bg-white border border-zinc-200 text-xs rounded-xl py-2.5 px-3.5 text-zinc-900 focus:outline-none focus:border-violet-500 transition-colors"
+                  required
+                />
+              </div>
             </div>
           </div>
 

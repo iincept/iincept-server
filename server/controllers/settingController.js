@@ -8,6 +8,444 @@ const getSettings = async (req, res) => {
       // Create default settings if not exists
       settings = await Setting.create({});
     }
+
+    if (!settings.heroSlides || settings.heroSlides.length === 0) {
+      settings.heroSlides = [
+        {
+          title: settings.heroTitle1 || "Apple devices for your business, sourced right, delivered anywhere in India.",
+          subtitle: settings.heroSubtitle1 || "Bulk pricing, GST invoicing, dedicated account support and consolidated billing — built for IT teams, gifting desks and resellers, not one-off retail buyers.",
+          buttonText: settings.heroButtonText1 || "Request Bulk Quote →",
+          buttonLink: "#procurement-section",
+          image: "",
+          bgStyle: "slide-dark",
+          isActive: true,
+        },
+        {
+          title: settings.heroTitle2 || "The latest Apple lineup, in stock and ready to ship today.",
+          subtitle: settings.heroSubtitle2 || "From the newest iPhone 17 series to our best-selling MacBooks and AirPods — explore the full range and place your order in minutes, no quote required.",
+          buttonText: settings.heroButtonText2 || "Browse Catalogue →",
+          buttonLink: "#apple-categories",
+          image: "",
+          bgStyle: "slide-light",
+          isActive: true,
+        },
+        {
+          title: settings.heroTitle3 || "Official AppleCare+ protection for total peace of mind.",
+          subtitle: settings.heroSubtitle3 || "Protect your team's Apple devices with genuine AppleCare+ coverage, priority tech support, and zero-hassle hardware replacement.",
+          buttonText: settings.heroButtonText3 || "Explore AppleCare+ →",
+          buttonLink: "/apple-care",
+          image: "",
+          bgStyle: "slide-dark-blue",
+          isActive: true,
+        },
+        {
+          title: settings.heroTitle4 || "Corporate gifting & exclusive institutional offers.",
+          subtitle: settings.heroSubtitle4 || "Customized procurement packages for corporate rewards, employee onboarding kits, and volume discounts on premium accessories.",
+          buttonText: settings.heroButtonText4 || "Explore Accessories →",
+          buttonLink: "/accessories",
+          image: "",
+          bgStyle: "slide-warm",
+          isActive: true,
+        },
+      ];
+      await settings.save();
+    }
+
+    if (!settings.appleCategories || settings.appleCategories.length === 0) {
+      settings.appleCategories = [
+        { name: 'iPhone', actionText: 'Shop all models →', link: '/iphone', image: '/iphone_category_uploaded.jpg', cardTheme: 'dark', isActive: true },
+        { name: 'Mac', actionText: 'Shop all models →', link: '/macbook', image: '/macbook_category_uploaded.png', cardTheme: 'light', isActive: true },
+        { name: 'iPad', actionText: 'Shop all models →', link: '/ipad', image: '/ipad_category_uploaded.png', cardTheme: 'dark', isActive: true },
+        { name: 'Watch', actionText: 'Shop all models →', link: '/watch', image: '/watch_category_uploaded.png', cardTheme: 'dark', isActive: true },
+        { name: 'AirPods', actionText: 'Shop all models →', link: '/airpods', image: '/airpods_category_uploaded.png', cardTheme: 'grey', isActive: true },
+        { name: 'TV & Home', actionText: 'Shop all models →', link: '/tv-home', image: '/tvhome_category_uploaded.png', cardTheme: 'light', isActive: true },
+        { name: 'Accessories', actionText: 'Shop all models →', link: '/accessories', image: '/accessories_category_uploaded.png', cardTheme: 'dark', isActive: true },
+        { name: 'AppleCare+', actionText: 'Explore coverage →', link: '/applecare', image: '/applecare_official_hero.png', cardTheme: 'dark', isActive: true },
+        { name: 'New Arrivals', actionText: 'Explore latest releases →', link: '/shop?sort=newest', image: '', cardTheme: 'dark', isActive: true },
+      ];
+      await settings.save();
+    } else {
+      const hasNewArrivals = settings.appleCategories.some(c => c.name && c.name.toLowerCase() === 'new arrivals');
+      if (!hasNewArrivals) {
+        settings.appleCategories.push({
+          name: 'New Arrivals',
+          actionText: 'Explore latest releases →',
+          link: '/shop?sort=newest',
+          image: '',
+          cardTheme: 'dark',
+          isActive: true
+        });
+        await settings.save();
+      }
+    }
+
+    if (!settings.navbarMenuItems || settings.navbarMenuItems.length === 0) {
+      settings.navbarMenuItems = [
+        {
+          name: 'New Arrivals',
+          link: '/shop?sort=newest',
+          isActive: true,
+          dropdownItems: [
+            { label: 'Explore New Arrivals', path: '/shop?sort=newest', query: 'New Arrivals', image: '/iphone_category_v2.jpg', price: 'New Releases', isActive: true },
+            { label: 'iPhone 17 Series', path: '/iphone', query: 'iPhone 17', image: '/iphone17p_orange.jpg', price: 'From ₹79,900', isActive: true },
+            { label: 'MacBook M4 Series', path: '/macbook', query: 'MacBook Pro', image: '/mac_nav/macbook_pro.png', price: 'From ₹1,69,900', isActive: true },
+            { label: 'Apple Watch Series 10', path: '/watch', query: 'Series 10', image: '/watch_category_uploaded.png', price: 'From ₹46,900', isActive: true },
+          ]
+        },
+        {
+          name: 'Mac',
+          link: '/macbook',
+          isActive: true,
+          dropdownItems: [
+            { label: 'Explore All Mac', path: '/macbook', query: 'MacBook', image: '/macbook_category_v3.jpg', price: 'Mac Workstations', isActive: true },
+            { label: 'MacBook Neo', path: '/macbook?search=MacBook Neo', query: 'MacBook Neo', image: '/mac_dark_banner.jpg', price: 'High Performance Laptop', isActive: true },
+            { label: 'MacBook Air', path: '/macbook?search=MacBook Air', query: 'MacBook Air', image: '/student_mac_banner.jpg', price: 'Light & Powerful. From ₹1,14,900', isActive: true },
+            { label: 'MacBook Pro', path: '/macbook?search=MacBook Pro', query: 'MacBook Pro', image: '/mac_nav/macbook_pro.png', price: 'Pro Workflow Leader. From ₹1,69,900', isActive: true },
+            { label: 'iMac', path: '/macbook?search=iMac', query: 'iMac', image: '/imac_studio_lifestyle.jpg', price: 'All-in-one Desktop. From ₹1,29,900', isActive: true },
+            { label: 'Mac mini', path: '/macbook?search=Mac mini', query: 'Mac mini', image: 'https://www.apple.com/assets-www/en_WW/mac/04_chapternav/small/nav_mac_mini_f628f615d_2x.png', price: 'Compact Powerhouse. From ₹54,900', isActive: true },
+            { label: 'Mac Studio', path: '/macbook?search=Mac Studio', query: 'Mac Studio', image: '/mac_nav/mac_studio.png', price: 'Creator Station. From ₹1,99,900', isActive: true },
+            { label: 'Displays', path: '/macbook?search=Studio Display', query: 'Display', image: '/mac_nav/mac_displays.png', price: 'Retina 5K & 6K Panels', isActive: true },
+            { label: 'Compare Mac', path: '/compare?category=mac', query: 'Compare', image: '/macbook_category_v2.jpg', price: 'Compare Specs', isActive: true }
+          ]
+        },
+        {
+          name: 'iPad',
+          link: '/ipad',
+          isActive: true,
+          dropdownItems: [
+            { label: 'Explore All iPad', path: '/ipad', query: 'iPad', image: '/ipad_category_v3.png', price: 'iPad Catalogue', isActive: true },
+            { label: 'iPad Pro', path: '/ipad?search=iPad Pro', query: 'iPad Pro', image: '/ipad_category_v2.jpg', price: 'Ultra Thin. From ₹99,900', isActive: true },
+            { label: 'iPad Air', path: '/ipad?search=iPad Air', query: 'iPad Air', image: '/ipad_air_banner.jpg', price: 'Value & Power. From ₹59,900', isActive: true },
+            { label: 'iPad', path: '/ipad?search=iPad', query: 'iPad', image: '/ipad_category.jpg', price: 'Daily Workhorse. From ₹34,900', isActive: true },
+            { label: 'iPad mini', path: '/ipad?search=iPad mini', query: 'iPad mini', image: '/ipad_air_blue.jpg', price: 'Pocket Sized. From ₹49,900', isActive: true },
+            { label: 'Apple Pencil', path: '/accessories?search=Pencil', query: 'Pencil', image: '/accessories_banner.png', price: 'Precision Input. From ₹11,900', isActive: true },
+            { label: 'Keyboards', path: '/accessories?search=Keyboard', query: 'Keyboard', image: '/accessories_banner.png', price: 'Magic Keyboard', isActive: true },
+            { label: 'Compare iPad', path: '/compare?category=ipad', query: 'Compare', image: '/ipad_category_v3.png', price: 'Compare Specs', isActive: true }
+          ]
+        },
+        {
+          name: 'iPhone',
+          link: '/iphone',
+          isActive: true,
+          dropdownItems: [
+            { label: 'Explore All iPhone', path: '/iphone', query: 'iPhone', image: '/iphone_category_v2.jpg', price: 'iPhone Catalogue', isActive: true },
+            { label: 'iPhone 17 Pro Max', path: '/iphone?search=iPhone 17 Pro Max', query: 'iPhone 17 Pro Max', image: '/iphone17p_orange.jpg', price: 'Peak Performance. From ₹1,64,900', isActive: true },
+            { label: 'iPhone 17 Pro', path: '/iphone?search=iPhone 17 Pro', query: 'iPhone 17 Pro', image: '/iphone17p_white.jpg', price: 'Titanium Build. From ₹1,34,900', isActive: true },
+            { label: 'iPhone 17 Air', path: '/iphone?search=iPhone 17 Air', query: 'iPhone 17 Air', image: '/iphone17_green.jpg', price: 'Ultra Thin Design', isActive: true },
+            { label: 'iPhone 17', path: '/iphone?search=iPhone 17', query: 'iPhone 17', image: '/iphone17_green.jpg', price: 'Sleek & Durable. From ₹79,900', isActive: true },
+            { label: 'iPhone 17e', path: '/iphone?search=iPhone 17e', query: 'iPhone 17e', image: '/iphone17_green.jpg', price: 'Essential Performance', isActive: true },
+            { label: 'iPhone 16', path: '/iphone?search=iPhone 16', query: 'iPhone 16', image: '/iphone_category_uploaded.jpg', price: 'Proven Classic. From ₹69,900', isActive: true },
+            { label: 'Compare iPhone', path: '/compare?category=iphone', query: 'Compare', image: '/iphone_category_v2.jpg', price: 'Compare Specs', isActive: true }
+          ]
+        },
+        {
+          name: 'Watch',
+          link: '/watch',
+          isActive: true,
+          dropdownItems: [
+            { label: 'Explore All Watch', path: '/watch', query: 'Watch', image: '/watch_category_uploaded.png', price: 'Watch Lineup', isActive: true },
+            { label: 'Apple Watch Series 10', path: '/watch?search=Series 10', query: 'Series 10', image: '/watch_category_uploaded.png', price: 'Thinnest Watch. From ₹46,900', isActive: true },
+            { label: 'Apple Watch Ultra 2', path: '/watch?search=Ultra', query: 'Ultra', image: '/watch_category_uploaded.png', price: 'Extreme Sports. From ₹89,900', isActive: true },
+            { label: 'Apple Watch SE', path: '/watch?search=SE', query: 'SE', image: '/watch_category_uploaded.png', price: 'Essential Health. From ₹24,900', isActive: true },
+            { label: 'Compare Watch', path: '/compare?category=watch', query: 'Compare', image: '/watch_category_uploaded.png', price: 'Compare Specs', isActive: true }
+          ]
+        },
+        {
+          name: 'AirPods',
+          link: '/airpods',
+          isActive: true,
+          dropdownItems: [
+            { label: 'Explore All AirPods', path: '/airpods', query: 'AirPods', image: '/airpods_category_uploaded.png', price: 'AirPods Lineup', isActive: true },
+            { label: 'AirPods Pro 2', path: '/airpods?search=Pro', query: 'AirPods Pro', image: '/airpods_category_uploaded.png', price: 'ANC Leader. From ₹24,900', isActive: true },
+            { label: 'AirPods 4', path: '/airpods?search=AirPods 4', query: 'AirPods 4', image: '/airpods_category_uploaded.png', price: 'Open Ear ANC. From ₹12,900', isActive: true },
+            { label: 'AirPods Max', path: '/airpods?search=Max', query: 'AirPods Max', image: '/airpods_category_uploaded.png', price: 'Over Ear Audio. From ₹59,900', isActive: true }
+          ]
+        },
+        {
+          name: 'TV & Home',
+          link: '/tv-home',
+          isActive: true,
+          dropdownItems: [
+            { label: 'Explore All TV & Home', path: '/tv-home', query: 'TV & Home', image: '/tvhome_category_uploaded.png', price: 'Cinematic Experience', isActive: true },
+            { label: 'Apple TV 4K', path: '/tv-home?search=Apple TV', query: 'Apple TV', image: '/tvhome_category_uploaded.png', price: '4K HDR Cinema. From ₹14,900', isActive: true },
+            { label: 'HomePod', path: '/tv-home?search=HomePod', query: 'HomePod', image: '/tvhome_category_uploaded.png', price: 'High Fidelity Sound. From ₹32,900', isActive: true },
+            { label: 'HomePod mini', path: '/tv-home?search=HomePod mini', query: 'HomePod mini', image: '/tvhome_category_uploaded.png', price: 'Room filling audio. From ₹10,900', isActive: true }
+          ]
+        },
+        {
+          name: 'Accessories',
+          link: '/accessories',
+          isActive: true,
+          dropdownItems: [
+            { label: 'Shop All Accessories', path: '/accessories', query: 'Accessories', image: '/accessories_category_uploaded.png', price: 'Essential Gear', isActive: true },
+            { label: 'Mac Accessories', path: '/accessories?product=mac', query: 'Mac', image: '/accessories_category_uploaded.png', price: 'Keyboards, Mice & Docks', isActive: true },
+            { label: 'iPad Accessories', path: '/accessories?product=ipad', query: 'iPad', image: '/accessories_category_uploaded.png', price: 'Pencils & Folios', isActive: true },
+            { label: 'iPhone Accessories', path: '/accessories?product=iphone', query: 'iPhone', image: '/accessories_category_uploaded.png', price: 'MagSafe & Cases', isActive: true },
+            { label: 'Watch Accessories', path: '/accessories?product=watch', query: 'Watch', image: '/accessories_category_uploaded.png', price: 'Bands & Chargers', isActive: true },
+            { label: 'AirPods Accessories', path: '/accessories?product=airpods', query: 'AirPods', image: '/accessories_category_uploaded.png', price: 'Cases & Lanyards', isActive: true },
+            { label: 'TV & Home Accessories', path: '/accessories?product=tv-home', query: 'TV & Home', image: '/accessories_category_uploaded.png', price: 'Remotes & Mounts', isActive: true }
+          ]
+        },
+        {
+          name: 'AppleCare+',
+          link: '/applecare',
+          isActive: true,
+          dropdownItems: [
+            { label: 'Explore AppleCare+', path: '/applecare', query: 'AppleCare', image: '/applecare_official_hero.png', price: 'Official Warranty Protection', isActive: true },
+            { label: 'AppleCare+ for Mac', path: '/applecare', query: 'Mac', image: '/applecare_official_hero.png', price: '3-Year Protection Plan', isActive: true },
+            { label: 'AppleCare+ for iPhone', path: '/applecare', query: 'iPhone', image: '/applecare_official_hero.png', price: 'Accidental Damage Protection', isActive: true },
+            { label: 'AppleCare+ for iPad', path: '/applecare', query: 'iPad', image: '/applecare_official_hero.png', price: 'Hardware & Battery Coverage', isActive: true }
+          ]
+        }
+      ];
+      await settings.save();
+    }
+
+    if (!settings.footerSections || settings.footerSections.length === 0) {
+      settings.footerSections = [
+        {
+          title: 'SHOP',
+          isActive: true,
+          links: [
+            { label: 'iPhone', url: '/iphone', isActive: true },
+            { label: 'Mac', url: '/macbook', isActive: true },
+            { label: 'iPad', url: '/ipad', isActive: true },
+            { label: 'Watch', url: '/watch', isActive: true },
+            { label: 'AirPods', url: '/airpods', isActive: true },
+            { label: 'AppleCare+', url: '/applecare', isActive: true },
+          ]
+        },
+        {
+          title: 'BUSINESS',
+          isActive: true,
+          links: [
+            { label: 'Request a Quote', url: '/bulk-orders', isActive: true },
+            { label: 'Bulk Pricing', url: '/bulk-orders', isActive: true },
+            { label: 'Dealer Login', url: '/login', isActive: true },
+            { label: 'GST Invoicing', url: '/bulk-orders', isActive: true },
+          ]
+        },
+        {
+          title: 'COMPANY',
+          isActive: true,
+          links: [
+            { label: 'About iincept', url: '/about', isActive: true },
+            { label: 'Contact Us', url: '/contact', isActive: true },
+            { label: 'FAQ', url: '/faq', isActive: true },
+          ]
+        },
+        {
+          title: 'POLICIES',
+          isActive: true,
+          links: [
+            { label: 'Shipping Policy', url: '/shipping-policy', isActive: true },
+            { label: 'Returns & Refund Policy', url: '/returns-refund-policy', isActive: true },
+            { label: 'Privacy Policy', url: '/privacy-policy', isActive: true },
+            { label: 'Terms of Service', url: '/terms-of-service', isActive: true },
+          ]
+        }
+      ];
+      await settings.save();
+    }
+
+    if (!settings.appleCarePlans || settings.appleCarePlans.length === 0) {
+      settings.appleCarePlans = [
+        {
+          categoryKey: 'mac',
+          title: 'AppleCare+ for Mac',
+          subtitle: '3 Years of global technical support and accidental damage protection',
+          price: 14900,
+          priceDisplay: '₹14,900.00',
+          image: '/applecare_official_hero.png',
+          features: [
+            'Unlimited accidental damage protection',
+            'Battery service if capacity drops below 80%',
+            '24/7 priority access to Apple technical experts',
+            'Global repair & hardware replacement coverage'
+          ],
+          isActive: true
+        },
+        {
+          categoryKey: 'iphone',
+          title: 'AppleCare+ for iPhone',
+          subtitle: 'Comprehensive hardware protection & theft coverage',
+          price: 7900,
+          priceDisplay: '₹7,900.00',
+          image: '/applecare_official_hero.png',
+          features: [
+            'Unlimited accidental damage claims',
+            'Certified genuine Apple replacement parts',
+            'Express replacement service shipped to your door',
+            'Battery replacement service'
+          ],
+          isActive: true
+        },
+        {
+          categoryKey: 'ipad',
+          title: 'AppleCare+ for iPad',
+          subtitle: 'Complete protection for your iPad, Apple Pencil & Magic Keyboard',
+          price: 4900,
+          priceDisplay: '₹4,900.00',
+          image: '/applecare_official_hero.png',
+          features: [
+            'Coverage for iPad, Apple Pencil & Magic Keyboard',
+            'Unlimited accidental damage protection',
+            'Battery service coverage',
+            '24/7 priority technical support'
+          ],
+          isActive: true
+        },
+        {
+          categoryKey: 'watch',
+          title: 'AppleCare+ for Apple Watch',
+          subtitle: '2 Years of coverage and express replacement service',
+          price: 2900,
+          priceDisplay: '₹2,900.00',
+          image: '/applecare_official_hero.png',
+          features: [
+            'Unlimited accidental damage claims',
+            'Express replacement service',
+            'Battery replacement service',
+            '24/7 priority support'
+          ],
+          isActive: true
+        },
+        {
+          categoryKey: 'airpods',
+          title: 'AppleCare+ for Headphones & AirPods',
+          subtitle: '2 Years of coverage for AirPods and AirPods Max',
+          price: 2900,
+          priceDisplay: '₹2,900.00',
+          image: '/applecare_official_hero.png',
+          features: [
+            'Coverage for AirPods & Charging Case',
+            'Battery replacement service',
+            'Unlimited damage protection',
+            'Apple expert support'
+          ],
+          isActive: true
+        },
+        {
+          categoryKey: 'tv-home',
+          title: 'AppleCare+ for Apple TV & HomePod',
+          subtitle: '3 Years of protection for Apple TV, Siri Remote and HomePod',
+          price: 2900,
+          priceDisplay: '₹2,900.00',
+          image: '/applecare_official_hero.png',
+          features: [
+            'Coverage for Apple TV & Siri Remote',
+            'Global repair service',
+            'Technical support'
+          ],
+          isActive: true
+        }
+      ];
+      await settings.save();
+    }
+
+    // Seed appleCarePricingTables defaults if not set
+    if (!settings.appleCarePricingTables || settings.appleCarePricingTables.length === 0) {
+      settings.appleCarePricingTables = [
+        {
+          categoryKey: 'mac',
+          image: '/macbook_category_v3.jpg',
+          headline: 'Cover your Mac.',
+          subheadline: 'AppleCare+ for Mac provides up to 3 years of expert support and hardware coverage.',
+          durationLabel: '3 years',
+          isActive: true,
+          rows: [
+            { model: 'Mac mini', title: 'AppleCare+ for Mac mini', description: '3 Years Apple-certified coverage for Mac mini', sku: 'AC-MAC-MINI', mrp: '₹14,900.00', discount: '13% OFF', salePrice: '₹12,900.00', monthly: '₹429.00', yearly: '₹12,900.00', isActive: true, image: 'https://www.apple.com/assets-www/en_WW/mac/04_chapternav/small/nav_mac_mini_f628f615d_2x.png' },
+            { model: 'Mac Studio', title: 'AppleCare+ for Mac Studio', description: '3 Years Apple-certified coverage for Mac Studio', sku: 'AC-MAC-STUDIO', mrp: '₹22,900.00', discount: '13% OFF', salePrice: '₹19,900.00', monthly: '₹679.00', yearly: '₹19,900.00', isActive: true, image: '/mac_nav/mac_studio.png' },
+            { model: 'iMac', title: 'AppleCare+ for iMac', description: '3 Years Apple-certified coverage for iMac', sku: 'AC-IMAC-24', mrp: '₹22,900.00', discount: '13% OFF', salePrice: '₹19,900.00', monthly: '₹679.00', yearly: '₹19,900.00', isActive: true, image: '/mac_nav/imac.png' },
+            { model: 'Macbook Neo', title: 'AppleCare+ for Macbook Neo', description: '3 Years Apple-certified coverage for Macbook Neo', sku: 'AC-MACBOOK-NEO', mrp: '₹18,900.00', discount: '11% OFF', salePrice: '₹16,900.00', monthly: '₹579.00', yearly: '₹16,900.00', isActive: true, image: '/mac_nav/macbook_neo.png' },
+            { model: 'MacBook Air 13″', title: 'AppleCare+ for MacBook Air 13″', description: '3 Years Apple-certified coverage for MacBook Air 13″', sku: 'AC-MBA-13', mrp: '₹25,900.00', discount: '12% OFF', salePrice: '₹22,900.00', monthly: '₹779.00', yearly: '₹22,900.00', isActive: true, image: '/mac_nav/macbook_air.png' },
+            { model: 'MacBook Air 15″', title: 'AppleCare+ for MacBook Air 15″', description: '3 Years Apple-certified coverage for MacBook Air 15″', sku: 'AC-MBA-15', mrp: '₹27,900.00', discount: '12% OFF', salePrice: '₹24,900.00', monthly: '₹849.00', yearly: '₹24,900.00', isActive: true, image: '/mac_nav/macbook_air.png' },
+            { model: 'MacBook Pro 14″', title: 'AppleCare+ for MacBook Pro 14″', description: '3 Years Apple-certified coverage for MacBook Pro 14″', sku: 'AC-MBP-14', mrp: '₹33,900.00', discount: '12% OFF', salePrice: '₹29,900.00', monthly: '₹999.00', yearly: '₹29,900.00', isActive: true, image: '/mac_nav/macbook_pro.png' },
+            { model: 'MacBook Pro 16″', title: 'AppleCare+ for MacBook Pro 16″', description: '3 Years Apple-certified coverage for MacBook Pro 16″', sku: 'AC-MBP-16', mrp: '₹45,900.00', discount: '11% OFF', salePrice: '₹40,900.00', monthly: '₹1,379.00', yearly: '₹40,900.00', isActive: true, image: '/mac_nav/macbook_pro.png' },
+            { model: 'Mac Pro', title: 'AppleCare+ for Mac Pro', description: '3 Years Apple-certified coverage for Mac Pro', sku: 'AC-MAC-PRO', mrp: '₹55,900.00', discount: '11% OFF', salePrice: '₹49,900.00', monthly: '₹1,699.00', yearly: '₹49,900.00', isActive: true, image: '/mac_nav/mac_studio.png' }
+          ]
+        },
+        {
+          categoryKey: 'iphone',
+          image: '/iphone_category_v2.jpg',
+          headline: 'Cover your iPhone.',
+          subheadline: 'AppleCare+ for iPhone includes unlimited incidents of accidental damage protection.',
+          durationLabel: '2 years',
+          isActive: true,
+          rows: [
+            { model: 'iPhone 17e', monthly: '₹599.00', yearly: '₹11,900.00', isActive: true },
+            { model: 'iPhone 17, iPhone 16', monthly: '₹749.00', yearly: '₹14,900.00', isActive: true },
+            { model: 'iPhone 16 Plus', monthly: '₹899.00', yearly: '₹17,900.00', isActive: true },
+            { model: 'iPhone 17 Pro, iPhone 17 Pro Max', monthly: '₹1,049.00', yearly: '₹20,900.00', isActive: true }
+          ]
+        },
+        {
+          categoryKey: 'ipad',
+          image: '/ipad_category_v3.png',
+          headline: 'Cover your iPad.',
+          subheadline: 'AppleCare+ for iPad covers your iPad, Apple Pencil, and Apple-branded keyboards.',
+          durationLabel: '2 years',
+          isActive: true,
+          rows: [
+            { model: 'iPad, iPad mini', monthly: '₹449.00', yearly: '₹8,900.00', isActive: true },
+            { model: 'iPad Air 11″', monthly: '₹499.00', yearly: '₹9,900.00', isActive: true },
+            { model: 'iPad Air 13″', monthly: '₹599.00', yearly: '₹11,900.00', isActive: true },
+            { model: 'iPad Pro 11″', monthly: '₹899.00', yearly: '₹17,900.00', isActive: true },
+            { model: 'iPad Pro 13″', monthly: '₹999.00', yearly: '₹19,900.00', isActive: true }
+          ]
+        },
+        {
+          categoryKey: 'watch',
+          image: '/watch_category.jpg',
+          headline: 'Cover your Apple Watch.',
+          subheadline: 'AppleCare+ for Apple Watch provides 2 years of accidental damage protection.',
+          durationLabel: '2 years',
+          isActive: true,
+          rows: [
+            { model: 'Apple Watch SE', monthly: '₹249.00', yearly: '₹4,900.00', isActive: true },
+            { model: 'Apple Watch Series 11', monthly: '₹399.00', yearly: '₹7,900.00', isActive: true },
+            { model: 'Apple Watch Ultra 3', monthly: '₹499.00', yearly: '₹9,900.00', isActive: true }
+          ]
+        },
+        {
+          categoryKey: 'airpods',
+          image: '/airpods_category.jpg',
+          headline: 'Cover your headphones.',
+          subheadline: 'AppleCare+ for Headphones covers AirPods Pro, AirPods Max and Beats.',
+          durationLabel: '2 years',
+          isActive: true,
+          rows: [
+            { model: 'AirPods 4, Beats', monthly: '₹149.00', yearly: '₹2,900.00', isActive: true },
+            { model: 'AirPods Pro 3', monthly: '₹249.00', yearly: '₹4,900.00', isActive: true },
+            { model: 'AirPods Max 2', monthly: '₹349.00', yearly: '₹6,900.00', isActive: true }
+          ]
+        },
+        {
+          categoryKey: 'tv-home',
+          image: '/applecare_official_hero.png',
+          headline: 'Cover your Apple TV.',
+          subheadline: 'AppleCare+ for Apple TV and HomePod includes 3 years of hardware support.',
+          durationLabel: '3 years',
+          isActive: true,
+          rows: [
+            { model: 'Apple TV', monthly: '₹99.00', yearly: '₹2,900.00', isActive: true },
+            { model: 'HomePod mini', monthly: '₹79.00', yearly: '₹1,600.00', isActive: true },
+            { model: 'HomePod', monthly: '₹199.00', yearly: '₹3,900.00', isActive: true }
+          ]
+        }
+      ];
+      await settings.save();
+    } else if (settings.appleCarePricingTables && settings.appleCarePricingTables.length > 0) {
+      const macTbl = settings.appleCarePricingTables.find(t => t.categoryKey === 'mac');
+      if (macTbl && macTbl.rows) {
+        const hasNeo = macTbl.rows.some(r => (r.model || '').toLowerCase().includes('neo'));
+        if (!hasNeo) {
+          macTbl.rows.splice(3, 0, { model: 'Macbook Neo', monthly: '₹579.00', yearly: '₹16,900.00', isActive: true, image: '/mac_nav/macbook_neo.png' });
+          await settings.save();
+        }
+      }
+    }
+
     res.status(200).json(settings);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -22,6 +460,58 @@ const updateSettings = async (req, res) => {
       settings = new Setting({});
     }
 
+    if (!settings.testimonials || settings.testimonials.length === 0) {
+      settings.testimonials = [
+        {
+          stars: 5,
+          text: '"Procured 40 MacBooks for our new office in 3 days, GST invoice sorted same week."',
+          author: '— IT Head, Fintech firm, Bengaluru',
+          isActive: true
+        },
+        {
+          stars: 5,
+          text: '"Our gifting desk orders AirPods every quarter — consolidated billing makes finance happy."',
+          author: '— Procurement Lead, D2C brand, Mumbai',
+          isActive: true
+        },
+        {
+          stars: 5,
+          text: '"Quote turnaround was faster than two other resellers we checked."',
+          author: '— Ops Manager, Consulting firm, Delhi NCR',
+          isActive: true
+        },
+        {
+          stars: 5,
+          text: '"Reliable for repeat bulk orders, delivered to three city offices without issue."',
+          author: '— Admin Head, BPO, Pune',
+          isActive: true
+        }
+      ];
+    }
+
+    if (!settings.productAppleCare || !settings.productAppleCare.title) {
+      settings.productAppleCare = {
+        isEnabled: true,
+        title: "Add AppleCare+",
+        monthlyPriceText: "From ₹2817.00/mo.◊",
+        mrpText: "or MRP ₹16900.00 (inclusive of all taxes)",
+        features: [
+          "Unlimited repairs for accidental damage protection‡",
+          "Apple-certified repairs using genuine Apple parts",
+          "{category}, battery and included accessories covered",
+          "Priority access to Apple experts"
+        ],
+        categoryPrices: [
+          { categoryName: "Mac", monthlyPrice: "From ₹2817.00/mo.◊", mrpPrice: "or MRP ₹16900.00 (inclusive of all taxes)" },
+          { categoryName: "iPhone", monthlyPrice: "From ₹1483.00/mo.◊", mrpPrice: "or MRP ₹8900.00 (inclusive of all taxes)" },
+          { categoryName: "iPad", monthlyPrice: "From ₹1150.00/mo.◊", mrpPrice: "or MRP ₹6900.00 (inclusive of all taxes)" },
+          { categoryName: "Watch", monthlyPrice: "From ₹750.00/mo.◊", mrpPrice: "or MRP ₹4500.00 (inclusive of all taxes)" },
+          { categoryName: "AirPods", monthlyPrice: "From ₹483.00/mo.◊", mrpPrice: "or MRP ₹2900.00 (inclusive of all taxes)" }
+        ]
+      };
+      await settings.save();
+    }
+
     const {
       logo,
       businessEmail,
@@ -34,11 +524,28 @@ const updateSettings = async (req, res) => {
       heroTitle2,
       heroSubtitle2,
       heroButtonText2,
+      heroTitle3,
+      heroSubtitle3,
+      heroButtonText3,
+      heroTitle4,
+      heroSubtitle4,
+      heroButtonText4,
+      heroSlides,
+      appleCategories,
+      testimonials,
+      navbarMenuItems,
+      categoryIconGroups,
+      appleCarePlans,
+      appleCarePricingTables,
+      productAppleCare,
+      footerSections,
       featuredProductIds,
       shippingCharge,
       taxPercentage,
       freeShippingThreshold,
       announcement,
+      announcementBold,
+      announcementNormal,
     } = req.body;
 
     if (logo !== undefined) settings.logo = logo;
@@ -55,11 +562,31 @@ const updateSettings = async (req, res) => {
     if (heroSubtitle2 !== undefined) settings.heroSubtitle2 = heroSubtitle2;
     if (heroButtonText2 !== undefined) settings.heroButtonText2 = heroButtonText2;
 
+    if (heroTitle3 !== undefined) settings.heroTitle3 = heroTitle3;
+    if (heroSubtitle3 !== undefined) settings.heroSubtitle3 = heroSubtitle3;
+    if (heroButtonText3 !== undefined) settings.heroButtonText3 = heroButtonText3;
+
+    if (heroTitle4 !== undefined) settings.heroTitle4 = heroTitle4;
+    if (heroSubtitle4 !== undefined) settings.heroSubtitle4 = heroSubtitle4;
+    if (heroButtonText4 !== undefined) settings.heroButtonText4 = heroButtonText4;
+
+    if (heroSlides !== undefined) settings.heroSlides = heroSlides;
+    if (appleCategories !== undefined) settings.appleCategories = appleCategories;
+    if (testimonials !== undefined) settings.testimonials = testimonials;
+    if (navbarMenuItems !== undefined) settings.navbarMenuItems = navbarMenuItems;
+    if (categoryIconGroups !== undefined) settings.categoryIconGroups = categoryIconGroups;
+    if (appleCarePlans !== undefined) settings.appleCarePlans = appleCarePlans;
+    if (appleCarePricingTables !== undefined) settings.appleCarePricingTables = appleCarePricingTables;
+    if (productAppleCare !== undefined) settings.productAppleCare = productAppleCare;
+    if (footerSections !== undefined) settings.footerSections = footerSections;
+
     if (featuredProductIds !== undefined) settings.featuredProductIds = featuredProductIds;
     if (shippingCharge !== undefined) settings.shippingCharge = Number(shippingCharge);
     if (taxPercentage !== undefined) settings.taxPercentage = Number(taxPercentage);
     if (freeShippingThreshold !== undefined) settings.freeShippingThreshold = Number(freeShippingThreshold);
     if (announcement !== undefined) settings.announcement = announcement;
+    if (announcementBold !== undefined) settings.announcementBold = announcementBold;
+    if (announcementNormal !== undefined) settings.announcementNormal = announcementNormal;
 
     await settings.save();
     res.status(200).json(settings);

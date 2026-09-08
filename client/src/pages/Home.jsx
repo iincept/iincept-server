@@ -7,60 +7,126 @@ export default function Home() {
   const location = useLocation();
 
   const [quoteForm, setQuoteForm] = useState({
-    companyName: '',
     fullName: '',
-    email: '',
     phone: '',
-    productInterest: 'Product interest',
-    quantity: ''
+    productInterest: 'Product interest'
   });
+  const [quoteFormErrors, setQuoteFormErrors] = useState({});
   const [submittingQuote, setSubmittingQuote] = useState(false);
   const [quoteSuccess, setQuoteSuccess] = useState('');
 
   const handleQuoteSubmit = async (e) => {
     e.preventDefault();
-    const { companyName, fullName, email, phone, productInterest, quantity } = quoteForm;
+    const errors = {};
 
-    if (!companyName.trim() || !fullName.trim() || !email.trim() || !phone.trim() || productInterest === 'Product interest' || !quantity) {
-      alert('Please fill in all required fields (Company name, Contact person, Email, Phone, Product interest, and Quantity).');
+    if (!quoteForm.fullName.trim()) {
+      errors.fullName = 'Contact person / Full name is mandatory *';
+    }
+    if (!quoteForm.phone.trim()) {
+      errors.phone = 'Mobile number is mandatory *';
+    } else if (!/^[0-9+\s-]{8,15}$/.test(quoteForm.phone.trim())) {
+      errors.phone = 'Please enter a valid mobile number';
+    }
+    if (!quoteForm.productInterest || quoteForm.productInterest === 'Product interest') {
+      errors.productInterest = 'Interested product is mandatory *';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setQuoteFormErrors(errors);
       return;
     }
 
+    setQuoteFormErrors({});
     setSubmittingQuote(true);
+
+    const fullNameVal = quoteForm.fullName;
+    const phoneVal = quoteForm.phone;
+    const productVal = quoteForm.productInterest;
+
+    // Pre-filled WhatsApp Message
+    const whatsappMsg = `Hello iIncept B2B Desk! 👋\n\nI would like to request a quotation:\n\n👤 *Name:* ${fullNameVal}\n📞 *Mobile:* ${phoneVal}\n📦 *Interested Product:* ${productVal}\n\nPlease share availability & corporate pricing.`;
+    const waUrl = `https://wa.me/918607222417?text=${encodeURIComponent(whatsappMsg)}`;
+
     try {
       await axiosClient.post('/enquiries', {
-        companyName,
-        fullName,
-        email,
-        phone,
-        productInterest,
-        quantity: Number(quantity)
+        companyName: 'N/A',
+        fullName: fullNameVal,
+        email: 'b2b-inquiry@iincept.com',
+        phone: phoneVal,
+        productInterest: productVal,
+        quantity: 1
       });
-      setQuoteSuccess('Quote request submitted successfully! Our B2B desk will contact you soon.');
-      setQuoteForm({
-        companyName: '',
-        fullName: '',
-        email: '',
-        phone: '',
-        productInterest: 'Product interest',
-        quantity: ''
-      });
-      setTimeout(() => setQuoteSuccess(''), 5000);
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to submit quote request.');
+      console.error('Enquiry database save warning:', err);
     } finally {
+      window.open(waUrl, '_blank');
+      setQuoteSuccess('Quote request submitted! Opening WhatsApp chat...');
+      setQuoteForm({
+        fullName: '',
+        phone: '',
+        productInterest: 'Product interest'
+      });
       setSubmittingQuote(false);
+      setTimeout(() => setQuoteSuccess(''), 5000);
     }
   };
 
-  const [settings, setSettings] = useState({
-    heroTitle1: "Apple devices for your business, sourced right, delivered anywhere in India.",
-    heroSubtitle1: "Bulk pricing, GST invoicing, dedicated account support and consolidated billing — built for IT teams, gifting desks and resellers, not one-off retail buyers.",
-    heroButtonText1: "Request Bulk Quote →",
-    heroTitle2: "The latest Apple lineup, in stock and ready to ship today.",
-    heroSubtitle2: "From the newest iPhone 17 series to our best-selling MacBooks and AirPods — explore the full range and place your order in minutes, no quote required.",
-    heroButtonText2: "Browse Catalogue →"
-  });
+  const [heroSlides, setHeroSlides] = useState([
+    {
+      title: "Apple devices for your business, sourced right, delivered anywhere in India.",
+      subtitle: "Bulk pricing, GST invoicing, dedicated account support and consolidated billing — built for IT teams, gifting desks and resellers, not one-off retail buyers.",
+      buttonText: "Request Bulk Quote →",
+      buttonLink: "#procurement-section",
+      image: "",
+      bgStyle: "slide-dark"
+    },
+    {
+      title: "The latest Apple lineup, in stock and ready to ship today.",
+      subtitle: "From the newest iPhone 17 series to our best-selling MacBooks and AirPods — explore the full range and place your order in minutes, no quote required.",
+      buttonText: "Browse Catalogue →",
+      buttonLink: "#apple-categories",
+      image: "",
+      bgStyle: "slide-light"
+    },
+    {
+      title: "Official AppleCare+ protection for total peace of mind.",
+      subtitle: "Protect your team's Apple devices with genuine AppleCare+ coverage, priority tech support, and zero-hassle hardware replacement.",
+      buttonText: "Explore AppleCare+ →",
+      buttonLink: "/apple-care",
+      image: "",
+      bgStyle: "slide-dark-blue"
+    },
+    {
+      title: "Corporate gifting & exclusive institutional offers.",
+      subtitle: "Customized procurement packages for corporate rewards, employee onboarding kits, and volume discounts on premium accessories.",
+      buttonText: "Explore Accessories →",
+      buttonLink: "/accessories",
+      image: "",
+      bgStyle: "slide-warm"
+    }
+  ]);
+
+  const [appleCategories, setAppleCategories] = useState([
+    { name: 'iPhone', actionText: 'Shop all models →', link: '/iphone', image: '/iphone_category_uploaded.jpg', cardTheme: 'dark', isActive: true },
+    { name: 'Mac', actionText: 'Shop all models →', link: '/macbook', image: '/macbook_category_uploaded.png', cardTheme: 'light', isActive: true },
+    { name: 'iPad', actionText: 'Shop all models →', link: '/ipad', image: '/ipad_category_uploaded.png', cardTheme: 'dark', isActive: true },
+    { name: 'Watch', actionText: 'Shop all models →', link: '/watch', image: '/watch_category_uploaded.png', cardTheme: 'dark', isActive: true },
+    { name: 'AirPods', actionText: 'Shop all models →', link: '/airpods', image: '/airpods_category_uploaded.png', cardTheme: 'grey', isActive: true },
+    { name: 'TV & Home', actionText: 'Shop all models →', link: '/tv-home', image: '/tvhome_category_uploaded.png', cardTheme: 'light', isActive: true },
+    { name: 'Accessories', actionText: 'Shop all models →', link: '/accessories', image: '/accessories_category_uploaded.png', cardTheme: 'dark', isActive: true },
+    { name: 'AppleCare+', actionText: 'Explore coverage →', link: '/applecare', image: '/applecare_official_hero.png', cardTheme: 'dark', isActive: true },
+    { name: 'New Arrivals', actionText: 'Explore latest releases →', link: '/shop?sort=newest', image: '', cardTheme: 'dark', isActive: true },
+  ]);
+
+  const [testimonials, setTestimonials] = useState([
+    { stars: 5, text: '"Procured 40 MacBooks for our new office in 3 days, GST invoice sorted same week."', author: '— IT Head, Fintech firm, Bengaluru', isActive: true },
+    { stars: 5, text: '"Our gifting desk orders AirPods every quarter — consolidated billing makes finance happy."', author: '— Procurement Lead, D2C brand, Mumbai', isActive: true },
+    { stars: 5, text: '"Quote turnaround was faster than two other resellers we checked."', author: '— Ops Manager, Consulting firm, Delhi NCR', isActive: true },
+    { stars: 5, text: '"Reliable for repeat bulk orders, delivered to three city offices without issue."', author: '— Admin Head, BPO, Pune', isActive: true }
+  ]);
+
+  const activeSlides = heroSlides.filter((slide) => slide.isActive !== false);
+  const slidesToRender = activeSlides.length > 0 ? activeSlides : heroSlides;
 
   useEffect(() => {
     fetchSettings();
@@ -70,20 +136,20 @@ export default function Home() {
     try {
       const response = await axiosClient.get('/settings');
       if (response.data) {
-        setSettings({
-          heroTitle1: response.data.heroTitle1 || settings.heroTitle1,
-          heroSubtitle1: response.data.heroSubtitle1 || settings.heroSubtitle1,
-          heroButtonText1: response.data.heroButtonText1 || settings.heroButtonText1,
-          heroTitle2: response.data.heroTitle2 || settings.heroTitle2,
-          heroSubtitle2: response.data.heroSubtitle2 || settings.heroSubtitle2,
-          heroButtonText2: response.data.heroButtonText2 || settings.heroButtonText2
-        });
+        if (response.data.heroSlides && response.data.heroSlides.length > 0) {
+          setHeroSlides(response.data.heroSlides);
+        }
+        if (response.data.appleCategories && response.data.appleCategories.length > 0) {
+          setAppleCategories(response.data.appleCategories);
+        }
+        if (response.data.testimonials && response.data.testimonials.length > 0) {
+          setTestimonials(response.data.testimonials);
+        }
       }
     } catch (err) {
       console.error('Failed to load home layout settings:', err);
     }
   };
-
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -106,11 +172,12 @@ export default function Home() {
   }, [location]);
 
   useEffect(() => {
+    if (slidesToRender.length <= 1) return;
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % 2);
+      setCurrentSlide((prev) => (prev + 1) % slidesToRender.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slidesToRender.length]);
 
   return (
     <div className="b2b-hero">
@@ -157,20 +224,28 @@ export default function Home() {
           overflow: hidden;
           min-height: 460px;
           height: 460px;
+          background: #ffffff;
+          transform: translateZ(0);
+          -webkit-transform: translateZ(0);
+          -webkit-mask-image: -webkit-radial-gradient(white, black);
+          outline: none;
+          border: none;
         }
         .slides-wrapper {
           display: flex;
-          width: 200%;
           height: 100%;
           transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+          will-change: transform;
         }
         .slide {
-          width: 50%;
           height: 100%;
           display: flex;
           align-items: center;
           padding: 64px 64px 56px;
           flex-shrink: 0;
+          box-sizing: border-box;
+          outline: none;
+          border: none;
         }
 
         .slide-dark {
@@ -181,6 +256,23 @@ export default function Home() {
         .slide-light {
           background: linear-gradient(135deg, #eef1f6, #e3e8f2);
         }
+        .slide-dark-blue {
+          background:
+            linear-gradient(120deg, rgba(15,23,42,0.92), rgba(30,41,59,0.75) 55%, rgba(15,23,42,0.85)),
+            radial-gradient(circle at 30% 40%, #1e3a8a, #0f172a 70%);
+        }
+        .slide-dark-blue .slide-content h1 { color: #fff; }
+        .slide-dark-blue .slide-content p { color: rgba(255,255,255,0.78); }
+        .slide-dark-blue .slide-stats { border-top-color: rgba(255,255,255,0.18); color: rgba(255,255,255,0.75); }
+        .slide-dark-blue .slide-stats b { color: #fff; }
+
+        .slide-warm {
+          background: linear-gradient(135deg, #1c1917, #292524, #12100e);
+        }
+        .slide-warm .slide-content h1 { color: #fff; }
+        .slide-warm .slide-content p { color: rgba(255,255,255,0.78); }
+        .slide-warm .slide-stats { border-top-color: rgba(255,255,255,0.18); color: rgba(255,255,255,0.75); }
+        .slide-warm .slide-stats b { color: #fff; }
 
         .slide-content {
           max-width: 720px;
@@ -423,12 +515,120 @@ export default function Home() {
         }
         .b2b-hero .quoteform .btn-dark:hover { background: #000; }
 
-        .b2b-hero .trustgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
-        @media(max-width:880px){.b2b-hero .trustgrid{grid-template-columns:repeat(2,1fr);}}
-        .b2b-hero .tcard { padding:30px 24px; background:#fff; }
-        .b2b-hero .tcard .icon { font-size:20px; margin-bottom:14px; color:var(--blue); }
-        .b2b-hero .tcard h4 { font-size:15px; margin-bottom:8px; font-weight:700; }
-        .b2b-hero .tcard p { font-size:13px; color:var(--muted); line-height:1.55; }
+        .b2b-hero .trust-wrap {
+          width: 100%;
+          max-width: 1280px;
+          margin: 0 auto;
+        }
+        .b2b-hero .eyebrow {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: .14em;
+          text-transform: uppercase;
+          color: #1d1d1f;
+          margin-bottom: 20px;
+        }
+        .b2b-hero .eyebrow .seal {
+          width: 6px; height: 6px; border-radius: 50%;
+          background: #0071e3;
+          box-shadow: 0 0 0 0 rgba(0,113,227,.5);
+          animation: pulseSeal 2.2s infinite;
+        }
+        @keyframes pulseSeal {
+          0% { box-shadow: 0 0 0 0 rgba(0,113,227,.4); }
+          70% { box-shadow: 0 0 0 9px rgba(0,113,227,0); }
+          100% { box-shadow: 0 0 0 0 rgba(0,113,227,0); }
+        }
+
+        .b2b-hero .trust-strip {
+          position: relative;
+          background: #ffffff;
+          border: none;
+          outline: none;
+          border-radius: 24px;
+          padding: 36px 20px;
+          box-shadow: none;
+          overflow: hidden;
+        }
+        .b2b-hero .trust-strip::before {
+          display: none;
+        }
+
+        .b2b-hero .trust-list {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 0;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+          position: relative;
+          z-index: 1;
+        }
+
+        .b2b-hero .trust-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 16px;
+          padding: 6px 24px;
+        }
+        .b2b-hero .trust-item:not(:first-child) {
+          border-left: 1px solid #D1D1D6 !important;
+        }
+
+        .b2b-hero .icon-badge {
+          flex: 0 0 auto;
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #f4f4f5;
+          border: 1px solid #e4e4e7;
+          color: #1d1d1f;
+          position: relative;
+          box-shadow: 0 2px 6px rgba(0,0,0,.02);
+          transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+        }
+        .b2b-hero .icon-badge svg { width: 22px; height: 22px; position: relative; z-index: 1; stroke-width: 2.2; }
+        .b2b-hero .trust-item:hover .icon-badge {
+          transform: translateY(-3px);
+          background: #e4e4e7;
+          color: #000000;
+          box-shadow: 0 8px 18px -6px rgba(0,0,0,.15);
+        }
+
+        .b2b-hero .trust-copy { min-width: 0; padding-top: 2px; }
+
+        .b2b-hero .trust-title {
+          font-size: 15.5px;
+          font-weight: 650;
+          letter-spacing: -0.01em;
+          margin: 0 0 4px;
+          color: #1d1d1f;
+          line-height: 1.35;
+        }
+        .b2b-hero .trust-sub {
+          font-size: 13px;
+          color: #6e6e73;
+          margin: 0;
+          line-height: 1.5;
+        }
+
+        @media (max-width: 900px) {
+          .b2b-hero .trust-list { grid-template-columns: repeat(2, 1fr); gap: 28px 0; }
+          .b2b-hero .trust-item { border-left: none !important; padding: 0 16px; }
+          .b2b-hero .trust-item:nth-child(2n) { border-left: 1px solid #eceef1 !important; }
+        }
+        @media (max-width: 560px) {
+          .b2b-hero .trust-strip { padding: 30px 24px; border-radius: 20px; }
+          .b2b-hero .trust-list { grid-template-columns: 1fr; gap: 24px; }
+          .b2b-hero .trust-item { border-left: none !important; padding: 0; }
+        }
 
         .b2b-hero .marquee-wrap { overflow:hidden; padding:60px 0; background:var(--ink-2); position:relative; }
         .b2b-hero .marquee-wrap::before, .b2b-hero .marquee-wrap::after {
@@ -454,68 +654,82 @@ export default function Home() {
 
       <div className="hero-stage">
         <div className="hero-carousel" id="heroCarousel">
-          <div className="slides-wrapper" style={{ transform: `translateX(-${currentSlide * 50}%)` }}>
-            {/* Slide 0: B2B Procurement */}
-            <div className="slide slide-dark">
-              <div className="slide-content text-center">
-                <h1 className="whitespace-pre-line">{settings.heroTitle1}</h1>
-                <p>{settings.heroSubtitle1}</p>
-                <a
-                  href="#procurement-section"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const section = document.getElementById('procurement-section');
-                    if (section) {
-                      const yOffset = -100;
-                      const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                      window.scrollTo({ top: y, behavior: 'smooth' });
-                    }
-                  }}
-                  className="btn-light cursor-pointer"
-                >
-                  {settings.heroButtonText1}
-                </a>
-                <div className="slide-stats">
-                  <span><b>GST invoicing</b> on every order</span>
-                  <span><b>Volume pricing</b> on bulk orders</span>
-                  <span><b>Pan-India</b> delivery &amp; tracking</span>
-                </div>
-              </div>
-            </div>
+          <div 
+            className="slides-wrapper" 
+            style={{ 
+              width: `${slidesToRender.length * 100}%`,
+              transform: `translateX(-${(currentSlide * 100) / slidesToRender.length}%)` 
+            }}
+          >
+            {slidesToRender.map((slide, idx) => {
+              const isImageBg = Boolean(slide.image && slide.image.trim());
+              const slideStyle = isImageBg ? {
+                backgroundImage: `linear-gradient(120deg, rgba(10,10,12,0.78), rgba(10,10,12,0.55)), url(${slide.image})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              } : {};
 
-            {/* Slide 1: Launches & Best Sellers */}
-            <div className="slide slide-light">
-              <div className="slide-content text-center">
-                <h1 className="whitespace-pre-line">{settings.heroTitle2}</h1>
-                <p>{settings.heroSubtitle2}</p>
-                <a
-                  href="#apple-categories"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const section = document.getElementById('apple-categories');
-                    if (section) {
-                      const yOffset = -60;
-                      const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                      window.scrollTo({ top: y, behavior: 'smooth' });
-                    }
-                  }}
-                  className="btn-light cursor-pointer shadow-sm"
-                  style={{ border: '1px solid #d1d5db' }}
+              const isAnchor = slide.buttonLink && slide.buttonLink.startsWith('#');
+
+              return (
+                <div 
+                  key={idx} 
+                  className={`slide ${isImageBg ? 'slide-dark' : (slide.bgStyle || 'slide-dark')}`}
+                  style={{ width: `${100 / slidesToRender.length}%`, ...slideStyle }}
                 >
-                  {settings.heroButtonText2}
-                </a>
-                <div className="slide-stats">
-                  <span><b>New launches</b> every month</span>
-                  <span><b>Curated</b> best-sellers</span>
-                  <span><b>Fast dispatch</b>, 2–4 days</span>
+                  <div className="slide-content text-center">
+                    <h1 className="whitespace-pre-line">
+                      {slide.titleBold ? <span className="font-extrabold">{slide.titleBold} </span> : null}
+                      <span>{slide.titleNormal || slide.title}</span>
+                    </h1>
+                    <p>{slide.subtitle}</p>
+                    {isAnchor ? (
+                      <a
+                        href={slide.buttonLink || '#'}
+                        onClick={(e) => {
+                          if (slide.buttonLink && slide.buttonLink.startsWith('#')) {
+                            e.preventDefault();
+                            const targetId = slide.buttonLink.replace('#', '');
+                            const section = document.getElementById(targetId);
+                            if (section) {
+                              const yOffset = -80;
+                              const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                              window.scrollTo({ top: y, behavior: 'smooth' });
+                            }
+                          }
+                        }}
+                        className="btn-light cursor-pointer shadow-sm"
+                      >
+                        {slide.buttonText || 'Explore Now →'}
+                      </a>
+                    ) : (
+                      <Link
+                        to={slide.buttonLink || '/'}
+                        className="btn-light cursor-pointer shadow-sm"
+                      >
+                        {slide.buttonText || 'Explore Now →'}
+                      </Link>
+                    )}
+                    <div className="slide-stats">
+                      <span><b>{slide.stat1Bold || 'GST invoicing'}</b> {slide.stat1Normal || 'on every order'}</span>
+                      <span><b>{slide.stat2Bold || 'Volume pricing'}</b> {slide.stat2Normal || 'on bulk orders'}</span>
+                      <span><b>{slide.stat3Bold || 'Pan-India'}</b> {slide.stat3Normal || 'delivery & tracking'}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
 
           <div className="slide-dots" id="slideDots">
-            <button className={currentSlide === 0 ? 'active' : ''} onClick={() => setCurrentSlide(0)} aria-label="Slide 1"></button>
-            <button className={currentSlide === 1 ? 'active' : ''} onClick={() => setCurrentSlide(1)} aria-label="Slide 2"></button>
+            {slidesToRender.map((_, idx) => (
+              <button
+                key={idx}
+                className={currentSlide === idx ? 'active' : ''}
+                onClick={() => setCurrentSlide(idx)}
+                aria-label={`Slide ${idx + 1}`}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -524,18 +738,61 @@ export default function Home() {
         ⟳ Additionally, get exchange bonus up to <b>&nbsp;₹6,000&nbsp;</b> on trade-in value of your old smartphone
       </div>
 
-      <div className="emi-strip">
-        <div className="item"><span className="dot"></span><span className="badge">Apple</span> Authorised Reseller</div>
-        <div className="item"><span className="dot"></span><span className="badge">GST Invoicing</span> on every order</div>
-        <div className="item"><span className="dot"></span><span className="badge">Volume Pricing</span> on bulk orders</div>
-        <div className="item"><span className="dot"></span><span className="badge">Pan-India</span> delivery &amp; tracking</div>
-      </div>
+      {/* Trust Badges — Clean Pure White */}
+      <section id="trust" style={{ padding: '30px 0 60px 0', marginTop: '75px', background: '#ffffff' }}>
+        <div className="trust-wrap" style={{ padding: '0 20px' }}>
+          <div className="eyebrow">Why buy from us</div>
 
-      {/* Balanced Light Divider Line */}
-      <div style={{ width: '100%', maxWidth: '1240px', margin: '75px auto 0', height: '1px', backgroundColor: '#d4d4d8' }}></div>
+          <div className="trust-strip">
+            <ul className="trust-list">
+              <li className="trust-item">
+                <span className="icon-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>
+                </span>
+                <div className="trust-copy">
+                  <p className="trust-title">Apple Authorised Reseller</p>
+                  <p className="trust-sub">100% genuine products</p>
+                </div>
+              </li>
+
+              <li className="trust-item">
+                <span className="icon-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h10a1 1 0 0 1 1 1v16l-3-2-2 2-2-2-2 2-2-2-3 2V4a1 1 0 0 1 1-1z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+                </span>
+                <div className="trust-copy">
+                  <p className="trust-title">GST Invoicing</p>
+                  <p className="trust-sub">On every single order</p>
+                </div>
+              </li>
+
+              <li className="trust-item">
+                <span className="icon-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.6 12.6L12.7 20.5a2 2 0 0 1-2.8 0L3.5 14.1a2 2 0 0 1 0-2.8l7.9-7.9a2 2 0 0 1 1.4-.6H19a2 2 0 0 1 2 2v5.4a2 2 0 0 1-.4 1.4z"/><circle cx="15.5" cy="8.5" r="1.5"/></svg>
+                </span>
+                <div className="trust-copy">
+                  <p className="trust-title">Volume Pricing</p>
+                  <p className="trust-sub">Best rates on bulk orders</p>
+                </div>
+              </li>
+
+              <li className="trust-item">
+                <span className="icon-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12h13V6H1v6z"/><path d="M14 9h4l3 3v3h-7V9z"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+                </span>
+                <div className="trust-copy">
+                  <p className="trust-title">Pan-India Delivery</p>
+                  <p className="trust-sub">With real-time tracking</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+
 
       {/* Category Grid Section */}
-      <section id="apple-categories" className="category-section" style={{ scrollMarginTop: '60px' }}>
+      <section id="apple-categories" className="category-section" style={{ scrollMarginTop: '60px', marginTop: '16px', paddingTop: '20px' }}>
         <div className="wrap">
           <div style={{ margin: '0 auto', textAlign: 'center', marginBottom: '28px' }}>
             <h2 className="text-zinc-900" style={{ fontSize: 'clamp(28px, 4vw, 40px)', color: '#1D1D1F', marginBottom: '12px', fontWeight: 700 }}>
@@ -544,130 +801,46 @@ export default function Home() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+            {appleCategories
+              .filter(cat => cat.isActive !== false)
+              .map((cat, idx) => {
+                const isDark = cat.cardTheme === 'dark' || cat.cardTheme === 'grey';
+                const hasImage = Boolean(cat.image && cat.image.trim());
+                const bgStyle = hasImage ? {
+                  backgroundImage: `url("${cat.image}")`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  position: 'relative',
+                  overflow: 'hidden'
+                } : {};
 
-            {/* iPhone Card */}
-            <Link to="/iphone" className="category-card dark" style={{
-              backgroundImage: 'url("/iphone_category_uploaded.jpg")',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0) 100%)',
-                zIndex: 1
-              }}></div>
-              <div style={{ position: 'relative', zIndex: 2 }}>
-                <h3>iPhone</h3>
-                <div className="action-link">
-                  Shop all models <span>→</span>
-                </div>
-              </div>
-            </Link>
-
-            {/* Mac Card */}
-            <Link to="/macbook" className="category-card light">
-              <div>
-                <h3>Mac</h3>
-                <div className="action-link">
-                  Shop all models <span>→</span>
-                </div>
-              </div>
-            </Link>
-
-            {/* iPad Card */}
-            <Link to="/ipad" className="category-card dark" style={{
-              backgroundImage: 'url("/ipad_category_uploaded.png")',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0) 100%)',
-                zIndex: 1
-              }}></div>
-              <div style={{ position: 'relative', zIndex: 2 }}>
-                <h3>iPad</h3>
-                <div className="action-link">
-                  Shop all models <span>→</span>
-                </div>
-              </div>
-            </Link>
-
-            {/* Watch Card */}
-            <Link to="/watch" className="category-card dark" style={{
-              backgroundImage: 'url("/watch_category_uploaded.png")',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0) 100%)',
-                zIndex: 1
-              }}></div>
-              <div style={{ position: 'relative', zIndex: 2 }}>
-                <h3>Watch</h3>
-                <div className="action-link">
-                  Shop all models <span>→</span>
-                </div>
-              </div>
-            </Link>
-
-            {/* AirPods Card */}
-            <Link to="/airpods" className="category-card light" style={{
-              backgroundImage: 'url("/airpods_category_uploaded.jpg")',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(to top, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.1) 60%, rgba(255,255,255,0) 100%)',
-                zIndex: 1
-              }}></div>
-              <div style={{ position: 'relative', zIndex: 2 }}>
-                <h3>AirPods</h3>
-                <div className="action-link">
-                  Shop all models <span>→</span>
-                </div>
-              </div>
-            </Link>
-
-            {/* TV&Home Card */}
-            <Link to="/tv-home" className="category-card dark" style={{
-              backgroundImage: 'url("/tv_home_category_uploaded.jpg")',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0) 100%)',
-                zIndex: 1
-              }}></div>
-              <div style={{ position: 'relative', zIndex: 2 }}>
-                <h3>TV&Home</h3>
-                <div className="action-link">
-                  Shop all models <span>→</span>
-                </div>
-              </div>
-            </Link>
-
-
-
-
+                return (
+                  <Link
+                    key={idx}
+                    to={cat.link || '/shop'}
+                    className={`category-card ${cat.cardTheme || 'dark'}`}
+                    style={bgStyle}
+                  >
+                    {hasImage && (
+                      <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: isDark
+                          ? 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0) 100%)'
+                          : 'linear-gradient(to top, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.15) 60%, rgba(255,255,255,0) 100%)',
+                        zIndex: 1
+                      }}></div>
+                    )}
+                    <div style={{ position: 'relative', zIndex: 2 }}>
+                      <h3>{cat.name}</h3>
+                      <div className="action-link">
+                        {cat.actionText || 'Shop all models →'}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })
+            }
           </div>
         </div>
       </section>
@@ -710,64 +883,95 @@ export default function Home() {
               </div>
             </div>
 
-            <form onSubmit={handleQuoteSubmit} className="quoteform">
+            <form onSubmit={handleQuoteSubmit} className="quoteform" noValidate>
               {quoteSuccess && (
                 <div style={{ padding: '12px', marginBottom: '14px', background: '#ecfdf5', color: '#065f46', borderRadius: '10px', fontSize: '12px', fontWeight: '600', border: '1px solid #d1fae5', textAlign: 'left' }}>
-                  {quoteSuccess}
+                  ✓ {quoteSuccess}
                 </div>
               )}
-              <input
-                type="text"
-                placeholder="Company name"
-                value={quoteForm.companyName}
-                onChange={(e) => setQuoteForm({ ...quoteForm, companyName: e.target.value })}
-                required
-              />
-              <input
-                type="text"
-                placeholder="Contact person"
-                value={quoteForm.fullName}
-                onChange={(e) => setQuoteForm({ ...quoteForm, fullName: e.target.value })}
-                required
-              />
-              <input
-                type="email"
-                placeholder="Work email"
-                value={quoteForm.email}
-                onChange={(e) => setQuoteForm({ ...quoteForm, email: e.target.value })}
-                required
-              />
-              <input
-                type="tel"
-                placeholder="Phone number"
-                value={quoteForm.phone}
-                onChange={(e) => setQuoteForm({ ...quoteForm, phone: e.target.value })}
-                required
-              />
-              <select
-                value={quoteForm.productInterest}
-                onChange={(e) => setQuoteForm({ ...quoteForm, productInterest: e.target.value })}
-                required
-              >
-                <option disabled value="Product interest">Product interest</option>
-                <option value="iPhone">iPhone</option>
-                <option value="Mac">Mac</option>
-                <option value="iPad">iPad</option>
-                <option value="Mixed / Fleet order">Mixed / Fleet order</option>
-              </select>
-              <input
-                type="number"
-                placeholder="Quantity (e.g. 10)"
-                value={quoteForm.quantity}
-                onChange={(e) => setQuoteForm({ ...quoteForm, quantity: e.target.value })}
-                required
-                min="1"
-              />
+
+              {Object.keys(quoteFormErrors).length > 0 && (
+                <div style={{ padding: '10px 14px', marginBottom: '14px', background: '#fef2f2', color: '#991b1b', borderRadius: '10px', fontSize: '12px', fontWeight: '600', border: '1px solid #fecaca', textAlign: 'left' }}>
+                  ⚠️ Please fill in all mandatory fields before submitting.
+                </div>
+              )}
+
+              <div style={{ marginBottom: '12px', textAlign: 'left' }}>
+                <input
+                  type="text"
+                  placeholder="Contact person / Full name *"
+                  value={quoteForm.fullName}
+                  onChange={(e) => {
+                    setQuoteForm({ ...quoteForm, fullName: e.target.value });
+                    if (quoteFormErrors.fullName) setQuoteFormErrors({ ...quoteFormErrors, fullName: null });
+                  }}
+                  style={{
+                    borderColor: quoteFormErrors.fullName ? '#ef4444' : undefined,
+                    backgroundColor: quoteFormErrors.fullName ? '#fef2f2' : undefined
+                  }}
+                />
+                {quoteFormErrors.fullName && (
+                  <span style={{ color: '#ef4444', fontSize: '11px', fontWeight: '600', marginTop: '4px', display: 'block' }}>
+                    ⚠️ {quoteFormErrors.fullName}
+                  </span>
+                )}
+              </div>
+
+              <div style={{ marginBottom: '12px', textAlign: 'left' }}>
+                <input
+                  type="tel"
+                  placeholder="Mobile / Phone number *"
+                  value={quoteForm.phone}
+                  onChange={(e) => {
+                    setQuoteForm({ ...quoteForm, phone: e.target.value });
+                    if (quoteFormErrors.phone) setQuoteFormErrors({ ...quoteFormErrors, phone: null });
+                  }}
+                  style={{
+                    borderColor: quoteFormErrors.phone ? '#ef4444' : undefined,
+                    backgroundColor: quoteFormErrors.phone ? '#fef2f2' : undefined
+                  }}
+                />
+                {quoteFormErrors.phone && (
+                  <span style={{ color: '#ef4444', fontSize: '11px', fontWeight: '600', marginTop: '4px', display: 'block' }}>
+                    ⚠️ {quoteFormErrors.phone}
+                  </span>
+                )}
+              </div>
+
+              <div style={{ marginBottom: '12px', textAlign: 'left' }}>
+                <select
+                  value={quoteForm.productInterest}
+                  onChange={(e) => {
+                    setQuoteForm({ ...quoteForm, productInterest: e.target.value });
+                    if (quoteFormErrors.productInterest) setQuoteFormErrors({ ...quoteFormErrors, productInterest: null });
+                  }}
+                  style={{
+                    borderColor: quoteFormErrors.productInterest ? '#ef4444' : undefined,
+                    backgroundColor: quoteFormErrors.productInterest ? '#fef2f2' : undefined
+                  }}
+                >
+                  <option disabled value="Product interest">Interested product *</option>
+                  <option value="iPhone">iPhone</option>
+                  <option value="Mac">Mac</option>
+                  <option value="iPad">iPad</option>
+                  <option value="Watch">Watch</option>
+                  <option value="AirPods">AirPods</option>
+                  <option value="Accessories">Accessories</option>
+                  <option value="AppleCare+">AppleCare+</option>
+                  <option value="Mixed / Fleet order">Mixed / Fleet order</option>
+                </select>
+                {quoteFormErrors.productInterest && (
+                  <span style={{ color: '#ef4444', fontSize: '11px', fontWeight: '600', marginTop: '4px', display: 'block' }}>
+                    ⚠️ {quoteFormErrors.productInterest}
+                  </span>
+                )}
+              </div>
+
               <button
                 type="submit"
                 disabled={submittingQuote}
                 className="btn-dark"
-                style={{ border: 'none', cursor: 'pointer', width: '100%' }}
+                style={{ border: 'none', cursor: 'pointer', width: '100%', marginTop: '8px' }}
               >
                 {submittingQuote ? 'Submitting...' : 'Request Quote →'}
               </button>
@@ -796,49 +1000,60 @@ export default function Home() {
       </section>
 
 
-      {/* Trust Grid Section */}
-      <section className="section" id="trust" style={{ paddingTop: 0 }}>
+      {/* Testimonial Marquee & Reviews Section */}
+      <div style={{ paddingTop: '60px', background: '#f5f5f7' }}>
         <div className="wrap">
-          <div className="section-head">
-            <h2>Why businesses buy from iincept.</h2>
-          </div>
-          <div className="trustgrid">
-            <div className="tcard">
-              <div className="icon">✓</div>
-              <h4>100% Authorised</h4>
-              <p>Apple Authorised Reseller stock with full manufacturer warranty, every order.</p>
-            </div>
-            <div className="tcard">
-              <div className="icon">🧾</div>
-              <h4>GST Invoicing</h4>
-              <p>Proper tax invoices on every order — no chasing paperwork later.</p>
-            </div>
-            <div className="tcard">
-              <div className="icon">📦</div>
-              <h4>Pan-India Delivery</h4>
-              <p>Tracked delivery to any office or warehouse location across India.</p>
-            </div>
-            <div className="tcard">
-              <div className="icon">🤝</div>
-              <h4>Dedicated Account Desk</h4>
-              <p>One point of contact for repeat and bulk orders, not a generic helpline.</p>
-            </div>
+          <div className="section-head" style={{ margin: '0 auto 36px auto', textAlign: 'center', maxWidth: '640px' }}>
+            <h2 style={{ fontSize: 'clamp(24px, 3.2vw, 36px)', fontWeight: '700', color: '#1d1d1f', fontFamily: 'Fraunces, serif' }}>
+              What our business partners say.
+            </h2>
           </div>
         </div>
-      </section>
 
-      {/* Testimonial Marquee */}
-      <div className="marquee-wrap">
-        <div className="marquee-track" id="marquee">
-          <div className="tescard"><div className="stars">★★★★★</div><p>"Procured 40 MacBooks for our new office in 3 days, GST invoice sorted same week."</p><div className="who">— IT Head, Fintech firm, Bengaluru</div></div>
-          <div className="tescard"><div className="stars">★★★★★</div><p>"Our gifting desk orders AirPods every quarter — consolidated billing makes finance happy."</p><div className="who">— Procurement Lead, D2C brand, Mumbai</div></div>
-          <div className="tescard"><div className="stars">★★★★★</div><p>"Quote turnaround was faster than two other resellers we checked."</p><div className="who">— Ops Manager, Consulting firm, Delhi NCR</div></div>
-          <div className="tescard"><div className="stars">★★★★★</div><p>"Reliable for repeat bulk orders, delivered to three city offices without issue."</p><div className="who">— Admin Head, BPO, Pune</div></div>
-          <div className="tescard"><div className="stars">★★★★★</div><p>"Procured 40 MacBooks for our new office in 3 days, GST invoice sorted same week."</p><div className="who">— IT Head, Fintech firm, Bengaluru</div></div>
-          <div className="tescard"><div className="stars">★★★★★</div><p>"Our gifting desk orders AirPods every quarter — consolidated billing makes finance happy."</p><div className="who">— Procurement Lead, D2C brand, Mumbai</div></div>
-          <div className="tescard"><div className="stars">★★★★★</div><p>"Quote turnaround was faster than two other resellers we checked."</p><div className="who">— Ops Manager, Consulting firm, Delhi NCR</div></div>
-          <div className="tescard"><div className="stars">★★★★★</div><p>"Reliable for repeat bulk orders, delivered to three city offices without issue."</p><div className="who">— Admin Head, BPO, Pune</div></div>
-        </div>
+        {(() => {
+        const activeTestimonials = testimonials.filter(t => t.isActive !== false);
+        const listToRender = activeTestimonials.length > 0 ? activeTestimonials : testimonials;
+        // Duplicate list for infinite smooth scrolling marquee
+        const marqueeItems = [...listToRender, ...listToRender, ...listToRender];
+
+        return (
+          <div className="marquee-wrap">
+            <div className="marquee-track" id="marquee">
+              {marqueeItems.map((item, idx) => (
+                <div key={idx} className="tescard" style={{ minWidth: '340px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '28px 24px' }}>
+                  {/* 1. Image (Top) */}
+                  {item.image && item.image.trim() !== '' ? (
+                    <img 
+                      src={item.image} 
+                      alt="Customer Avatar" 
+                      style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #e4e4e7', marginBottom: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)', background: '#fff' }} 
+                    />
+                  ) : (
+                    <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#f4f4f5', border: '1px solid #e4e4e7', display: 'flex', alignItems: 'center', justifyCenter: 'center', color: '#a1a1aa', marginBottom: '12px', fontSize: '22px' }}>
+                      👤
+                    </div>
+                  )}
+
+                  {/* 2. Rating Stars (Below Image) */}
+                  <div className="stars" style={{ color: '#0071e3', fontSize: '16px', letterSpacing: '3px', marginBottom: '12px' }}>
+                    {'★'.repeat(item.stars || 5)}
+                  </div>
+
+                  {/* 3. Review Quote Text (Below Rating) */}
+                  <p style={{ fontSize: '13.5px', lineHeight: '1.6', color: '#1d1d1f', marginBottom: '14px', fontWeight: '500', textAlign: 'center' }}>
+                    {item.text}
+                  </p>
+
+                  {/* 4. Author Name / Designation (Below Text) */}
+                  <div className="who" style={{ fontSize: '12px', color: 'rgba(29,29,31,0.62)', fontWeight: '600', textAlign: 'center' }}>
+                    {item.author}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
       </div>
     </div>
   );

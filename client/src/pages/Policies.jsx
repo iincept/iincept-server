@@ -75,10 +75,10 @@ export default function Policies() {
   const Icon = policy.icon;
 
   const tabs = [
-    { key: 'shipping', label: 'Shipping Policy', icon: Truck },
-    { key: 'returns', label: 'Returns & Refunds', icon: RotateCcw },
-    { key: 'privacy', label: 'Privacy Policy', icon: ShieldCheck },
-    { key: 'terms', label: 'Terms of Service', icon: FileText }
+    { key: 'shipping', label: 'Shipping Policy', route: '/shipping-policy', icon: Truck },
+    { key: 'returns', label: 'Returns & Refunds', route: '/returns-refund-policy', icon: RotateCcw },
+    { key: 'privacy', label: 'Privacy Policy', route: '/privacy-policy', icon: ShieldCheck },
+    { key: 'terms', label: 'Terms of Service', route: '/terms-of-service', icon: FileText }
   ];
 
   return (
@@ -100,7 +100,7 @@ export default function Policies() {
             return (
               <button
                 key={tab.key}
-                onClick={() => navigate(`/policies/${tab.key}`)}
+                onClick={() => navigate(tab.route)}
                 className={`w-full flex items-center gap-3 p-4 rounded-xl border text-xs font-bold transition-all cursor-pointer text-left ${
                   isActive 
                     ? 'bg-black text-white border-black shadow-sm' 

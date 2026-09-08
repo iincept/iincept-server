@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Filter, Star, ShoppingBag, Heart, Search, ArrowUpDown, SlidersHorizontal, ChevronRight, X } from 'lucide-react';
@@ -25,8 +25,9 @@ export default function Shop() {
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [minRating, setMinRating] = useState(0);
   const [sortOption, setSortOption] = useState('rating');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [visibleCount, setVisibleCount] = useState(6);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const isLoadingMore = useRef(false);
 
   // Synchronize category and search query if URL parameters update
   useEffect(() => {
@@ -78,18 +79,33 @@ export default function Shop() {
     return 0; // Default
   });
 
-  // Pagination constants
-  const itemsPerPage = 6;
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  // Reset pagination page if filters change the total count
+  // Infinite Scroll logic: load 6 more products on scroll
   useEffect(() => {
-    setCurrentPage(1);
+    const handleScroll = () => {
+      if (isLoadingMore.current) return;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
+
+      if (scrollTop > 150 && (clientHeight + scrollTop >= scrollHeight - 120)) {
+        isLoadingMore.current = true;
+        setVisibleCount(prev => prev + 6);
+        setTimeout(() => {
+          isLoadingMore.current = false;
+        }, 600);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Reset visible count if filters change
+  useEffect(() => {
+    setVisibleCount(6);
   }, [search, selectedCategory, maxPrice, selectedBrands, minRating, sortOption]);
+
+  const paginatedProducts = filteredProducts.slice(0, visibleCount);
 
   const handleBrandChange = (brand) => {
     if (selectedBrands.includes(brand)) {
@@ -117,7 +133,6 @@ export default function Shop() {
       image: product.image || (product.images && product.images[0]) || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=150&q=80',
       rating: product.rating
     }));
-    alert(`Added ${product.name || product.title} to Wishlist!`);
   };
 
   return (
@@ -410,32 +425,10 @@ export default function Shop() {
                 ))}
               </div>
 
-              {/* Dynamic Pagination */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 pt-4">
-                  <button 
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-xs font-semibold text-slate-400 hover:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Prev
-                  </button>
-                  {[...Array(totalPages)].map((_, idx) => (
-                    <button 
-                      key={idx}
-                      onClick={() => setCurrentPage(idx + 1)}
-                      className={`px-3.5 py-1.5 rounded-lg border text-xs font-bold transition-all ${currentPage === idx + 1 ? 'border-violet-500 bg-violet-950/20 text-violet-400' : 'border-slate-800 bg-slate-900 hover:border-slate-700 text-slate-300'}`}
-                    >
-                      {idx + 1}
-                    </button>
-                  ))}
-                  <button 
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-xs font-semibold text-slate-400 hover:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Next
-                  </button>
+              {/* Infinite scroll status */}
+              {visibleCount < filteredProducts.length && (
+                <div className="text-center py-6 text-xs text-slate-500 font-semibold animate-pulse">
+                  Scroll down to view more products ({filteredProducts.length - visibleCount} more available)
                 </div>
               )}
             </>

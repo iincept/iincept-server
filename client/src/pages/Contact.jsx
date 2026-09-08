@@ -1,257 +1,483 @@
-import { useState } from 'react';
-import { Mail, Phone, Clock, MessageSquare, Send, CheckCircle, MapPin } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import axiosClient from '../services/axiosClient';
 
 export default function Contact() {
-  const [name, setName] = useState('');
+  const [fullname, setFullname] = useState('');
   const [email, setEmail] = useState('');
-  const [subject, setSubject] = useState('');
+  const [phone, setPhone] = useState('');
+  const [company, setCompany] = useState('');
   const [message, setMessage] = useState('');
-  const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !email || !message) {
+    if (!fullname || !email || !message) {
       alert('Please fill in all required fields.');
       return;
     }
     setLoading(true);
+
+    // Save to admin database backend
     try {
       await axiosClient.post('/enquiries', {
-        fullName: name,
+        fullName: fullname,
         email: email,
-        companyName: subject || 'Contact Support Enquiry',
-        phone: 'N/A',
-        productInterest: 'General Enquiry',
+        companyName: company || 'iincept Customer',
+        phone: phone || 'N/A',
+        productInterest: 'Contact Support Enquiry',
         quantity: 1,
         message: message
       });
-      setSubmitted(true);
-      setName('');
-      setEmail('');
-      setSubject('');
-      setMessage('');
     } catch (err) {
-      alert('Failed to submit message. Please try again.');
-    } finally {
-      setLoading(false);
+      console.log('Enquiry save notice:', err);
     }
+
+    // Format WhatsApp message payload
+    const whatsappText = `Hi iincept Support Team,\n\nI am sending an enquiry via website Contact Form:\n• *Full Name:* ${fullname}\n• *Email:* ${email}\n• *Phone:* ${phone || 'N/A'}\n• *Company:* ${company || 'N/A'}\n• *Message:* ${message}`;
+    const whatsappUrl = `https://wa.me/918607222417?text=${encodeURIComponent(whatsappText)}`;
+
+    // Open WhatsApp in new window
+    window.open(whatsappUrl, '_blank');
+
+    setSubmitted(true);
+    setLoading(false);
+    setFullname('');
+    setEmail('');
+    setPhone('');
+    setCompany('');
+    setMessage('');
   };
 
   return (
-    <div className="space-y-10 py-6 text-left max-w-5xl mx-auto animate-in fade-in duration-300">
-      
-      {/* Title */}
-      <div className="space-y-2 text-center max-w-xl mx-auto">
-        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">Contact Support</h1>
-        <p className="text-sm text-zinc-500">Have questions about your order or our products? Drop us a line below.</p>
+    <div className="contact-page-root">
+      <style>{`
+        :root{
+          --text:#1d1d1f;
+          --text-secondary:#6e6e73;
+          --border:#e5e5ea;
+          --surface:#ffffff;
+          --field-bg:#f5f5f7;
+          --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+        }
+        .contact-page-root {
+          font-family: var(--font);
+          -webkit-font-smoothing: antialiased;
+          background: #ffffff;
+          color: var(--text);
+          padding: 48px 24px 80px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          min-height: 80vh;
+        }
+
+        .contact-hero-header {
+          max-width: 800px;
+          margin: 0 auto 44px;
+          text-align: center;
+          padding: 0 16px;
+        }
+        .contact-pill-tag {
+          display: inline-block;
+          padding: 7px 20px;
+          background: #f5f5f7;
+          border: 1px solid #e5e5ea;
+          border-radius: 980px;
+          font-size: 14px;
+          font-weight: 700;
+          color: #1d1d1f;
+          margin-bottom: 22px;
+          letter-spacing: -0.01em;
+          box-shadow: 0 2px 8px rgba(0,0,0,.02);
+        }
+        .contact-main-title {
+          font-size: clamp(32px, 5vw, 52px);
+          font-weight: 800;
+          color: #1d1d1f;
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+          margin: 0 0 6px;
+        }
+        .contact-sub-title {
+          font-size: clamp(28px, 4vw, 44px);
+          font-weight: 800;
+          color: #1d1d1f;
+          letter-spacing: -0.02em;
+          line-height: 1.15;
+          margin: 0 0 16px;
+        }
+        .contact-description {
+          font-size: 15.5px;
+          color: #6e6e73;
+          line-height: 1.6;
+          max-width: 640px;
+          margin: 0 auto;
+        }
+
+        .contact-wrap{
+          width: 100%;
+          max-width: 1180px;
+          display: grid;
+          grid-template-columns: 0.85fr 1.15fr;
+          gap: 28px;
+        }
+        @media (max-width: 900px){
+          .contact-wrap{ grid-template-columns: 1fr; }
+        }
+
+        /* ---------- LEFT: info cards ---------- */
+        .info-col{
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          text-align: left;
+        }
+        .info-card{
+          display: flex;
+          gap: 18px;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 18px;
+          padding: 24px;
+        }
+        .info-icon{
+          flex: 0 0 auto;
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
+          background: var(--field-bg);
+          border: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .info-icon svg{ width: 22px; height: 22px; color: var(--text); stroke-width: 2; }
+
+        .info-label{
+          font-size: 11.5px;
+          font-weight: 700;
+          letter-spacing: .1em;
+          text-transform: uppercase;
+          color: var(--text-secondary);
+          margin: 2px 0 8px;
+        }
+        .info-line{
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--text);
+          line-height: 1.5;
+          margin: 0;
+        }
+        .info-sub{
+          font-size: 14.5px;
+          font-weight: 400;
+          color: var(--text-secondary);
+          line-height: 1.5;
+          margin-top: 2px;
+          margin-bottom: 0;
+        }
+
+        /* ---------- RIGHT: form ---------- */
+        .form-card{
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 22px;
+          padding: 36px 40px;
+          text-align: left;
+        }
+        .form-title{
+          font-size: 26px;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          margin: 0 0 8px;
+          color: var(--text);
+        }
+        .form-subtitle{
+          font-size: 15px;
+          color: var(--text-secondary);
+          margin: 0 0 28px;
+          line-height: 1.5;
+        }
+
+        .form-grid{
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px 20px;
+          margin-bottom: 20px;
+        }
+        @media (max-width: 560px){
+          .form-grid{ grid-template-columns: 1fr; }
+          .form-card{ padding: 24px 20px; }
+        }
+
+        .field label{
+          display: block;
+          font-size: 13.5px;
+          font-weight: 600;
+          color: var(--text);
+          margin-bottom: 8px;
+        }
+        .field input,
+        .field textarea{
+          width: 100%;
+          box-sizing: border-box;
+          font-family: var(--font);
+          font-size: 14.5px;
+          color: var(--text);
+          background: var(--field-bg);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 13px 15px;
+          outline: none;
+          transition: border-color .15s, background .15s;
+        }
+        .field input::placeholder,
+        .field textarea::placeholder{ color: #9a9a9e; }
+        .field input:focus,
+        .field textarea:focus{
+          border-color: #1d1d1f;
+          background: #fff;
+        }
+        .field textarea{
+          resize: vertical;
+          min-height: 130px;
+          line-height: 1.5;
+        }
+        .field.full{ grid-column: 1 / -1; }
+
+        .btn-send{
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 15px 30px;
+          border: none;
+          border-radius: 980px;
+          background: #1d1d1f;
+          color: #fff;
+          font-family: var(--font);
+          font-size: 15px;
+          font-weight: 650;
+          cursor: pointer;
+          transition: transform .15s ease, background .15s ease;
+        }
+        .btn-send:hover{
+          background: #000;
+          transform: translateY(-1px);
+        }
+        .btn-send:disabled{
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        .btn-send svg{ width: 16px; height: 16px; }
+
+        .success-box {
+          padding: 24px;
+          background: #f0fdf4;
+          border: 1px solid #bbf7d0;
+          border-radius: 16px;
+          color: #166534;
+          margin-bottom: 20px;
+        }
+        .contact-map-card {
+          width: 100%;
+          max-width: 1180px;
+          margin-top: 36px;
+          background: #ffffff;
+          border: 1px solid var(--border);
+          border-radius: 22px;
+          padding: 24px;
+          text-align: left;
+          box-sizing: border-box;
+        }
+        .map-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: var(--text);
+          margin: 0 0 16px;
+        }
+        .map-container {
+          width: 100%;
+          border-radius: 16px;
+          overflow: hidden;
+        }
+        .maps-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
+        }
+        @media (max-width: 850px){
+          .maps-grid { grid-template-columns: 1fr; }
+        }
+        .map-location-title {
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--text);
+          margin: 0 0 12px;
+        }
+      `}</style>
+
+      {/* Top Hero Heading Header */}
+      <div className="contact-hero-header">
+        <h1 className="contact-main-title">Contact Us</h1>
+        <h2 className="contact-sub-title">We'd love to hear from you! Let's get in touch.</h2>
+        <p className="contact-description">
+          We're here to support your procurement end-to-end. Reach out by phone, email, or drop us a message—our customer success team responds within 24 hours.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
-        
-        {/* Info Grid */}
-        <div className="md:col-span-2 space-y-6">
-          <div className="bg-zinc-50 border border-zinc-200 rounded-3xl p-6 space-y-6">
-            <h2 className="text-base font-bold text-zinc-900 uppercase tracking-wider">Contact Information</h2>
+      <div className="contact-wrap">
 
-            <div className="space-y-4 text-xs">
-              <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-zinc-450 shrink-0 mt-0.5" />
-                <div className="space-y-2">
-                  <p className="font-bold text-zinc-800">Our Offices</p>
-                  <div>
-                    <span className="font-bold text-zinc-900 block text-[11px]">Delhi Office:</span>
-                    <p className="text-zinc-500 leading-snug">109, Kushal House, Bazar 32-33, Nehru Place, New Delhi 110019</p>
-                  </div>
-                  <div>
-                    <span className="font-bold text-zinc-900 block text-[11px]">Gurugram Office:</span>
-                    <p className="text-zinc-500 leading-snug">Second floor, Plot No - 129P, Sector 39, Gurugram, Haryana 122003</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Mail className="h-5 w-5 text-zinc-450 shrink-0" />
-                <div>
-                  <p className="font-bold text-zinc-800">Email Desk</p>
-                  <a href="mailto:support@iincept.com" className="text-zinc-500 hover:text-black hover:underline font-semibold">support@iincept.com</a>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Phone className="h-5 w-5 text-zinc-450 shrink-0" />
-                <div>
-                  <p className="font-bold text-zinc-800">Telephone Support</p>
-                  <a href="tel:+919999999999" className="text-zinc-500 hover:text-black hover:underline font-semibold">+91 99999 99999</a>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Clock className="h-5 w-5 text-zinc-450 shrink-0" />
-                <div>
-                  <p className="font-bold text-zinc-800">Operational Hours</p>
-                  <p className="text-zinc-550">Mon – Sat: 9:00 AM to 6:00 PM IST</p>
-                </div>
-              </div>
+        {/* LEFT: info cards */}
+        <div className="info-col">
+          <div className="info-card">
+            <span className="info-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>
+            </span>
+            <div>
+              <p className="info-label">Email us</p>
+              <p className="info-line">connect@iincept.com</p>
+              <p className="info-sub">support@iincept.com</p>
             </div>
           </div>
 
-          <div className="bg-white border border-zinc-200 rounded-3xl p-6 text-center space-y-2.5">
-            <h3 className="font-bold text-zinc-850 text-sm">Need immediate assistance?</h3>
-            <p className="text-xs text-zinc-500">Reach our product coordinators directly over WhatsApp chat.</p>
-            <a 
-              href="https://wa.me/918607222417" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center bg-[#25d366] hover:bg-[#20ba59] text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-sm"
-            >
-              WhatsApp Us
-            </a>
+          <div className="info-card">
+            <span className="info-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </span>
+            <div>
+              <p className="info-label">Call us</p>
+              <p className="info-line">+91 86072 22417</p>
+              <p className="info-sub">Mon–Sat · 10:00AM – 6:00PM IST</p>
+            </div>
+          </div>
+
+          <div className="info-card">
+            <span className="info-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </span>
+            <div>
+              <p className="info-label">Visit us</p>
+              <p className="info-line">Delhi Office</p>
+              <p className="info-sub">109, Kushal House, Bazar 32-33, Nehru Place, New Delhi 110019</p>
+              <p className="info-line" style={{ marginTop: '14px' }}>Gurugram Office</p>
+              <p className="info-sub">Second floor, Plot No - 129P, Sector 39, Gurugram, Haryana 122003</p>
+            </div>
           </div>
         </div>
 
-        {/* Message Form */}
-        <div className="md:col-span-3 bg-white border border-zinc-200 rounded-3xl p-6 sm:p-8 shadow-sm">
-          {submitted ? (
-            <div className="py-12 text-center space-y-4">
-              <div className="h-12 w-12 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center text-emerald-600 mx-auto">
-                <CheckCircle className="h-6 w-6" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-bold text-zinc-900">Message Dispatched</h3>
-                <p className="text-xs text-zinc-500">We have received your ticket request. Support desk details will email you shortly.</p>
-              </div>
-              <button 
-                onClick={() => setSubmitted(false)}
-                className="bg-zinc-50 border border-zinc-200 text-zinc-800 hover:bg-zinc-100 font-bold text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer"
-              >
-                Send Another Message
-              </button>
+        {/* RIGHT: form */}
+        <div className="form-card">
+          <h2 className="form-title">Send us a message</h2>
+          <p className="form-subtitle">Fill out the form and we'll get back within 24 hours.</p>
+
+          {submitted && (
+            <div className="success-box">
+              <h4 style={{ margin: '0 0 4px', fontWeight: 700, fontSize: '15px' }}>✓ Message Received</h4>
+              <p style={{ margin: 0, fontSize: '13.5px' }}>Thank you! Our support desk team will get back to you within 24 hours.</p>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-5 text-left">
-              <h2 className="text-base font-bold text-zinc-900 border-b border-zinc-150 pb-2">Send Us a Message</h2>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Your Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Full Name"
-                    className="w-full bg-zinc-50 border border-zinc-200 text-xs rounded-xl p-3.5 text-zinc-900 focus:outline-none focus:border-zinc-500 focus:bg-white transition-all"
-                  />
-                </div>
+          )}
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Email Address *</label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    className="w-full bg-zinc-50 border border-zinc-200 text-xs rounded-xl p-3.5 text-zinc-900 focus:outline-none focus:border-zinc-500 focus:bg-white transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Subject</label>
-                <input
-                  type="text"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  placeholder="What is this regarding?"
-                  className="w-full bg-zinc-50 border border-zinc-200 text-xs rounded-xl p-3.5 text-zinc-900 focus:outline-none focus:border-zinc-500 focus:bg-white transition-all"
+          <form onSubmit={handleSubmit}>
+            <div className="form-grid">
+              <div className="field">
+                <label htmlFor="fullname">Full Name *</label>
+                <input 
+                  type="text" 
+                  id="fullname" 
+                  value={fullname}
+                  onChange={(e) => setFullname(e.target.value)}
+                  placeholder="John Carter" 
+                  required
                 />
               </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider block">Message *</label>
-                <textarea
+              <div className="field">
+                <label htmlFor="email">Email Address *</label>
+                <input 
+                  type="email" 
+                  id="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@company.com" 
                   required
-                  rows="4"
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="phone">Phone</label>
+                <input 
+                  type="text" 
+                  id="phone" 
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="98765XXXXX" 
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="company">Company</label>
+                <input 
+                  type="text" 
+                  id="company" 
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  placeholder="iincept B2B Partner" 
+                />
+              </div>
+              <div className="field full">
+                <label htmlFor="message">Tell us more *</label>
+                <textarea 
+                  id="message" 
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Detail your request here..."
-                  className="w-full bg-zinc-50 border border-zinc-200 text-xs rounded-xl p-3.5 text-zinc-900 focus:outline-none focus:border-zinc-500 focus:bg-white transition-all"
-                />
+                  placeholder="Share any specifics or requirements..." 
+                  required
+                ></textarea>
               </div>
+            </div>
 
-              <button
-                type="submit"
-                className="inline-flex items-center gap-1.5 bg-black hover:bg-zinc-900 text-white font-bold text-xs px-5 py-3 rounded-xl transition-all cursor-pointer shadow-sm"
-              >
-                <Send className="h-3.5 w-3.5" />
-                Submit Ticket
-              </button>
-            </form>
-          )}
+            <button type="submit" className="btn-send" disabled={loading}>
+              {loading ? 'Sending...' : 'Send message'}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </form>
         </div>
 
       </div>
 
-      {/* Map Section - Dual Locations */}
-      <div className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-sm overflow-hidden space-y-5 animate-in fade-in duration-300">
-        <div className="flex items-center gap-2 border-b border-zinc-100 pb-3 text-zinc-900">
-          <MapPin className="h-5 w-5 text-zinc-800" />
-          <h2 className="text-base font-bold uppercase tracking-wider">Our Locations</h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Location 1: Delhi Office */}
-          <div className="space-y-3">
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-zinc-900 flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-zinc-500" />
-                  Delhi Office (Nehru Place)
-                </span>
-                <span className="text-[10px] bg-zinc-100 text-zinc-600 font-semibold px-2 py-0.5 rounded-full">New Delhi</span>
-              </div>
-              <p className="text-[11px] text-zinc-500 mt-1 pl-5">109, Kushal House, Bazar 32-33, Nehru Place, New Delhi, Delhi 110019</p>
-            </div>
-            <div className="relative w-full h-80 rounded-2xl overflow-hidden border border-zinc-150 shadow-inner">
+      {/* Google Maps Section - Dual Office Locations */}
+      <div className="contact-map-card">
+        <div className="maps-grid">
+          <div className="map-item">
+            <h4 className="map-location-title">📍 Office 1</h4>
+            <div className="map-container">
               <iframe 
-                title="Delhi Office Location Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d670.7611981972549!2d77.2506581862361!3d28.549188132598193!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce35554210a31%3A0xdd6ef47c87c2cb91!2sIINCEPT!5e0!3m2!1sen!2sin!4v1784097809983!5m2!1sen!2sin"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d224685.33903933124!2d77.06795769556184!3d28.367663651415853!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce35554210a31%3A0xdd6ef47c87c2cb91!2sIINCEPT!5e0!3m2!1sen!2sin!4v1788510058256!5m2!1sen!2sin" 
+                width="100%" 
+                height="380" 
+                style={{ border: 0, borderRadius: '16px' }} 
+                allowFullScreen="" 
+                loading="lazy" 
+                referrerPolicy="strict-origin-when-cross-origin"
+                title="IINCEPT Office 1 Map"
               ></iframe>
             </div>
           </div>
 
-          {/* Location 2: Gurugram Office */}
-          <div className="space-y-3">
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-zinc-900 flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-zinc-500" />
-                  Gurugram Office
-                </span>
-                <span className="text-[10px] bg-zinc-100 text-zinc-600 font-semibold px-2 py-0.5 rounded-full">Gurugram</span>
-              </div>
-              <p className="text-[11px] text-zinc-500 mt-1 pl-5">Second floor, Plot No - 129P, Sector 39, Gurugram, Haryana 122003</p>
-            </div>
-            <div className="relative w-full h-80 rounded-2xl overflow-hidden border border-zinc-150 shadow-inner">
+          <div className="map-item">
+            <h4 className="map-location-title">📍 Office 2</h4>
+            <div className="map-container">
               <iframe 
-                title="Gurugram Office Location Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3508.1175521535197!2d77.04439237570371!3d28.445872592532222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d196ec57e0ff7%3A0x328aaa29f17e8a9b!2sIINCEPT!5e0!3m2!1sen!2sin!4v1784534311784!5m2!1sen!2sin"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3508.117554225429!2d77.0420963832692!3d28.445872530067376!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d196ec57e0ff7%3A0x328aaa29f17e8a9b!2sIINCEPT!5e0!3m2!1sen!2sin!4v1788510164195!5m2!1sen!2sin" 
+                width="100%" 
+                height="380" 
+                style={{ border: 0, borderRadius: '16px' }} 
+                allowFullScreen="" 
+                loading="lazy" 
+                referrerPolicy="strict-origin-when-cross-origin"
+                title="IINCEPT Office 2 Map"
               ></iframe>
             </div>
           </div>

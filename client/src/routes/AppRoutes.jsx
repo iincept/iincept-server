@@ -31,6 +31,14 @@ import AdminOrders from '../pages/admin/Orders';
 import Users from '../pages/admin/Users';
 import Coupons from '../pages/admin/Coupons';
 import Settings from '../pages/admin/Settings';
+import HeroBanners from '../pages/admin/HeroBanners';
+import AppleCategories from '../pages/admin/AppleCategories';
+import Testimonials from '../pages/admin/Testimonials';
+import NavbarManager from '../pages/admin/NavbarManager';
+import CategoryIconsManager from '../pages/admin/CategoryIconsManager';
+import AppleCareManager from '../pages/admin/AppleCareManager';
+import ProductAppleCareManager from '../pages/admin/ProductAppleCareManager';
+import FooterManager from '../pages/admin/FooterManager';
 import AdminReturns from '../pages/admin/Returns';
 import AdminEnquiries from '../pages/admin/Enquiries';
 import AdminSalesReport from '../pages/admin/SalesReport';
@@ -45,6 +53,10 @@ import ResetPassword from '../pages/ResetPassword';
 import Contact from '../pages/Contact';
 import Faq from '../pages/Faq';
 import Policies from '../pages/Policies';
+import ShippingPolicy from '../pages/ShippingPolicy';
+import ReturnsRefundPolicy from '../pages/ReturnsRefundPolicy';
+import PrivacyPolicy from '../pages/PrivacyPolicy';
+import TermsOfService from '../pages/TermsOfService';
 import BulkOrders from '../pages/BulkOrders';
 import Compare from '../pages/Compare';
 
@@ -107,23 +119,23 @@ const router = createBrowserRouter([
       },
       {
         path: 'checkout',
-        element: <ProtectedRoute><Checkout /></ProtectedRoute>
+        element: <Checkout />
       },
       {
         path: 'profile',
-        element: <ProtectedRoute><Profile /></ProtectedRoute>
+        element: <Navigate to="/" replace />
       },
       {
         path: 'orders',
-        element: <ProtectedRoute><Orders /></ProtectedRoute>
+        element: <Navigate to="/" replace />
       },
       {
         path: 'orders/:id',
-        element: <ProtectedRoute><OrderDetails /></ProtectedRoute>
+        element: <Navigate to="/" replace />
       },
       {
         path: 'addresses',
-        element: <ProtectedRoute><SavedAddresses /></ProtectedRoute>
+        element: <Navigate to="/checkout" replace />
       },
       {
         path: 'wishlist',
@@ -145,13 +157,59 @@ const router = createBrowserRouter([
         path: 'faq',
         element: <Faq />
       },
+      // Dedicated Standalone Policy Pages
+      {
+        path: 'shipping-policy',
+        element: <ShippingPolicy />
+      },
+      {
+        path: 'returns-refund-policy',
+        element: <ReturnsRefundPolicy />
+      },
+      {
+        path: 'returns-policy',
+        element: <ReturnsRefundPolicy />
+      },
+      {
+        path: 'privacy-policy',
+        element: <PrivacyPolicy />
+      },
+      {
+        path: 'privacy',
+        element: <PrivacyPolicy />
+      },
+      {
+        path: 'terms-of-service',
+        element: <TermsOfService />
+      },
+      {
+        path: 'terms',
+        element: <TermsOfService />
+      },
+
+      {
+        path: 'policies/shipping',
+        element: <ShippingPolicy />
+      },
+      {
+        path: 'policies/returns',
+        element: <ReturnsRefundPolicy />
+      },
+      {
+        path: 'policies/privacy',
+        element: <PrivacyPolicy />
+      },
+      {
+        path: 'policies/terms',
+        element: <TermsOfService />
+      },
       {
         path: 'policies/:type',
         element: <Policies />
       },
       {
         path: 'policies',
-        element: <Navigate to="shipping" replace />
+        element: <Navigate to="/shipping-policy" replace />
       },
       {
         path: 'bulk-orders',
@@ -178,6 +236,14 @@ const router = createBrowserRouter([
       { path: 'orders', element: <AdminOrders /> },
       { path: 'users', element: <Users /> },
       { path: 'coupons', element: <Coupons /> },
+      { path: 'hero-banners', element: <HeroBanners /> },
+      { path: 'apple-categories', element: <AppleCategories /> },
+      { path: 'testimonials', element: <Testimonials /> },
+      { path: 'navbar-menu', element: <NavbarManager /> },
+      { path: 'category-icons', element: <CategoryIconsManager /> },
+      { path: 'applecare', element: <AppleCareManager /> },
+      { path: 'product-applecare', element: <ProductAppleCareManager /> },
+      { path: 'footer-menu', element: <FooterManager /> },
       { path: 'settings', element: <Settings /> },
       { path: 'returns', element: <AdminReturns /> },
       { path: 'enquiries', element: <AdminEnquiries /> },
@@ -186,19 +252,19 @@ const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: <Login />
+    element: <Navigate to="/" replace />
   },
   {
     path: '/signup',
-    element: <Signup />
+    element: <Navigate to="/" replace />
   },
   {
     path: '/forgot-password',
-    element: <ForgotPassword />
+    element: <Navigate to="/" replace />
   },
   {
     path: '/reset-password',
-    element: <ResetPassword />
+    element: <Navigate to="/" replace />
   },
   {
     path: '*',

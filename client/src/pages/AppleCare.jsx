@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ShieldCheck, Zap, Wrench, Smartphone, Laptop, Tablet, Watch, Headphones, CheckCircle2, ArrowRight, MessageSquare, ChevronDown, Monitor, Sparkles, ChevronLeft, ChevronRight, Tv, Radio, Calendar, Globe, Battery, Truck, X } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/cartSlice';
+import axiosClient from '../services/axiosClient';
 
 const BENEFIT_CARDS = [
   {
@@ -608,7 +609,98 @@ const PLAN_TILES = {
   },
 };
 
+const DEFAULT_PRICING_TABLES = [
+  {
+    categoryKey: 'iphone',
+    image: '/iphone_category_v2.jpg',
+    headline: 'Cover your iPhone.',
+    subheadline: 'AppleCare+ for iPhone includes unlimited incidents of accidental damage protection.',
+    durationLabel: '2 years',
+    isActive: true,
+    rows: [
+      { model: 'iPhone 17e', monthly: '₹599.00', yearly: '₹11,900.00', isActive: true },
+      { model: 'iPhone 17, iPhone 16', monthly: '₹749.00', yearly: '₹14,900.00', isActive: true },
+      { model: 'iPhone 16 Plus', monthly: '₹899.00', yearly: '₹17,900.00', isActive: true },
+      { model: 'iPhone 17 Pro, iPhone 17 Pro Max', monthly: '₹1,049.00', yearly: '₹20,900.00', isActive: true }
+    ]
+  },
+  {
+    categoryKey: 'mac',
+    image: '/macbook_category_v3.jpg',
+    headline: 'Cover your Mac.',
+    subheadline: 'AppleCare+ for Mac provides up to 3 years of expert support and hardware coverage.',
+    durationLabel: '3 years',
+    isActive: true,
+    rows: [
+      { model: 'Mac mini', monthly: '₹429.00', yearly: '₹12,900.00', isActive: true, image: '/mac_nav/mac_mini.png' },
+      { model: 'Mac Studio', monthly: '₹679.00', yearly: '₹19,900.00', isActive: true, image: '/mac_nav/mac_studio.png' },
+      { model: 'iMac', monthly: '₹679.00', yearly: '₹19,900.00', isActive: true, image: '/mac_nav/imac.png' },
+      { model: 'Macbook Neo', monthly: '₹579.00', yearly: '₹16,900.00', isActive: true, image: '/mac_nav/macbook_neo.png' },
+      { model: 'MacBook Air 13″', monthly: '₹779.00', yearly: '₹22,900.00', isActive: true, image: '/mac_nav/macbook_air.png' },
+      { model: 'MacBook Air 15″', monthly: '₹849.00', yearly: '₹24,900.00', isActive: true, image: '/mac_nav/macbook_air.png' },
+      { model: 'MacBook Pro 14″', monthly: '₹999.00', yearly: '₹29,900.00', isActive: true, image: '/mac_nav/macbook_pro.png' },
+      { model: 'MacBook Pro 16″', monthly: '₹1,379.00', yearly: '₹40,900.00', isActive: true, image: '/mac_nav/macbook_pro.png' },
+      { model: 'Mac Pro', monthly: '₹1,699.00', yearly: '₹49,900.00', isActive: true, image: '/mac_nav/mac_studio.png' }
+    ]
+  },
+  {
+    categoryKey: 'ipad',
+    image: '/ipad_category_v3.png',
+    headline: 'Cover your iPad.',
+    subheadline: 'AppleCare+ for iPad covers your iPad, Apple Pencil, and Apple-branded keyboards.',
+    durationLabel: '2 years',
+    isActive: true,
+    rows: [
+      { model: 'iPad, iPad mini', monthly: '₹449.00', yearly: '₹8,900.00', isActive: true },
+      { model: 'iPad Air 11″', monthly: '₹499.00', yearly: '₹9,900.00', isActive: true },
+      { model: 'iPad Air 13″', monthly: '₹599.00', yearly: '₹11,900.00', isActive: true },
+      { model: 'iPad Pro 11″', monthly: '₹899.00', yearly: '₹17,900.00', isActive: true },
+      { model: 'iPad Pro 13″', monthly: '₹999.00', yearly: '₹19,900.00', isActive: true }
+    ]
+  },
+  {
+    categoryKey: 'watch',
+    image: '/watch_category.jpg',
+    headline: 'Cover your Apple Watch.',
+    subheadline: 'AppleCare+ for Apple Watch provides 2 years of accidental damage protection.',
+    durationLabel: '2 years',
+    isActive: true,
+    rows: [
+      { model: 'Apple Watch SE', monthly: '₹249.00', yearly: '₹4,900.00', isActive: true },
+      { model: 'Apple Watch Series 11', monthly: '₹399.00', yearly: '₹7,900.00', isActive: true },
+      { model: 'Apple Watch Ultra 3', monthly: '₹499.00', yearly: '₹9,900.00', isActive: true }
+    ]
+  },
+  {
+    categoryKey: 'airpods',
+    image: '/airpods_category.jpg',
+    headline: 'Cover your headphones.',
+    subheadline: 'AppleCare+ for Headphones covers AirPods Pro, AirPods Max and Beats.',
+    durationLabel: '2 years',
+    isActive: true,
+    rows: [
+      { model: 'AirPods 4, Beats', monthly: '₹149.00', yearly: '₹2,900.00', isActive: true },
+      { model: 'AirPods Pro 3', monthly: '₹249.00', yearly: '₹4,900.00', isActive: true },
+      { model: 'AirPods Max 2', monthly: '₹349.00', yearly: '₹6,900.00', isActive: true }
+    ]
+  },
+  {
+    categoryKey: 'tv-home',
+    image: '/applecare_official_hero.png',
+    headline: 'Cover your Apple TV.',
+    subheadline: 'AppleCare+ for Apple TV and HomePod includes 3 years of hardware support.',
+    durationLabel: '3 years',
+    isActive: true,
+    rows: [
+      { model: 'Apple TV', monthly: '₹99.00', yearly: '₹2,900.00', isActive: true },
+      { model: 'HomePod mini', monthly: '₹79.00', yearly: '₹1,600.00', isActive: true },
+      { model: 'HomePod', monthly: '₹199.00', yearly: '₹3,900.00', isActive: true }
+    ]
+  }
+];
+
 const APPLECARE_PLANS = [
+
   {
     id: 'ac-iphone',
     category: 'iPhone',
@@ -729,14 +821,106 @@ const FAQS = [
   }
 ];
 
+const getModelImage = (row) => {
+  if (row?.image) return row.image;
+  const name = (row?.model || '').toLowerCase();
+  
+  if (name.includes('mini')) return '/mac_nav/mac_mini.png';
+  if (name.includes('studio')) return '/mac_nav/mac_studio.png';
+  if (name.includes('imac')) return '/mac_nav/imac.png';
+  if (name.includes('neo')) return '/mac_nav/macbook_neo.png';
+  if (name.includes('air')) return '/mac_nav/macbook_air.png';
+  if (name.includes('pro') && (name.includes('14') || name.includes('16') || name.includes('macbook'))) return '/mac_nav/macbook_pro.png';
+  if (name.includes('mac pro')) return '/mac_nav/mac_studio.png';
+  
+  if (name.includes('17 pro')) return '/iphone17p_white.jpg';
+  if (name.includes('17e')) return '/iphone17e_purple_fb.jpg';
+  if (name.includes('17') || name.includes('16')) return '/iphone17_group.jpg';
+  
+  if (name.includes('ipad air')) return '/ipad_air_blue.jpg';
+  if (name.includes('ipad pro')) return '/ipad_category_v3.png';
+  if (name.includes('ipad')) return '/ipad_category_v2.jpg';
+  
+  if (name.includes('watch')) return '/apple_watch_health.jpg';
+  if (name.includes('airpods') || name.includes('beats')) return '/airpods_category.jpg';
+
+  return null;
+};
+
 export default function AppleCare() {
   const dispatch = useDispatch();
-  const [selectedCategory, setSelectedCategory] = useState('iPhone');
+  const [searchParams] = useSearchParams();
+  const catParam = searchParams.get('category') || searchParams.get('cat');
+  const openModalParam = searchParams.get('modal') === 'true' || searchParams.get('openModal') === 'true';
+
+  const [selectedCategory, setSelectedCategory] = useState(
+    catParam ? (catParam.toLowerCase() === 'airpods' ? 'AirPods' : catParam.toLowerCase() === 'tv' ? 'TV' : catParam.charAt(0).toUpperCase() + catParam.slice(1).toLowerCase()) : 'iPhone'
+  );
   const [openFaq, setOpenFaq] = useState(null);
-  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(openModalParam);
+
+  useEffect(() => {
+    if (openModalParam) {
+      setIsPricingModalOpen(true);
+      const newParams = new URLSearchParams(window.location.search);
+      newParams.delete('modal');
+      newParams.delete('openModal');
+      const newSearch = newParams.toString();
+      const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '');
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [openModalParam]);
+  const [dbPlans, setDbPlans] = useState([]);
+  const [dbCategoryIcons, setDbCategoryIcons] = useState([]);
+  const [pricingTables, setPricingTables] = useState(() => {
+    try {
+      const cached = localStorage.getItem('iincept_applecare_pricing_tables_v2');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return DEFAULT_PRICING_TABLES;
+  });
   const scrollRef = useRef(null);
   const repairsScrollRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    axiosClient.get('/settings')
+      .then(res => {
+        if (res.data?.appleCarePlans) {
+          setDbPlans(res.data.appleCarePlans);
+        }
+        if (res.data?.categoryIconGroups) {
+          const appleCareGrp = res.data.categoryIconGroups.find(g => g.categoryKey === 'applecare');
+          if (appleCareGrp && appleCareGrp.icons) {
+            setDbCategoryIcons(appleCareGrp.icons.filter(i => i.isActive !== false));
+          }
+        }
+        if (res.data?.appleCarePricingTables && res.data.appleCarePricingTables.length > 0) {
+          // Merge DB data with defaults — DB overrides defaults per categoryKey
+          const dbTables = res.data.appleCarePricingTables.filter(t => t.isActive !== false);
+          setPricingTables(prev => {
+            const updated = DEFAULT_PRICING_TABLES.map(def => {
+              const found = dbTables.find(d => d.categoryKey === def.categoryKey);
+              if (!found) return def;
+              const dbRows = (found.rows || []).filter(r => r.isActive !== false);
+              return { 
+                ...def, 
+                ...found, 
+                rows: dbRows.length > 0 ? dbRows : def.rows 
+              };
+            });
+            try {
+              localStorage.setItem('iincept_applecare_pricing_tables_v2', JSON.stringify(updated));
+            } catch (e) {}
+            return updated;
+          });
+        }
+      })
+      .catch(err => console.error('Error fetching AppleCare settings:', err));
+  }, []);
 
   useEffect(() => {
     if (isPricingModalOpen) {
@@ -950,7 +1134,28 @@ export default function AppleCare() {
         {/* Device Category Icon Nav Bar */}
         <div className="relative border-b border-[#D2D2D7]/80 pb-0 mb-16">
           <div className="flex items-end justify-center gap-6 sm:gap-10 md:gap-12 overflow-x-auto scrollbar-none px-4">
-            {[
+            {(dbCategoryIcons.length > 0 ? dbCategoryIcons.map(ic => {
+              const staticOptions = [
+                { id: 'iPhone', label: 'iPhone', icon: IPhoneSvgIcon },
+                { id: 'Mac', label: 'Mac', icon: MacSvgIcon },
+                { id: 'Display', label: 'Display', icon: DisplaySvgIcon },
+                { id: 'iPad', label: 'iPad', icon: IPadSvgIcon },
+                { id: 'Watch', label: 'Watch', icon: WatchSvgIcon },
+                { id: 'AirPods', label: 'Headphones', icon: HeadphonesSvgIcon },
+                { id: 'TV', label: 'TV', icon: TVSvgIcon },
+                { id: 'HomePod', label: 'HomePod', icon: HomePodIcon }
+              ];
+              const matched = staticOptions.find(s => 
+                s.id.toLowerCase() === (ic.query || '').toLowerCase() || 
+                (ic.label || '').toLowerCase().includes(s.id.toLowerCase())
+              );
+              return {
+                id: matched?.id || ic.query || 'iPhone',
+                label: ic.label,
+                image: ic.image,
+                icon: matched?.icon || IPhoneSvgIcon
+              };
+            }) : [
               { id: 'iPhone', label: 'iPhone', icon: IPhoneSvgIcon },
               { id: 'Mac', label: 'Mac', icon: MacSvgIcon },
               { id: 'Display', label: 'Display', icon: DisplaySvgIcon },
@@ -959,9 +1164,9 @@ export default function AppleCare() {
               { id: 'AirPods', label: 'Headphones', icon: HeadphonesSvgIcon },
               { id: 'TV', label: 'TV', icon: TVSvgIcon },
               { id: 'HomePod', label: 'HomePod', icon: HomePodIcon }
-            ].map((item) => {
+            ]).map((item) => {
               const IconComponent = item.icon;
-              const isActive = selectedCategory === item.id;
+              const isActive = selectedCategory.toLowerCase() === item.id.toLowerCase();
               return (
                 <button
                   key={item.id}
@@ -971,9 +1176,13 @@ export default function AppleCare() {
                   }`}
                 >
                   <div className="h-12 sm:h-14 flex items-end justify-center w-full">
-                    <IconComponent className={`h-10 sm:h-12 w-auto transition-transform group-hover:scale-105 ${
-                      isActive ? 'text-[#1D1D1F]' : 'text-[#6E6E73] group-hover:text-[#1D1D1F]'
-                    }`} />
+                    {item.image ? (
+                      <img src={item.image} alt={item.label} className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105" />
+                    ) : (
+                      <IconComponent className={`h-10 sm:h-12 w-auto transition-transform group-hover:scale-105 ${
+                        isActive ? 'text-[#1D1D1F]' : 'text-[#6E6E73] group-hover:text-[#1D1D1F]'
+                      }`} />
+                    )}
                   </div>
                   <span className="tracking-tight whitespace-nowrap">{item.label}</span>
                 </button>
@@ -984,7 +1193,19 @@ export default function AppleCare() {
 
         {/* Official Apple Tile Container for Selected Category */}
         {(() => {
-          const currentPlan = PLAN_TILES[selectedCategory] || PLAN_TILES.iPhone;
+          const defaultPlan = PLAN_TILES[selectedCategory] || PLAN_TILES.iPhone;
+          const adminPlan = dbPlans.find(p => p.category?.toLowerCase() === selectedCategory?.toLowerCase());
+
+          const currentPlan = {
+            ...defaultPlan,
+            eyebrow: adminPlan?.eyebrow || defaultPlan.eyebrow,
+            headline: adminPlan?.headline || defaultPlan.headline,
+            priceText: adminPlan?.priceText || (adminPlan?.price ? `From ₹${adminPlan.price.toLocaleString('en-IN')}.00 for ${selectedCategory === 'Mac' || selectedCategory === 'Display' || selectedCategory === 'TV' ? '3 years' : '2 years'}` : defaultPlan.priceText),
+            monthlyText: adminPlan?.monthlyText || defaultPlan.monthlyText,
+            priceVal: adminPlan?.price || defaultPlan.priceVal,
+            features: adminPlan?.features && adminPlan.features.length > 0 ? adminPlan.features : defaultPlan.features,
+            image: adminPlan?.image || defaultPlan.image
+          };
           return (
             <div
               key={selectedCategory}
@@ -1061,6 +1282,145 @@ export default function AppleCare() {
           );
         })()}
       </section>
+
+      {/* ===== Dynamic Pricing Table & Model Showcase Section ===== */}
+      {(() => {
+        const catKey = selectedCategory === 'AirPods' ? 'airpods'
+          : selectedCategory === 'TV' ? 'tv-home'
+          : selectedCategory?.toLowerCase();
+        if (catKey === 'mac') return null;
+        const tbl = pricingTables.find(t => t.categoryKey === catKey);
+        if (!tbl) return null;
+        const activeRows = (tbl.rows || []).filter(r => r.isActive !== false);
+        if (activeRows.length === 0) return null;
+
+        return (
+          <section className="py-12 sm:py-16 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto space-y-10">
+            
+            {/* Visual Product Showcase Cards Grid (for Mac & All Categories) */}
+            <div>
+              <div className="text-center max-w-2xl mx-auto mb-8">
+                <p className="text-sm font-semibold text-[#FF2D55] tracking-tight uppercase mb-1">AppleCare+ for {selectedCategory}</p>
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#1D1D1F] tracking-tight">
+                  Select your {selectedCategory} model
+                </h3>
+                <p className="text-sm text-[#6E6E73] mt-1.5">
+                  Complete official coverage with priority support and low service fees.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                {activeRows.map((row, idx) => {
+                  const imgSrc = getModelImage(row);
+                  return (
+                    <div
+                      key={idx}
+                      className="bg-white rounded-2xl p-5 border border-[#D2D2D7]/50 shadow-xs hover:shadow-md transition-all flex flex-col items-center text-center group relative overflow-hidden"
+                    >
+                      <div className="h-32 sm:h-36 w-full flex items-center justify-center bg-[#F5F5F7] rounded-xl p-4 mb-4 group-hover:scale-105 transition-transform duration-300">
+                        {imgSrc ? (
+                          <img
+                            src={imgSrc.startsWith('/') || imgSrc.startsWith('http') ? imgSrc : '/' + imgSrc}
+                            alt={row.model}
+                            className="max-h-full max-w-full object-contain drop-shadow-sm"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div className="text-3xl">💻</div>
+                        )}
+                      </div>
+
+                      <h4 className="font-bold text-[#1D1D1F] text-base sm:text-lg mb-1 leading-snug">{row.model}</h4>
+                      <div className="mt-auto pt-2 w-full">
+                        <div className="text-xs text-[#6E6E73] font-medium mb-0.5">{tbl.durationLabel || '3 years'} coverage</div>
+                        <div className="text-lg sm:text-xl font-extrabold text-[#1D1D1F] tracking-tight">{row.yearly}</div>
+                        {row.monthly && (
+                          <div className="text-xs text-[#FF2D55] font-semibold mt-0.5">{row.monthly}/mo.</div>
+                        )}
+                        <button
+                          onClick={() => handleAddToCart({
+                            id: `ac-${catKey}-${row.model.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+                            title: `AppleCare+ for ${row.model}`,
+                            price: parseInt((row.yearly || '0').replace(/[^0-9]/g, '')),
+                            image: imgSrc || tbl.image || ''
+                          })}
+                          className="mt-3.5 w-full bg-[#0071E3] hover:bg-[#0077ED] active:scale-95 text-white py-2 px-3 rounded-full text-xs font-semibold transition-all cursor-pointer shadow-xs"
+                        >
+                          Add Coverage
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Official Screenshot-Style Pricing Table Container */}
+            <div
+              key={`pricing-tbl-${selectedCategory}`}
+              className="bg-white rounded-[24px] sm:rounded-[28px] border border-[#D2D2D7]/60 overflow-hidden shadow-sm p-6 sm:p-10"
+            >
+              {/* Header section matching exact design of uploaded screenshot */}
+              <div className="flex items-end justify-between border-b border-[#D2D2D7]/60 pb-3 mb-2">
+                <div className="text-base sm:text-xl font-bold text-[#1D1D1F]">Models</div>
+                <div className="text-right">
+                  <div className="text-sm sm:text-base font-bold text-[#FF2D55] leading-tight mb-1">AppleCare+</div>
+                  <div className="flex items-center gap-6 sm:gap-12">
+                    <span className="text-xs sm:text-sm font-bold text-[#1D1D1F]">Monthly</span>
+                    <span className="text-xs sm:text-sm font-bold text-[#1D1D1F] min-w-[70px] text-right">{tbl.durationLabel || '3 years'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Table Rows matching uploaded screenshot layout with device images */}
+              <div className="divide-y divide-[#F5F5F7]">
+                {activeRows.map((row, i) => {
+                  const imgSrc = getModelImage(row);
+                  return (
+                    <div key={i} className="py-3.5 flex items-center justify-between hover:bg-[#FAFAFA] transition-colors px-2 rounded-lg">
+                      <div className="flex items-center gap-3 sm:gap-4 font-medium text-[#1D1D1F] text-sm sm:text-base">
+                        {imgSrc ? (
+                          <img
+                            src={imgSrc.startsWith('/') || imgSrc.startsWith('http') ? imgSrc : '/' + imgSrc}
+                            alt={row.model}
+                            className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0 drop-shadow-xs"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-[#F5F5F7] flex items-center justify-center text-xs font-bold text-[#6E6E73]">
+                            💻
+                          </div>
+                        )}
+                        <span className="font-semibold text-[#1D1D1F]">{row.model}</span>
+                      </div>
+                      <div className="flex items-center gap-6 sm:gap-12 text-right">
+                        <span className="text-sm sm:text-base text-[#1D1D1F] tabular-nums font-normal min-w-[70px]">{row.monthly}</span>
+                        <span className="text-sm sm:text-base text-[#1D1D1F] tabular-nums font-semibold min-w-[85px] text-right">{row.yearly}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-[#F5F5F7] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#6E6E73]">
+                <p>Prices include applicable taxes. Service fees may apply for repairs.</p>
+                <button
+                  onClick={() => handleAddToCart({
+                    id: `ac-${selectedCategory.toLowerCase()}`,
+                    title: `AppleCare+ for ${selectedCategory}`,
+                    price: activeRows[0] ? parseInt((activeRows[0].yearly || '0').replace(/[^0-9]/g, '')) : 4900,
+                    image: tbl.image || ''
+                  })}
+                  className="bg-[#0071E3] hover:bg-[#0077ED] text-white px-6 py-2 rounded-full text-xs font-medium transition-all hover:scale-105 cursor-pointer shrink-0"
+                >
+                  Buy AppleCare+ Coverage
+                </button>
+              </div>
+            </div>
+
+          </section>
+        );
+      })()}
 
       {/* iPhone Repairs Made Easy Section */}
       <section className="pt-10 pb-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto">
@@ -1241,7 +1601,7 @@ export default function AppleCare() {
 
             {/* Modal Headline */}
             <h2
-              className="typography-modal-headline modal-headline font-bold text-[#1D1D1F] pr-10 -mt-1 sm:-mt-2"
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#1D1D1F] tracking-tight leading-[1.1] pr-10 -mt-1 sm:-mt-2"
               id={`modal-headline-${selectedCategory.toLowerCase()}`}
             >
               {selectedCategory === 'Mac'

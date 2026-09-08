@@ -6,7 +6,7 @@ export default function AdminProtectedRoute({ children }) {
   const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
 
   if (!token || !user || user.role !== 'admin') {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;

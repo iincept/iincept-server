@@ -531,15 +531,15 @@ export default function Products() {
 
   const handleProductDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
-    setLoading(true);
+    setProducts(prev => prev.filter(p => p._id !== id));
     try {
       await deleteProduct(id);
       showSuccessMessage('Product deleted successfully!');
       fetchData();
     } catch (err) {
+      console.error('Delete product error:', err);
       setError(err.response?.data?.message || err.message || 'Failed to delete product');
-    } finally {
-      setLoading(false);
+      fetchData();
     }
   };
 
@@ -728,7 +728,7 @@ export default function Products() {
                             <img
                               src={prod.images?.[0] || '/iphone_category_v2.jpg'}
                               alt=""
-                              className="object-contain max-h-full max-w-full"
+                              className="w-full h-full object-contain"
                             />
                           </div>
                           <div>
@@ -1079,8 +1079,8 @@ export default function Products() {
                     />
 
                     {productForm.images && productForm.images.map((imgUrl, imgIdx) => (
-                      <div key={imgIdx} className="relative h-20 w-20 rounded-xl border border-zinc-200 bg-white overflow-hidden p-1 flex items-center justify-center shrink-0 shadow-sm">
-                        <img src={imgUrl} alt="" className="object-contain max-h-full max-w-full" />
+                      <div key={imgIdx} className="relative h-16 w-16 rounded-xl border border-zinc-200 bg-white overflow-hidden p-1 flex items-center justify-center shrink-0 shadow-sm">
+                        <img src={imgUrl} alt="" className="w-full h-full object-contain" />
                         <button
                           type="button"
                           onClick={() => {
@@ -1100,7 +1100,7 @@ export default function Products() {
                       type="button"
                       disabled={uploadingImage}
                       onClick={() => document.getElementById('base-product-upload').click()}
-                      className="w-20 h-20 rounded-xl border-2 border-dashed border-zinc-200 hover:border-[#0071e3] hover:bg-zinc-50 flex flex-col items-center justify-center gap-1 cursor-pointer bg-transparent transition-all shadow-sm"
+                      className="w-16 h-16 rounded-xl border-2 border-dashed border-zinc-200 hover:border-[#0071e3] hover:bg-zinc-50 flex flex-col items-center justify-center gap-0.5 cursor-pointer bg-transparent transition-all shadow-sm"
                     >
                       {uploadingImage ? (
                         <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
@@ -1259,7 +1259,7 @@ export default function Products() {
 
                   <VariantTagInput
                     label="Chip & Processor Options (Laptops & PCs / Mac)"
-                    placeholder="e.g. Apple M5 chip with 10-core CPU and 10-core GPU, Apple M4 chip with 10-core CPU and 8-core GPU"
+                    placeholder="e.g. Apple M4 chip with 8‑core CPU and 8‑core GPU, Apple M4 chip with 10-core CPU and 10-core GPU"
                     tags={productForm.processors || []}
                     onChange={(tags) => {
                       const removed = (productForm.processors || []).filter(t => !tags.includes(t));
@@ -1546,8 +1546,8 @@ export default function Products() {
                               />
 
                               {v.images && v.images.map((imgUrl, imgIdx) => (
-                                <div key={imgIdx} className="relative h-20 w-20 rounded-xl border border-zinc-200 bg-white overflow-hidden p-1 flex items-center justify-center shrink-0 shadow-sm">
-                                  <img src={imgUrl} alt="" className="object-contain max-h-full max-w-full" />
+                                <div key={imgIdx} className="relative h-16 w-16 rounded-xl border border-zinc-200 bg-white overflow-hidden p-1 flex items-center justify-center shrink-0 shadow-sm">
+                                  <img src={imgUrl} alt="" className="w-full h-full object-contain" />
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -1566,7 +1566,7 @@ export default function Products() {
                                 type="button"
                                 disabled={uploadingColorIndex === vIdx}
                                 onClick={() => document.getElementById(`variant-upload-${vIdx}`).click()}
-                                className="w-20 h-20 rounded-xl border-2 border-dashed border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50 flex flex-col items-center justify-center gap-1 cursor-pointer bg-transparent transition-all shadow-sm"
+                                className="w-16 h-16 rounded-xl border-2 border-dashed border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50 flex flex-col items-center justify-center gap-0.5 cursor-pointer bg-transparent transition-all shadow-sm"
                               >
                                 {uploadingColorIndex === vIdx ? (
                                   <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
@@ -1654,11 +1654,11 @@ export default function Products() {
               <div className={`bg-white border border-zinc-200 rounded-3xl shadow-md overflow-hidden transition-all duration-300 mx-auto ${previewMode === 'mobile' ? 'max-w-[370px] border-8 border-zinc-950 rounded-[40px]' : 'w-full'}`}>
 
                 {/* Visual Header of Card */}
-                <div className="h-64 bg-zinc-50 relative overflow-hidden flex items-center justify-center p-6 border-b border-zinc-100">
+                <div className="h-48 bg-zinc-50 relative overflow-hidden flex items-center justify-center p-4 border-b border-zinc-100">
                   <img
                     src={activePreviewMainImage || getPreviewImages()[0] || '/iphone_category_v2.jpg'}
                     alt="Preview Visual"
-                    className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-300 hover:scale-105"
+                    className="max-h-full max-w-full w-full h-full object-contain mix-blend-multiply transition-transform duration-300 hover:scale-105"
                   />
                 </div>
 
@@ -1672,7 +1672,7 @@ export default function Products() {
                         onClick={() => setActivePreviewMainImage(imgUrl)}
                         className={`w-10 h-10 rounded border p-0.5 bg-white flex items-center justify-center overflow-hidden cursor-pointer shrink-0 ${activePreviewMainImage === imgUrl ? 'border-zinc-800 border-2' : 'border-zinc-200 hover:border-zinc-400'}`}
                       >
-                        <img src={imgUrl} className="object-contain max-h-full max-w-full" />
+                        <img src={imgUrl} className="w-full h-full object-contain" />
                       </button>
                     ))}
                   </div>

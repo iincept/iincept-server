@@ -18,7 +18,7 @@ export default function AdminLogin() {
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
-      navigate('/admin/dashboard');
+      navigate('/dashboard/home');
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -28,7 +28,7 @@ export default function AdminLogin() {
       .unwrap()
       .then((data) => {
         if (data.role === 'admin') {
-          navigate('/admin/dashboard');
+          navigate('/dashboard/home');
         } else {
           alert('Access denied. Only administrators are allowed to enter.');
           dispatch(logout());

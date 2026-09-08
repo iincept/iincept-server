@@ -47,6 +47,168 @@ const settingSchema = new mongoose.Schema(
       type: String,
       default: "Browse Catalogue →",
     },
+    heroTitle3: {
+      type: String,
+      default: "Official AppleCare+ protection for total peace of mind.",
+    },
+    heroSubtitle3: {
+      type: String,
+      default: "Protect your team's Apple devices with genuine AppleCare+ coverage and priority tech support.",
+    },
+    heroButtonText3: {
+      type: String,
+      default: "Explore AppleCare+ →",
+    },
+    heroTitle4: {
+      type: String,
+      default: "Corporate gifting & exclusive institutional offers.",
+    },
+    heroSubtitle4: {
+      type: String,
+      default: "Customized procurement packages for corporate rewards and volume discounts on premium accessories.",
+    },
+    heroButtonText4: {
+      type: String,
+      default: "Explore Accessories →",
+    },
+    heroSlides: [
+      {
+        title: { type: String, default: "" },
+        titleBold: { type: String, default: "" },
+        titleNormal: { type: String, default: "" },
+        subtitle: { type: String, default: "" },
+        buttonText: { type: String, default: "Learn More →" },
+        buttonLink: { type: String, default: "#" },
+        image: { type: String, default: "" },
+        bgStyle: { type: String, default: "slide-dark" },
+        isActive: { type: Boolean, default: true },
+        stat1Bold: { type: String, default: "GST invoicing" },
+        stat1Normal: { type: String, default: "on every order" },
+        stat2Bold: { type: String, default: "Volume pricing" },
+        stat2Normal: { type: String, default: "on bulk orders" },
+        stat3Bold: { type: String, default: "Pan-India" },
+        stat3Normal: { type: String, default: "delivery & tracking" },
+      },
+    ],
+    appleCategories: [
+      {
+        name: { type: String, default: "" },
+        actionText: { type: String, default: "Shop all models →" },
+        link: { type: String, default: "/shop" },
+        image: { type: String, default: "" },
+        cardTheme: { type: String, default: "dark" },
+        isActive: { type: Boolean, default: true },
+      },
+    ],
+    testimonials: [
+      {
+        stars: { type: Number, default: 5 },
+        text: { type: String, default: "" },
+        author: { type: String, default: "" },
+        image: { type: String, default: "" },
+        isActive: { type: Boolean, default: true },
+      },
+    ],
+    navbarMenuItems: [
+      {
+        name: { type: String, default: "" },
+        link: { type: String, default: "/shop" },
+        isActive: { type: Boolean, default: true },
+        dropdownItems: [
+          {
+            label: { type: String, default: "" },
+            path: { type: String, default: "" },
+            query: { type: String, default: "" },
+            image: { type: String, default: "" },
+            price: { type: String, default: "" },
+            isActive: { type: Boolean, default: true }
+          }
+        ]
+      },
+    ],
+    categoryIconGroups: [
+      {
+        categoryKey: { type: String, default: "" },
+        categoryName: { type: String, default: "" },
+        icons: [
+          {
+            label: { type: String, default: "" },
+            path: { type: String, default: "" },
+            query: { type: String, default: "" },
+            image: { type: String, default: "" },
+            price: { type: String, default: "" },
+            isActive: { type: Boolean, default: true }
+          }
+        ]
+      }
+    ],
+    appleCarePlans: [
+      {
+        categoryKey: { type: String, default: "" },
+        title: { type: String, default: "" },
+        subtitle: { type: String, default: "" },
+        price: { type: Number, default: 0 },
+        priceDisplay: { type: String, default: "" },
+        image: { type: String, default: "" },
+        features: [{ type: String }],
+        isActive: { type: Boolean, default: true }
+      }
+    ],
+    appleCarePricingTables: [
+      {
+        categoryKey: { type: String, default: "" },
+        image: { type: String, default: "" },
+        headline: { type: String, default: "" },
+        headerTitle: { type: String, default: "AppleCare+" },
+        subheadline: { type: String, default: "" },
+        durationLabel: { type: String, default: "3 years" },
+        isActive: { type: Boolean, default: true },
+        rows: [
+          {
+            model: { type: String, default: "" },
+            title: { type: String, default: "" },
+            description: { type: String, default: "" },
+            sku: { type: String, default: "" },
+            mrp: { type: String, default: "" },
+            discount: { type: String, default: "" },
+            salePrice: { type: String, default: "" },
+            monthly: { type: String, default: "" },
+            yearly: { type: String, default: "" },
+            image: { type: String, default: "" },
+            isActive: { type: Boolean, default: true }
+          }
+        ]
+      }
+    ],
+    productAppleCare: {
+      isEnabled: { type: Boolean, default: true },
+      title: { type: String, default: "Add AppleCare+" },
+      monthlyPriceText: { type: String, default: "From ₹2,817.00/mo.◊" },
+      mrpText: { type: String, default: "or MRP ₹16,900.00 (inclusive of all taxes)" },
+      features: [
+        { type: String }
+      ],
+      categoryPrices: [
+        {
+          categoryName: { type: String, default: "" },
+          monthlyPrice: { type: String, default: "" },
+          mrpPrice: { type: String, default: "" }
+        }
+      ]
+    },
+    footerSections: [
+      {
+        title: { type: String, default: "" },
+        links: [
+          {
+            label: { type: String, default: "" },
+            url: { type: String, default: "" },
+            isActive: { type: Boolean, default: true },
+          },
+        ],
+        isActive: { type: Boolean, default: true },
+      },
+    ],
     featuredProductIds: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -68,6 +230,14 @@ const settingSchema = new mongoose.Schema(
     announcement: {
       type: String,
       default: "🔥 FREE SHIPPING ABOVE INR 1499",
+    },
+    announcementBold: {
+      type: String,
+      default: "🔥 FREE SHIPPING",
+    },
+    announcementNormal: {
+      type: String,
+      default: "ON ORDERS ABOVE INR 1,499",
     },
   },
   { timestamps: true }

@@ -1,6 +1,71 @@
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axiosClient from '../services/axiosClient';
+
+const DEFAULT_SECTIONS = [
+  {
+    title: 'SHOP',
+    isActive: true,
+    links: [
+      { label: 'iPhone', url: '/iphone', isActive: true },
+      { label: 'Mac', url: '/macbook', isActive: true },
+      { label: 'iPad', url: '/ipad', isActive: true },
+      { label: 'Watch', url: '/watch', isActive: true },
+      { label: 'AirPods', url: '/airpods', isActive: true },
+      { label: 'AppleCare+', url: '/applecare', isActive: true },
+    ]
+  },
+  {
+    title: 'BUSINESS',
+    isActive: true,
+    links: [
+      { label: 'Request a Quote', url: '/bulk-orders', isActive: true },
+      { label: 'Bulk Pricing', url: '/bulk-orders', isActive: true },
+      { label: 'Dealer Login', url: 'http://localhost:5174', isActive: true },
+      { label: 'GST Invoicing', url: '/bulk-orders', isActive: true },
+    ]
+  },
+  {
+    title: 'COMPANY',
+    isActive: true,
+    links: [
+      { label: 'About iincept', url: '/about', isActive: true },
+      { label: 'Contact Us', url: '/contact', isActive: true },
+      { label: 'FAQ', url: '/faq', isActive: true },
+    ]
+  },
+  {
+    title: 'POLICIES',
+    isActive: true,
+    links: [
+      { label: 'Shipping Policy', url: '/shipping-policy', isActive: true },
+      { label: 'Returns & Refund Policy', url: '/returns-refund-policy', isActive: true },
+      { label: 'Privacy Policy', url: '/privacy-policy', isActive: true },
+      { label: 'Terms of Service', url: '/terms-of-service', isActive: true },
+    ]
+  }
+];
 
 export default function Footer() {
+  const [sections, setSections] = useState(DEFAULT_SECTIONS);
+
+  useEffect(() => {
+    fetchFooterSections();
+  }, []);
+
+  const fetchFooterSections = async () => {
+    try {
+      const response = await axiosClient.get('/settings');
+      if (response.data && response.data.footerSections && response.data.footerSections.length > 0) {
+        setSections(response.data.footerSections);
+      }
+    } catch (err) {
+      console.warn('Could not load dynamic footer sections, using defaults:', err);
+    }
+  };
+
+  const activeSections = sections.filter(sec => sec.isActive !== false);
+
   return (
     <footer className="bg-white border-t border-zinc-200/80 text-zinc-600 text-xs mt-auto shrink-0 select-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-6">
@@ -29,45 +94,41 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* SHOP column */}
-          <div className="lg:col-span-2 lg:col-start-7 space-y-4">
-            <h4 className="font-bold tracking-wider uppercase text-[#0066cc] text-[11px]">
-              SHOP
-            </h4>
-            <ul className="space-y-3 text-[13px] text-zinc-600">
-              <li><Link to="/iphone" className="hover:text-zinc-900 transition-colors">iPhone</Link></li>
-              <li><Link to="/macbook" className="hover:text-zinc-900 transition-colors">Mac</Link></li>
-              <li><Link to="/ipad" className="hover:text-zinc-900 transition-colors">iPad</Link></li>
-              <li><Link to="/watch" className="hover:text-zinc-900 transition-colors">Watch</Link></li>
-              <li><Link to="/airpods" className="hover:text-zinc-900 transition-colors">AirPods</Link></li>
-              <li><Link to="/applecare" className="hover:text-zinc-900 transition-colors">AppleCare+</Link></li>
-            </ul>
-          </div>
-
-          {/* BUSINESS column */}
-          <div className="lg:col-span-2 space-y-4">
-            <h4 className="font-bold tracking-wider uppercase text-[#0066cc] text-[11px]">
-              BUSINESS
-            </h4>
-            <ul className="space-y-3 text-[13px] text-zinc-600">
-              <li><Link to="/bulk-orders" className="hover:text-zinc-900 transition-colors">Request a Quote</Link></li>
-              <li><Link to="/bulk-orders" className="hover:text-zinc-900 transition-colors">Bulk Pricing</Link></li>
-              <li><Link to="/login" className="hover:text-zinc-900 transition-colors">Dealer Login</Link></li>
-              <li><Link to="/bulk-orders" className="hover:text-zinc-900 transition-colors">GST Invoicing</Link></li>
-            </ul>
-          </div>
-
-          {/* COMPANY column */}
-          <div className="lg:col-span-2 space-y-4">
-            <h4 className="font-bold tracking-wider uppercase text-[#0066cc] text-[11px]">
-              COMPANY
-            </h4>
-            <ul className="space-y-3 text-[13px] text-zinc-600">
-              <li><Link to="/about" className="hover:text-zinc-900 transition-colors">About iincept</Link></li>
-              <li><Link to="/contact" className="hover:text-zinc-900 transition-colors">Contact Us</Link></li>
-              <li><Link to="/faq" className="hover:text-zinc-900 transition-colors">FAQ</Link></li>
-              <li><Link to="/policies" className="hover:text-zinc-900 transition-colors">Policies</Link></li>
-            </ul>
+          {/* Right Links Container - Dynamically Grid Adapts */}
+          <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-6 lg:gap-8 text-left">
+            {activeSections.map((section, idx) => {
+              const activeLinks = (section.links || []).filter(link => link.isActive !== false);
+              return (
+                <div key={idx} className="space-y-4">
+                  <h4 className="font-bold tracking-wider uppercase text-zinc-900 text-[11px]">
+                    {section.title}
+                  </h4>
+                  <ul className="space-y-3 text-[13px] text-zinc-600">
+                    {activeLinks.map((link, lIdx) => (
+                      <li key={lIdx}>
+                        {link.url?.startsWith('http') || link.url?.startsWith('https') ? (
+                          <a
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-zinc-900 transition-colors"
+                          >
+                            {link.label}
+                          </a>
+                        ) : (
+                          <Link 
+                            to={link.url || '#'} 
+                            className="hover:text-zinc-900 transition-colors"
+                          >
+                            {link.label}
+                          </Link>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
           </div>
 
         </div>
