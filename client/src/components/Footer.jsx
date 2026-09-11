@@ -3,19 +3,21 @@ import { Link } from 'react-router-dom';
 import axiosClient from '../services/axiosClient';
 
 const DEFAULT_FOOTER_DATA = {
-  brandTitle: 'IndiaiStore',
+  brandTitle: 'iiNCEPT',
   brandTagline: 'Official platform of Apple Authorised Distributors in India. Browse online, buy from trusted mono-brand resellers near you.',
-  copyrightText: 'Copyright © 2026 IndiaiStore. All rights reserved. Powered by Ingram Micro & Redington.',
+  copyrightText: 'Copyright © 2026 iiNCEPT Electronics. All rights reserved. Powered by Ingram Micro & Redington.',
   columns: [
     {
       title: 'Shop',
       links: [
         { label: 'Mac', url: '/macbook' },
-        { label: 'iPad', url: '/ipad' },
         { label: 'iPhone', url: '/iphone' },
+        { label: 'iPad', url: '/ipad' },
         { label: 'Watch', url: '/watch' },
         { label: 'AirPods', url: '/airpods' },
+        { label: 'TV & Home', url: '/tv-home' },
         { label: 'Accessories', url: '/accessories' },
+        { label: 'AppleCare+', url: '/applecare' },
       ]
     },
     {
@@ -78,7 +80,7 @@ export default function Footer() {
         }));
       }
     } catch (err) {
-      console.warn('Using default IndiaiStore footer settings:', err);
+      console.warn('Using default iiNCEPT footer settings:', err);
     }
   };
 
@@ -170,24 +172,18 @@ export default function Footer() {
           
           {/* Column 1: Brand Info */}
           <div className="indiaistore-footer-brand-col">
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontSize: '18px',
-              fontWeight: 700,
-              color: '#1d1d1f',
-              letterSpacing: '-0.3px',
-              marginBottom: '12px'
-            }}>
-              <span style={{ fontSize: '20px', lineHeight: 1 }}></span>
-              <span>{footerData.brandTitle}</span>
-            </div>
+            <Link to="/" style={{ display: 'inline-block', marginBottom: '18px' }}>
+              <img 
+                src="/iincept_logo.svg" 
+                alt="iiNCEPT" 
+                style={{ height: '56px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} 
+              />
+            </Link>
             <p style={{
               fontSize: '13px',
               color: '#86868b',
               lineHeight: 1.55,
-              maxWidth: '260px',
+              maxWidth: '340px',
               margin: 0
             }}>
               {footerData.brandTagline}

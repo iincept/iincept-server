@@ -98,6 +98,19 @@ const settingSchema = new mongoose.Schema(
         isActive: { type: Boolean, default: true },
       },
     ],
+    homeNewArrivals: [
+      {
+        id: { type: String, default: "" },
+        productId: { type: String, default: "" },
+        name: { type: String, default: "" },
+        tagline: { type: String, default: "" },
+        price: { type: String, default: "" },
+        monthlyPrice: { type: String, default: "" },
+        image: { type: String, default: "" },
+        path: { type: String, default: "" },
+        isActive: { type: Boolean, default: true }
+      }
+    ],
     heroTitle1: {
       type: String,
       default: "Apple devices for your business, sourced right, delivered anywhere in India.",

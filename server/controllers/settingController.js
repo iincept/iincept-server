@@ -17,32 +17,55 @@ const getSettings = async (req, res) => {
     if (!settings.homeHeroSecondaryBtnText) settings.homeHeroSecondaryBtnText = "Find Nearest Store";
     if (!settings.homeHeroSecondaryBtnLink) settings.homeHeroSecondaryBtnLink = "#store-locator";
 
+    const DEFAULT_CATEGORY_IMAGES = {
+      'Mac': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-mac-nav-202410?wid=200&hei=130&fmt=png-alpha&.v=1728342368663',
+      'iPhone': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-iphone-nav-202409?wid=200&hei=130&fmt=png-alpha&.v=1724258295052',
+      'iPad': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-ipad-nav-202405?wid=200&hei=130&fmt=png-alpha&.v=1714846430310',
+      'Watch': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-watch-nav-202409?wid=200&hei=130&fmt=png-alpha',
+      'AirPods': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-airpods-nav-202409?wid=200&hei=130&fmt=png-alpha',
+      'AirTag': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-airtags-nav-202108?wid=200&hei=130&fmt=png-alpha',
+      'Apple TV 4K': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-appletv-nav-202210?wid=200&hei=130&fmt=png-alpha',
+      'HomePod': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-homepod-nav-202301?wid=200&hei=130&fmt=png-alpha',
+      'Accessories': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-accessories-nav-202409?wid=200&hei=130&fmt=png-alpha',
+    };
+
     if (!settings.homeCategoryIcons || settings.homeCategoryIcons.length === 0) {
       settings.homeCategoryIcons = [
-        { name: 'Mac', label: 'Mac', image: 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-mac-nav-202410?wid=200&hei=130&fmt=png-alpha&.v=1728342368663', path: '/macbook', isActive: true },
-        { name: 'iPhone', label: 'iPhone', image: 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-iphone-nav-202409?wid=200&hei=130&fmt=png-alpha&.v=1724258295052', path: '/iphone', isActive: true },
-        { name: 'iPad', label: 'iPad', image: '/ipad_nav/ipad_pro.png', path: '/ipad', isActive: true },
-        { name: 'Watch', label: 'Watch', image: '/watch_category_uploaded.png', path: '/watch', isActive: true },
-        { name: 'AirPods', label: 'AirPods', image: '/airpods_category_uploaded.png', path: '/airpods', isActive: true },
-        { name: 'AirTag', label: 'AirTag', image: '/iphone_nav/airtag.png', path: '/iphone?search=AirTag', isActive: true },
-        { name: 'Apple TV 4K', label: 'Apple TV 4K', image: '/tvhome_category_uploaded.png', path: '/tv-home', isActive: true },
-        { name: 'HomePod', label: 'HomePod', image: '/tvhome_nav/homepod.png', path: '/tv-home?search=HomePod', isActive: true },
-        { name: 'Accessories', label: 'Accessories', image: '/accessories_category_uploaded.png', path: '/accessories', isActive: true },
-        { name: 'Gift Card', label: 'Gift Card', image: '/gift_card_icon.png', path: '/shop', isActive: true },
+        { name: 'Mac', label: 'Mac', image: DEFAULT_CATEGORY_IMAGES['Mac'], path: '/macbook', isActive: true },
+        { name: 'iPhone', label: 'iPhone', image: DEFAULT_CATEGORY_IMAGES['iPhone'], path: '/iphone', isActive: true },
+        { name: 'iPad', label: 'iPad', image: DEFAULT_CATEGORY_IMAGES['iPad'], path: '/ipad', isActive: true },
+        { name: 'Watch', label: 'Watch', image: DEFAULT_CATEGORY_IMAGES['Watch'], path: '/watch', isActive: true },
+        { name: 'AirPods', label: 'AirPods', image: DEFAULT_CATEGORY_IMAGES['AirPods'], path: '/airpods', isActive: true },
+        { name: 'AirTag', label: 'AirTag', image: DEFAULT_CATEGORY_IMAGES['AirTag'], path: '/airtag', isActive: true },
+        { name: 'Apple TV 4K', label: 'Apple TV 4K', image: DEFAULT_CATEGORY_IMAGES['Apple TV 4K'], path: '/tv-home', isActive: true },
+        { name: 'HomePod', label: 'HomePod', image: DEFAULT_CATEGORY_IMAGES['HomePod'], path: '/tv-home?search=HomePod', isActive: true },
+        { name: 'Accessories', label: 'Accessories', image: DEFAULT_CATEGORY_IMAGES['Accessories'], path: '/accessories', isActive: true },
       ];
       await settings.save();
     } else {
-      // Update existing Mac & iPhone category icons if using old images
+      // Update existing category icons if using old/broken images or local fallback paths
       let updated = false;
+
+      // Remove Gift Card if present
+      const initialLength = settings.homeCategoryIcons.length;
+      settings.homeCategoryIcons = settings.homeCategoryIcons.filter(item => {
+        const nameKey = item.name || item.label;
+        return nameKey !== 'Gift Card';
+      });
+      if (settings.homeCategoryIcons.length !== initialLength) {
+        updated = true;
+      }
+
       settings.homeCategoryIcons = settings.homeCategoryIcons.map(item => {
         let obj = item.toObject ? item.toObject() : item;
-        if ((obj.name === 'Mac' || obj.label === 'Mac') && (obj.image === '/mac_nav/macbook_pro.png' || !obj.image)) {
-          updated = true;
-          return { ...obj, image: 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-mac-nav-202410?wid=200&hei=130&fmt=png-alpha&.v=1728342368663' };
-        }
-        if ((obj.name === 'iPhone' || obj.label === 'iPhone') && (obj.image === '/iphone_nav/iphone_17_pro.png' || !obj.image)) {
-          updated = true;
-          return { ...obj, image: 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-iphone-nav-202409?wid=200&hei=130&fmt=png-alpha&.v=1724258295052' };
+        const key = obj.name || obj.label;
+        const currentImg = (obj.image || '').trim();
+
+        if (DEFAULT_CATEGORY_IMAGES[key]) {
+          if (!currentImg || !currentImg.startsWith('http') || currentImg.includes('_category_uploaded') || currentImg.includes('…') || currentImg.includes('traceId') || currentImg.startsWith('*') || currentImg.includes('_nav/')) {
+            updated = true;
+            return { ...obj, image: DEFAULT_CATEGORY_IMAGES[key] };
+          }
         }
         return item;
       });
@@ -50,6 +73,15 @@ const getSettings = async (req, res) => {
         settings.markModified('homeCategoryIcons');
         await settings.save();
       }
+    }
+
+    if (!settings.homeNewArrivals || settings.homeNewArrivals.length === 0) {
+      settings.homeNewArrivals = [
+        { id: '1', productId: '', name: 'iPhone 17 Pro', tagline: 'All out Pro.', price: 'From ₹1,34,900', monthlyPrice: 'or ₹5,621/mo.*', image: '/iphone_nav/iphone_17_pro.png', path: '/iphone', isActive: true },
+        { id: '2', productId: '', name: 'MacBook Neo', tagline: 'Amazing Mac. Surprising price.', price: 'From ₹79,900', monthlyPrice: 'or ₹3,329/mo.*', image: '/mac_nav/macbook_neo.png', path: '/macbook', isActive: true },
+        { id: '3', productId: '', name: 'Apple Watch Series 11', tagline: 'Smarter. Fitter. Brighter.', price: 'From ₹46,900', monthlyPrice: 'or ₹1,954/mo.*', image: '/watch_category_uploaded.png', path: '/watch', isActive: true }
+      ];
+      await settings.save();
     }
 
     if (!settings.heroSlides || settings.heroSlides.length === 0) {
@@ -96,30 +128,17 @@ const getSettings = async (req, res) => {
 
     if (!settings.appleCategories || settings.appleCategories.length === 0) {
       settings.appleCategories = [
-        { name: 'iPhone', actionText: 'Shop all models →', link: '/iphone', image: '/iphone_category_uploaded.jpg', cardTheme: 'dark', isActive: true },
-        { name: 'Mac', actionText: 'Shop all models →', link: '/macbook', image: '/macbook_category_uploaded.png', cardTheme: 'light', isActive: true },
-        { name: 'iPad', actionText: 'Shop all models →', link: '/ipad', image: '/ipad_category_uploaded.png', cardTheme: 'dark', isActive: true },
-        { name: 'Watch', actionText: 'Shop all models →', link: '/watch', image: '/watch_category_uploaded.png', cardTheme: 'dark', isActive: true },
-        { name: 'AirPods', actionText: 'Shop all models →', link: '/airpods', image: '/airpods_category_uploaded.png', cardTheme: 'grey', isActive: true },
-        { name: 'TV & Home', actionText: 'Shop all models →', link: '/tv-home', image: '/tvhome_category_uploaded.png', cardTheme: 'light', isActive: true },
-        { name: 'Accessories', actionText: 'Shop all models →', link: '/accessories', image: '/accessories_category_uploaded.png', cardTheme: 'dark', isActive: true },
+        { name: 'Mac', actionText: 'Shop all models →', link: '/macbook', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/mac/home-img-1776683069_8064.png', cardTheme: 'light', isActive: true },
+        { name: 'iPhone', actionText: 'Shop all models →', link: '/iphone', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/iphone/home-img-1776683084_2967.png', cardTheme: 'dark', isActive: true },
+        { name: 'iPad', actionText: 'Shop all models →', link: '/ipad', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/ipad/home-img-1776683096_1014.png', cardTheme: 'dark', isActive: true },
+        { name: 'Watch', actionText: 'Shop all models →', link: '/watch', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/watch/home-img-1757682221_3904.jpg', cardTheme: 'dark', isActive: true },
+        { name: 'AirPods', actionText: 'Shop all models →', link: '/airpods', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/music/home-img-1757682200_3577.jpg', cardTheme: 'grey', isActive: true },
+        { name: 'TV & Home', actionText: 'Shop all models →', link: '/tv-home', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/tv/home-img-1694070636_757.png', cardTheme: 'light', isActive: true },
+        { name: 'Accessories', actionText: 'Shop all models →', link: '/accessories', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/beats-by-dr-dre/home-img-1725349599_8443.jpg', cardTheme: 'dark', isActive: true },
         { name: 'AppleCare+', actionText: 'Explore coverage →', link: '/applecare', image: '/applecare_official_hero.png', cardTheme: 'dark', isActive: true },
         { name: 'New Arrivals', actionText: 'Explore latest releases →', link: '/shop?sort=newest', image: '', cardTheme: 'dark', isActive: true },
       ];
       await settings.save();
-    } else {
-      const hasNewArrivals = settings.appleCategories.some(c => c.name && c.name.toLowerCase() === 'new arrivals');
-      if (!hasNewArrivals) {
-        settings.appleCategories.push({
-          name: 'New Arrivals',
-          actionText: 'Explore latest releases →',
-          link: '/shop?sort=newest',
-          image: '',
-          cardTheme: 'dark',
-          isActive: true
-        });
-        await settings.save();
-      }
     }
 
     if (!settings.navbarMenuItems || settings.navbarMenuItems.length === 0) {
@@ -145,10 +164,10 @@ const getSettings = async (req, res) => {
             { label: 'MacBook Air', path: '/macbook?search=MacBook Air', query: 'MacBook Air', image: '/student_mac_banner.jpg', price: 'Light & Powerful. From ₹1,14,900', isActive: true },
             { label: 'MacBook Pro', path: '/macbook?search=MacBook Pro', query: 'MacBook Pro', image: '/mac_nav/macbook_pro.png', price: 'Pro Workflow Leader. From ₹1,69,900', isActive: true },
             { label: 'iMac', path: '/macbook?search=iMac', query: 'iMac', image: '/imac_studio_lifestyle.jpg', price: 'All-in-one Desktop. From ₹1,29,900', isActive: true },
-            { label: 'Mac mini', path: '/macbook?search=Mac mini', query: 'Mac mini', image: 'https://www.apple.com/assets-www/en_WW/mac/04_chapternav/small/nav_mac_mini_f628f615d_2x.png', price: 'Compact Powerhouse. From ₹54,900', isActive: true },
+            { label: 'Mac Mini', path: '/macbook?search=Mac Mini', query: 'Mac Mini', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/products/mac-mini/mac-mini-m4-silver.png', price: 'Compact Powerhouse. From ₹54,900', isActive: true },
             { label: 'Mac Studio', path: '/macbook?search=Mac Studio', query: 'Mac Studio', image: '/mac_nav/mac_studio.png', price: 'Creator Station. From ₹1,99,900', isActive: true },
             { label: 'Displays', path: '/macbook?search=Studio Display', query: 'Display', image: '/mac_nav/mac_displays.png', price: 'Retina 5K & 6K Panels', isActive: true },
-            { label: 'Compare Mac', path: '/compare?category=mac', query: 'Compare', image: '/macbook_category_v2.jpg', price: 'Compare Specs', isActive: true }
+            { label: 'AppleCare+', path: '/applecare', query: 'AppleCare+', image: '/applecare_official_hero.png', price: 'Official Apple Warranty', isActive: true }
           ]
         },
         {
@@ -250,11 +269,13 @@ const getSettings = async (req, res) => {
           title: 'SHOP',
           isActive: true,
           links: [
-            { label: 'iPhone', url: '/iphone', isActive: true },
             { label: 'Mac', url: '/macbook', isActive: true },
+            { label: 'iPhone', url: '/iphone', isActive: true },
             { label: 'iPad', url: '/ipad', isActive: true },
             { label: 'Watch', url: '/watch', isActive: true },
             { label: 'AirPods', url: '/airpods', isActive: true },
+            { label: 'TV & Home', url: '/tv-home', isActive: true },
+            { label: 'Accessories', url: '/accessories', isActive: true },
             { label: 'AppleCare+', url: '/applecare', isActive: true },
           ]
         },
@@ -570,6 +591,7 @@ const updateSettings = async (req, res) => {
       homeHeroSecondaryBtnLink,
       homeHeroImage,
       homeCategoryIcons,
+      homeNewArrivals,
       heroTitle1,
       heroSubtitle1,
       heroButtonText1,
@@ -623,6 +645,10 @@ const updateSettings = async (req, res) => {
     if (homeHeroSecondaryBtnLink !== undefined) settings.homeHeroSecondaryBtnLink = homeHeroSecondaryBtnLink;
     if (homeHeroImage !== undefined) settings.homeHeroImage = homeHeroImage;
     if (homeCategoryIcons !== undefined) settings.homeCategoryIcons = homeCategoryIcons;
+    if (homeNewArrivals !== undefined) {
+      settings.homeNewArrivals = homeNewArrivals;
+      settings.markModified('homeNewArrivals');
+    }
 
     if (dealEyebrow !== undefined) settings.dealEyebrow = dealEyebrow;
     if (dealTitle !== undefined) settings.dealTitle = dealTitle;
@@ -650,7 +676,14 @@ const updateSettings = async (req, res) => {
     if (heroButtonText4 !== undefined) settings.heroButtonText4 = heroButtonText4;
 
     if (heroSlides !== undefined) settings.heroSlides = heroSlides;
-    if (appleCategories !== undefined) settings.appleCategories = appleCategories;
+    if (appleCategories !== undefined) {
+      settings.appleCategories = appleCategories.map(cat => ({
+        ...cat,
+        image: (cat.image || '').trim(),
+        name: (cat.name || '').trim(),
+        link: (cat.link || '').trim(),
+      }));
+    }
     if (testimonials !== undefined) settings.testimonials = testimonials;
     if (navbarMenuItems !== undefined) settings.navbarMenuItems = navbarMenuItems;
     if (categoryIconGroups !== undefined) settings.categoryIconGroups = categoryIconGroups;

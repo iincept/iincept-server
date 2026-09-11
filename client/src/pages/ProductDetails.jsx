@@ -149,6 +149,8 @@ export default function ProductDetails() {
 
     // 2. Mock map or title substring match
     const mockIdMap = {
+      'iphone-18-pro': 'iPhone 18 Pro',
+      'default-iphone-18-pro': 'iPhone 18 Pro',
       'ip17pm': 'iPhone 17 Pro Max',
       'ip17p': 'iPhone 17 Pro',
       'iphone-17-pro': 'iPhone 17 Pro',
@@ -270,6 +272,10 @@ export default function ProductDetails() {
       return cValStr;
     }
     const PDP_COLOR_MAP = {
+      "night sky": "#353e4a",
+      "star white": "#fafafa",
+      "burgundy": "#4a1525",
+      "glacier": "#e4effb",
       "space black": "#1c1c1c",
       "space gray": "#555555",
       "starlight": "#f5f5f4",
@@ -414,6 +420,10 @@ export default function ProductDetails() {
       storages.push(trimmed);
     }
   });
+
+  if (storages.length === 0 && ((product?.title || product?.name || '').toLowerCase().includes('18 pro'))) {
+    storages = ['256GB', '512GB', '1TB', '2TB'];
+  }
 
   let rams = [];
   const rawRams = Array.isArray(product?.ram) ? [...product.ram] : (Array.isArray(product?.rams) ? [...product.rams] : []);
@@ -779,6 +789,17 @@ export default function ProductDetails() {
   const getVariantPrice = (oColor, oSize, oStorage, oRam, oGlass, oConnectivity) => {
     if (!product) return 0;
     const defaultPrice = product.price || 0;
+
+    const currentStorage = (oStorage || selectedStorage || storages[0] || '').toString().toLowerCase().trim();
+    const is18Pro = (product.name || product.title || '').toLowerCase().includes('18 pro');
+
+    if (is18Pro && currentStorage) {
+      if (currentStorage.includes('256')) return 164900;
+      if (currentStorage.includes('512')) return 189000;
+      if (currentStorage.includes('1tb') || currentStorage.includes('1 tb')) return 239900;
+      if (currentStorage.includes('2tb') || currentStorage.includes('2 tb')) return 314900;
+    }
+
     if (!product.variants || product.variants.length === 0) return defaultPrice;
 
     const matchedVar = getActiveVariant(oColor, oStorage, oRam, oSize, oGlass, oConnectivity);

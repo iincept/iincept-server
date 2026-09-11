@@ -446,8 +446,9 @@ export default function Ipad() {
           if (!v.color) return false;
           return v.color.replace(/\s+/g, ' ').trim().toLowerCase() === targetNorm;
         });
-        if (foundVariant && foundVariant.images && foundVariant.images[0]) {
-          return foundVariant.images[0];
+        if (foundVariant) {
+          if (foundVariant.image) return foundVariant.image;
+          if (foundVariant.images && foundVariant.images[0]) return foundVariant.images[0];
         }
       }
 
@@ -464,7 +465,14 @@ export default function Ipad() {
       if (targetNorm.includes('purple') || targetNorm.includes('pink')) return '/ipad_category_v3.png';
       if (targetNorm.includes('starlight') || targetNorm.includes('silver') || targetNorm.includes('white')) return '/ipad_category_v2.jpg';
     }
-    return prod.image;
+
+    if (prod.image && !prod.image.includes('ipad_category')) {
+      return prod.image;
+    }
+    const extracted = extractFirstValidImage(prod);
+    if (extracted) return extracted;
+
+    return prod.image || '/ipad_category_v2.jpg';
   };
 
   const handleAddToCart = (prod) => {
@@ -519,6 +527,42 @@ export default function Ipad() {
     return COLOR_MAP[lowerVal] || '#cbd5e1';
   };
 
+  const extractFirstValidImage = (p) => {
+    if (!p) return null;
+    if (p.image && typeof p.image === 'string' && p.image.trim() && !p.image.includes('mock-cloud')) {
+      return p.image;
+    }
+    if (Array.isArray(p.images) && p.images.length > 0) {
+      const found = p.images.find(img => typeof img === 'string' && img.trim() && !img.includes('mock-cloud'));
+      if (found) return found;
+    }
+    if (Array.isArray(p.variants) && p.variants.length > 0) {
+      for (const v of p.variants) {
+        if (v.image && typeof v.image === 'string' && v.image.trim() && !v.image.includes('mock-cloud')) {
+          return v.image;
+        }
+        if (Array.isArray(v.images) && v.images.length > 0) {
+          const found = v.images.find(img => typeof img === 'string' && img.trim() && !img.includes('mock-cloud'));
+          if (found) return found;
+        }
+      }
+    }
+    if (Array.isArray(p.colors) && p.colors.length > 0) {
+      for (const c of p.colors) {
+        if (typeof c === 'object' && c) {
+          if (c.image && typeof c.image === 'string' && c.image.trim() && !c.image.includes('mock-cloud')) {
+            return c.image;
+          }
+          if (Array.isArray(c.images) && c.images.length > 0) {
+            const found = c.images.find(img => typeof img === 'string' && img.trim() && !img.includes('mock-cloud'));
+            if (found) return found;
+          }
+        }
+      }
+    }
+    return null;
+  };
+
   const dbIpads = products.filter(p => {
     const catName = p.category?.name || p.category?.toString() || '';
     const catSlug = p.category?.slug || '';
@@ -526,8 +570,8 @@ export default function Ipad() {
       catSlug.toLowerCase() === 'ipads' ||
       catName.toLowerCase().includes('ipad');
   }).map(p => {
-    const firstImg = p.image || (p.images && p.images[0]);
-    const isValidImg = firstImg && !firstImg.includes('mock-cloud');
+    const firstImg = extractFirstValidImage(p);
+    const isValidImg = !!firstImg;
     return {
       id: p._id || p.id,
       name: p.title || p.name,
@@ -542,14 +586,21 @@ export default function Ipad() {
         const val = typeof c === 'string' ? c : (c.value || c.name || '');
 
         let variantImage = typeof c === 'object' && c.image ? c.image : null;
+        if (!variantImage && typeof c === 'object' && Array.isArray(c.images) && c.images[0]) {
+          variantImage = c.images[0];
+        }
         if (!variantImage && p.variants && Array.isArray(p.variants)) {
           const matchedVariant = p.variants.find(v => {
             if (!v.color) return false;
             const vColor = v.color.replace(/\s+/g, ' ').trim().toLowerCase();
             return vColor === normName.toLowerCase();
           });
-          if (matchedVariant && matchedVariant.images && matchedVariant.images[0]) {
-            variantImage = matchedVariant.images[0];
+          if (matchedVariant) {
+            if (matchedVariant.image) {
+              variantImage = matchedVariant.image;
+            } else if (matchedVariant.images && matchedVariant.images[0]) {
+              variantImage = matchedVariant.images[0];
+            }
           }
         }
 
@@ -1074,9 +1125,9 @@ export default function Ipad() {
                   {/* Non-clickable configurations / actions */}
                   <div className="space-y-4 pt-2">
                     {/* Color Dot Options Row */}
-                    <div className="flex items-center justify-between gap-1.5 border-t border-zinc-100/60 pt-3">
+                    <div className="flex items-center justify-between gap-2 border-t border-zinc-100/60 pt-3">
                       <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Colors</span>
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-3 shrink-0 py-1">
                         {prod.colors.map((color) => {
                           const isSelected = selectedColors[prod.id] === color.name || (!selectedColors[prod.id] && prod.colors[0]?.name === color.name);
                           return (
@@ -1088,7 +1139,7 @@ export default function Ipad() {
                                 handleColorChange(prod.id, color.name);
                               }}
                               style={{ backgroundColor: color.value }}
-                              className={`w-3.5 h-3.5 rounded-full cursor-pointer transition-all border ${isSelected ? 'scale-125 border-zinc-800 ring-1 ring-zinc-400' : 'border-zinc-300 hover:scale-110'
+                              className={`w-4 h-4 rounded-full cursor-pointer transition-all ${isSelected ? 'scale-110 ring-2 ring-offset-2 ring-zinc-800 shadow-sm z-10' : 'border border-zinc-300 hover:scale-105'
                                 }`}
                               title={color.name}
                             />

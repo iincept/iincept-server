@@ -1,0 +1,714 @@
+{
+  "appleCategories": [
+    {
+      "name": "New Arrivals",
+      "actionText": "Explore latest releases →",
+      "link": "/shop?sort=newest",
+      "image": "/uploads/upload_1788427579493_556.webp",
+      "cardTheme": "dark",
+      "isActive": false,
+      "_id": "6a993c6ca51607ca3912123c"
+    },
+    {
+      "name": "iPhone",
+      "actionText": "Shop all models →",
+      "link": "/iphone",
+      "image": "/uploads/upload_1788944171171_750.webp",
+      "cardTheme": "dark",
+      "isActive": true,
+      "_id": "6a99393e8a1a6559c42183bd"
+    },
+    {
+      "name": "Mac",
+      "actionText": "Shop all models →",
+      "link": "/macbook",
+      "image": "/uploads/upload_1788947117189_495.png",
+      "cardTheme": "light",
+      "isActive": true,
+      "_id": "6a99393e8a1a6559c42183be"
+    },
+    {
+      "name": "iPad",
+      "actionText": "Shop all models →",
+      "link": "/ipad",
+      "image": "/uploads/upload_1788947108765_461.png",
+      "cardTheme": "dark",
+      "isActive": true,
+      "_id": "6a99393e8a1a6559c42183bf"
+    },
+    {
+      "name": "Watch",
+      "actionText": "Shop all models →",
+      "link": "/watch",
+      "image": "/uploads/upload_1788944935793_806.jpeg",
+      "cardTheme": "dark",
+      "isActive": true,
+      "_id": "6a99393e8a1a6559c42183c0"
+    },
+    {
+      "name": "AirPods",
+      "actionText": "Shop all models →",
+      "link": "/airpods",
+      "image": "https://i3-prod-assets.indiaistore.com/files/uploads/categories/music/home-img-1757682200_3577.jpg",
+      "cardTheme": "grey",
+      "isActive": true,
+      "_id": "6a99393e8a1a6559c42183c1"
+    },
+    {
+      "name": "TV & Home",
+      "actionText": "Shop all models →",
+      "link": "/tv-home",
+      "image": "https://i3-prod-assets.indiaistore.com/files/uploads/categories/tv/home-img-1694070636_757.png",
+      "cardTheme": "light",
+      "isActive": true,
+      "_id": "6a99393e8a1a6559c42183c2"
+    },
+    {
+      "name": "Accessories",
+      "actionText": "Shop all models →",
+      "link": "/accessories",
+      "image": "/uploads/upload_1788945268939_714.webp",
+      "cardTheme": "dark",
+      "isActive": true,
+      "_id": "6a99393e8a1a6559c42183c3"
+    },
+    {
+      "name": "AppleCare+",
+      "actionText": "Explore coverage →",
+      "link": "/applecare",
+      "image": "/uploads/upload_1788947062310_550.webp",
+      "cardTheme": "dark",
+      "isActive": true,
+      "_id": "6a99393e8a1a6559c42183c4"
+    }
+  ],
+  "homeCategoryIcons": [
+    {
+      "name": "Mac",
+      "label": "Mac",
+      "image": "https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-mac-nav-202410?wid=200&hei=130&fmt=png-alpha&.v=1728342368663",
+      "path": "/macbook",
+      "isActive": true,
+      "_id": "6aa03b46b0b23c89d2a223c9"
+    },
+    {
+      "name": "iPhone",
+      "label": "iPhone",
+      "image": "https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-iphone-nav-202409?wid=200&hei=130&fmt=png-alpha&.v=1724258295052",
+      "path": "/iphone",
+      "isActive": true,
+      "_id": "6aa03b46b0b23c89d2a223ca"
+    },
+    {
+      "name": "iPad",
+      "label": "iPad",
+      "image": "https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-ipad-nav-202405?wid=200&hei=130&fmt=png-alpha&.v=1714846430310",
+      "path": "/ipad",
+      "isActive": true,
+      "_id": "6aa03b46b0b23c89d2a223cb"
+    },
+    {
+      "name": "Watch",
+      "label": "Watch",
+      "image": "/watch_category_uploaded.png",
+      "path": "/watch",
+      "isActive": true,
+      "_id": "6aa03b46b0b23c89d2a223cc"
+    },
+    {
+      "name": "AirPods",
+      "label": "AirPods",
+      "image": "/airpods_category_uploaded.png",
+      "path": "/airpods",
+      "isActive": true,
+      "_id": "6aa03b46b0b23c89d2a223cd"
+    },
+    {
+      "name": "AirTag",
+      "label": "AirTag",
+      "image": "/iphone_nav/airtag.png",
+      "path": "/iphone?search=AirTag",
+      "isActive": true,
+      "_id": "6aa03b46b0b23c89d2a223ce"
+    },
+    {
+      "name": "Apple TV 4K",
+      "label": "Apple TV 4K",
+      "image": "/tvhome_category_uploaded.png",
+      "path": "/tv-home",
+      "isActive": true,
+      "_id": "6aa03b46b0b23c89d2a223cf"
+    },
+    {
+      "name": "HomePod",
+      "label": "HomePod",
+      "image": "/tvhome_nav/homepod.png",
+      "path": "/tv-home?search=HomePod",
+      "isActive": true,
+      "_id": "6aa03b46b0b23c89d2a223d0"
+    },
+    {
+      "name": "Accessories",
+      "label": "Accessories",
+      "image": "/accessories_category_uploaded.png",
+      "path": "/accessories",
+      "isActive": true,
+      "_id": "6aa03b46b0b23c89d2a223d1"
+    },
+    {
+      "name": "Gift Card",
+      "label": "Gift Card",
+      "image": "/gift_card_icon.png",
+      "path": "/shop",
+      "isActive": true,
+      "_id": "6aa03b46b0b23c89d2a223d2"
+    }
+  ],
+  "categoryIconGroups": [
+    {
+      "categoryKey": "mac",
+      "categoryName": "Mac",
+      "icons": [
+        {
+          "label": "MacBook Neo",
+          "path": "/macbook?search=MacBook Neo",
+          "query": "MacBook Neo",
+          "image": "/mac_nav/macbook_neo.png",
+          "price": "High Performance",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf282183"
+        },
+        {
+          "label": "MacBook Air",
+          "path": "/macbook?search=MacBook Air",
+          "query": "MacBook Air",
+          "image": "/mac_nav/macbook_air.png",
+          "price": "From ₹1,14,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf282184"
+        },
+        {
+          "label": "MacBook Pro",
+          "path": "/macbook?search=MacBook Pro",
+          "query": "MacBook Pro",
+          "image": "/mac_nav/macbook_pro.png",
+          "price": "From ₹1,69,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf282185"
+        },
+        {
+          "label": "iMac",
+          "path": "/macbook?search=iMac",
+          "query": "iMac",
+          "image": "https://www.apple.com/assets-www/en_WW/mac/04_chapternav/small/nav_imac_24_fbf85926c_2x.png",
+          "price": "From ₹1,29,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf282186"
+        },
+        {
+          "label": "Mac mini",
+          "path": "/macbook?search=Mac mini",
+          "query": "Mac mini",
+          "image": "https://www.apple.com/assets-www/en_WW/mac/04_chapternav/small/nav_mac_mini_f628f615d_2x.png",
+          "price": "From ₹54,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf282187"
+        },
+        {
+          "label": "Mac Studio",
+          "path": "/macbook?search=Mac Studio",
+          "query": "Mac Studio",
+          "image": "/mac_nav/mac_studio.png",
+          "price": "From ₹1,99,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf282188"
+        },
+        {
+          "label": "Compare",
+          "path": "/compare?category=mac",
+          "query": "Compare",
+          "image": "/mac_nav/mac_compare.png",
+          "price": "Compare Specs",
+          "isActive": false,
+          "_id": "6a9ba41971480907bf282189"
+        },
+        {
+          "label": "Displays",
+          "path": "/macbook?search=Studio Display",
+          "query": "Display",
+          "image": "https://www.apple.com/assets-www/en_WW/mac/04_chapternav/small/nav_displays_e08c5b904_2x.png",
+          "price": "Retina Panels",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf28218a"
+        },
+        {
+          "label": "AppleCare",
+          "path": "",
+          "query": "New Mac Model",
+          "image": "/uploads/upload_1788768441065_416.webp",
+          "price": "",
+          "isActive": true,
+          "_id": "6a9e714352408f2abc4582b5"
+        }
+      ],
+      "_id": "6a9ba41971480907bf282182"
+    },
+    {
+      "categoryKey": "iphone",
+      "categoryName": "iPhone",
+      "icons": [
+        {
+          "label": "iPhone 17 Pro",
+          "path": "/iphone?search=iPhone 17 Pro",
+          "query": "iPhone 17 Pro",
+          "image": "/iphone_nav/iphone_17_pro.png",
+          "price": "From ₹1,34,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf28218c"
+        },
+        {
+          "label": "iPhone Air",
+          "path": "/iphone?search=iPhone Air",
+          "query": "iPhone Air",
+          "image": "/iphone_nav/iphone_air.png",
+          "price": "From ₹89,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf28218d"
+        },
+        {
+          "label": "iPhone 17",
+          "path": "/iphone?search=iPhone 17",
+          "query": "iPhone 17",
+          "image": "/iphone_nav/iphone_17.png",
+          "price": "From ₹79,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf28218e"
+        },
+        {
+          "label": "iPhone 17e",
+          "path": "/iphone?search=iPhone 17e",
+          "query": "iPhone 17e",
+          "image": "/iphone_nav/iphone_17e.png",
+          "price": "From ₹59,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf28218f"
+        },
+        {
+          "label": "iPhone 16",
+          "path": "/iphone?search=iPhone 16",
+          "query": "iPhone 16",
+          "image": "/iphone_nav/iphone_16.png",
+          "price": "From ₹79,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf282190"
+        },
+        {
+          "label": "Compare",
+          "path": "/compare?category=iphone",
+          "query": "Compare",
+          "image": "/iphone_nav/iphone_compare.png",
+          "price": "Compare Specs",
+          "isActive": false,
+          "_id": "6a9ba41971480907bf282191"
+        },
+        {
+          "label": "Accessories",
+          "path": "/accessories",
+          "query": "Accessories",
+          "image": "/iphone_nav/accessories.png",
+          "price": "MagSafe & Cases",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf282192"
+        },
+        {
+          "label": "Shop iPhone",
+          "path": "/iphone",
+          "query": "Shop iPhone",
+          "image": "/iphone_nav/shop_iphone.png",
+          "price": "Browse All",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf282193"
+        },
+        {
+          "label": "AppleCare",
+          "path": "/iphone",
+          "query": "New iPhone Model",
+          "image": "/uploads/upload_1788768532800_209.webp",
+          "price": "",
+          "isActive": true,
+          "_id": "6a9e714352408f2abc4582bf"
+        }
+      ],
+      "_id": "6a9ba41971480907bf28218b"
+    },
+    {
+      "categoryKey": "ipad",
+      "categoryName": "iPad",
+      "icons": [
+        {
+          "label": "iPad Pro",
+          "path": "/ipad?search=iPad Pro",
+          "query": "iPad Pro",
+          "image": "/ipad_nav/ipad_pro.png",
+          "price": "From ₹99,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf282195"
+        },
+        {
+          "label": "iPad Air",
+          "path": "/ipad?search=iPad Air",
+          "query": "iPad Air",
+          "image": "/ipad_nav/ipad_air.png",
+          "price": "From ₹59,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf282196"
+        },
+        {
+          "label": "iPad",
+          "path": "/ipad?search=iPad",
+          "query": "iPad",
+          "image": "/ipad_nav/ipad.png",
+          "price": "From ₹34,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf282197"
+        },
+        {
+          "label": "iPad mini",
+          "path": "/ipad?search=iPad mini",
+          "query": "iPad mini",
+          "image": "/ipad_nav/ipad_mini.png",
+          "price": "From ₹49,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf282198"
+        },
+        {
+          "label": "Compare",
+          "path": "/compare?category=ipad",
+          "query": "Compare",
+          "image": "/ipad_nav/ipad_compare.png",
+          "price": "Compare Specs",
+          "isActive": false,
+          "_id": "6a9ba41971480907bf282199"
+        },
+        {
+          "label": "Apple Pencil",
+          "path": "/accessories?search=Pencil",
+          "query": "Pencil",
+          "image": "/ipad_nav/apple_pencil.png",
+          "price": "From ₹11,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf28219a"
+        },
+        {
+          "label": "Keyboards",
+          "path": "/accessories?search=Keyboard",
+          "query": "Keyboard",
+          "image": "/ipad_nav/keyboards.png",
+          "price": "Magic Keyboard",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf28219b"
+        },
+        {
+          "label": "Accessories",
+          "path": "/accessories",
+          "query": "Accessories",
+          "image": "/ipad_nav/accessories.png",
+          "price": "Cases & Covers",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf28219c"
+        },
+        {
+          "label": "AppleCare",
+          "path": "/ipad",
+          "query": "New iPad Model",
+          "image": "/uploads/upload_1788768576042_266.webp",
+          "price": "",
+          "isActive": true,
+          "_id": "6a9e714352408f2abc4582c9"
+        }
+      ],
+      "_id": "6a9ba41971480907bf282194"
+    },
+    {
+      "categoryKey": "watch",
+      "categoryName": "Watch",
+      "icons": [
+        {
+          "label": "Apple Watch Series 11",
+          "path": "/watch?search=Series 10",
+          "query": "Series 10",
+          "image": "/uploads/upload_1788855288967_891.png",
+          "price": "From ₹46,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf28219e"
+        },
+        {
+          "label": "Apple Watch Ultra 2",
+          "path": "/watch?search=Ultra",
+          "query": "Ultra",
+          "image": "/uploads/upload_1788855328586_56.png",
+          "price": "From ₹89,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf28219f"
+        },
+        {
+          "label": "Apple Watch SE",
+          "path": "/watch?search=SE",
+          "query": "SE",
+          "image": "/uploads/upload_1788855356292_346.png",
+          "price": "From ₹29,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf2821a0"
+        },
+        {
+          "label": "Compare Watch",
+          "path": "/compare?category=watch",
+          "query": "Compare",
+          "image": "/watch_category_uploaded.png",
+          "price": "Compare Specs",
+          "isActive": false,
+          "_id": "6a9ba41971480907bf2821a1"
+        },
+        {
+          "label": "AppleCare",
+          "path": "/watch",
+          "query": "New Watch Model",
+          "image": "/uploads/upload_1788768532800_209.webp",
+          "price": "",
+          "isActive": true,
+          "_id": "6a9ef3aa09494a8b255bc043"
+        }
+      ],
+      "_id": "6a9ba41971480907bf28219d"
+    },
+    {
+      "categoryKey": "airpods",
+      "categoryName": "AirPods",
+      "icons": [
+        {
+          "label": "AirPods Pro 2",
+          "path": "/airpods?search=Pro",
+          "query": "Pro",
+          "image": "/airpods_pro_3.jpg",
+          "price": "From ₹24,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf2821a3"
+        },
+        {
+          "label": "AirPods 4",
+          "path": "/airpods?search=AirPods 4",
+          "query": "AirPods 4",
+          "image": "/airpods_category_uploaded.png",
+          "price": "From ₹12,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf2821a4"
+        },
+        {
+          "label": "AirPods Max",
+          "path": "/airpods?search=Max",
+          "query": "Max",
+          "image": "/airpods_category.jpg",
+          "price": "From ₹59,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf2821a5"
+        },
+        {
+          "label": "AppleCare",
+          "path": "/airpods",
+          "query": "New AirPods Model",
+          "image": "/uploads/upload_1788768532800_209.webp",
+          "price": "",
+          "isActive": true,
+          "_id": "6a9ef3aa09494a8b255bc048"
+        }
+      ],
+      "_id": "6a9ba41971480907bf2821a2"
+    },
+    {
+      "categoryKey": "tv-home",
+      "categoryName": "TV & Home",
+      "icons": [
+        {
+          "label": "Apple TV 4K",
+          "path": "/tv-home?search=Apple TV",
+          "query": "Apple TV",
+          "image": "/tv_banner_1.jpg",
+          "price": "From ₹14,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf2821a7"
+        },
+        {
+          "label": "HomePod",
+          "path": "/tv-home?search=HomePod",
+          "query": "HomePod",
+          "image": "/homepod_category.jpg",
+          "price": "From ₹32,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf2821a8"
+        },
+        {
+          "label": "HomePod mini",
+          "path": "/tv-home?search=HomePod mini",
+          "query": "HomePod mini",
+          "image": "/tv_home_homepods.jpg",
+          "price": "From ₹9,900",
+          "isActive": true,
+          "_id": "6a9ba41971480907bf2821a9"
+        },
+        {
+          "label": "AppleCare",
+          "path": "/tv-home",
+          "query": "New TV & Home Model",
+          "image": "/uploads/upload_1788768532800_209.webp",
+          "price": "",
+          "isActive": true,
+          "_id": "6a9ef3aa09494a8b255bc04d"
+        }
+      ],
+      "_id": "6a9ba41971480907bf2821a6"
+    },
+    {
+      "categoryKey": "applecare",
+      "categoryName": "AppleCare Category",
+      "icons": [
+        {
+          "label": "iPhone AppleCare",
+          "path": "/applecare?category=iPhone",
+          "query": "iPhone",
+          "image": "/iphone_category_v2.jpg",
+          "price": "From ₹11,900 for 2 yrs",
+          "isActive": true,
+          "_id": "6a9e89bc0969705fe5ef938b"
+        },
+        {
+          "label": "Mac AppleCare",
+          "path": "/applecare?category=Mac",
+          "query": "Mac",
+          "image": "/macbook_category_v3.jpg",
+          "price": "From ₹12,900 for 3 yrs",
+          "isActive": true,
+          "_id": "6a9e89bc0969705fe5ef938c"
+        },
+        {
+          "label": "iPad AppleCare",
+          "path": "/applecare?category=iPad",
+          "query": "iPad",
+          "image": "/ipad_category_v3.png",
+          "price": "From ₹8,900 for 2 yrs",
+          "isActive": true,
+          "_id": "6a9e89bc0969705fe5ef938d"
+        },
+        {
+          "label": "Watch AppleCare",
+          "path": "/applecare?category=Watch",
+          "query": "Watch",
+          "image": "/watch_category.jpg",
+          "price": "From ₹4,900 for 2 yrs",
+          "isActive": true,
+          "_id": "6a9e89bc0969705fe5ef938e"
+        },
+        {
+          "label": "AirPods AppleCare",
+          "path": "/applecare?category=AirPods",
+          "query": "AirPods",
+          "image": "/airpods_category.jpg",
+          "price": "From ₹2,900 for 2 yrs",
+          "isActive": true,
+          "_id": "6a9e89bc0969705fe5ef938f"
+        },
+        {
+          "label": "TV & Home AppleCare",
+          "path": "/applecare?category=TV",
+          "query": "TV",
+          "image": "/tv_home_category_uploaded.jpg",
+          "price": "From ₹2,900 for 3 yrs",
+          "isActive": true,
+          "_id": "6a9e89bc0969705fe5ef9390"
+        }
+      ],
+      "_id": "6a9e89bc0969705fe5ef938a"
+    }
+  ],
+  "categories": [
+    {
+      "_id": "6a437eb3345ade0885f68a49",
+      "name": "Smartphones",
+      "slug": "smartphones",
+      "description": "Latest Apple iPhones and premium accessories.",
+      "image": "/iphone17p_orange_close.jpg",
+      "__v": 0,
+      "createdAt": "2026-06-30T08:30:43.336Z",
+      "updatedAt": "2026-06-30T08:30:43.336Z"
+    },
+    {
+      "_id": "6a437eb3345ade0885f68a4a",
+      "name": "Laptops & PCs",
+      "slug": "laptops-pcs",
+      "description": "Powerhouses for productivity, mix engineering, and 4K editing.",
+      "image": "/macbook_category_v3.jpg",
+      "__v": 0,
+      "createdAt": "2026-06-30T08:30:43.337Z",
+      "updatedAt": "2026-06-30T08:30:43.337Z"
+    },
+    {
+      "_id": "6a437eb3345ade0885f68a4b",
+      "name": "iPads",
+      "slug": "ipads",
+      "description": "Ultra-versatile computing pads for sketch artists, designers, and students.",
+      "image": "/ipad_category_v2.jpg",
+      "__v": 0,
+      "createdAt": "2026-06-30T08:30:43.337Z",
+      "updatedAt": "2026-06-30T08:30:43.337Z"
+    },
+    {
+      "_id": "6a437eb3345ade0885f68a4c",
+      "name": "Wearables",
+      "slug": "wearables",
+      "description": "Smart watches and personal health trackers.",
+      "image": "/watch_category.jpg",
+      "__v": 0,
+      "createdAt": "2026-06-30T08:30:43.337Z",
+      "updatedAt": "2026-06-30T08:30:43.337Z"
+    },
+    {
+      "_id": "6a437eb3345ade0885f68a4d",
+      "name": "Premium Audio",
+      "slug": "premium-audio",
+      "description": "Immersive sound, spatial audio, and active noise canceling headphones.",
+      "image": "/airpods_pro_3.jpg",
+      "__v": 0,
+      "createdAt": "2026-06-30T08:30:43.337Z",
+      "updatedAt": "2026-06-30T08:30:43.337Z"
+    },
+    {
+      "_id": "6a437eb3345ade0885f68a4e",
+      "name": "TV & Home",
+      "slug": "tv-home",
+      "description": "High-fidelity smart speakers and media players.",
+      "image": "/tv_home_homepods.jpg",
+      "__v": 0,
+      "createdAt": "2026-06-30T08:30:43.337Z",
+      "updatedAt": "2026-06-30T08:30:43.337Z"
+    },
+    {
+      "_id": "6a43878b45435c473407953b",
+      "name": "AirPods",
+      "slug": "airpods",
+      "description": "High-fidelity wireless sound, active noise cancellation, and spatial audio.",
+      "image": "/airpods_pro_3.jpg",
+      "createdAt": "2026-06-30T09:08:27.649Z",
+      "updatedAt": "2026-06-30T09:08:27.649Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a4607e65448c22c51156db4",
+      "name": "Accessories",
+      "slug": "accessories",
+      "description": "Premium protective cases, power adapters, loops, and Apple Pencil accessories.",
+      "image": "/iphone17e_cases.jpg",
+      "createdAt": "2026-07-02T06:40:38.377Z",
+      "updatedAt": "2026-07-02T06:40:38.377Z",
+      "__v": 0
+    }
+  ]
+}

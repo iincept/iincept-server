@@ -451,15 +451,53 @@ export default function Watch() {
     return COLOR_MAP[lowerVal] || '#cbd5e1';
   };
 
+  const extractFirstValidImage = (p) => {
+    if (!p) return null;
+    if (p.image && typeof p.image === 'string' && p.image.trim() && !p.image.includes('mock-cloud')) {
+      return p.image;
+    }
+    if (Array.isArray(p.images) && p.images.length > 0) {
+      const found = p.images.find(img => typeof img === 'string' && img.trim() && !img.includes('mock-cloud'));
+      if (found) return found;
+    }
+    if (Array.isArray(p.variants) && p.variants.length > 0) {
+      for (const v of p.variants) {
+        if (v.image && typeof v.image === 'string' && v.image.trim() && !v.image.includes('mock-cloud')) {
+          return v.image;
+        }
+        if (Array.isArray(v.images) && v.images.length > 0) {
+          const found = v.images.find(img => typeof img === 'string' && img.trim() && !img.includes('mock-cloud'));
+          if (found) return found;
+        }
+      }
+    }
+    if (Array.isArray(p.colors) && p.colors.length > 0) {
+      for (const c of p.colors) {
+        if (typeof c === 'object' && c) {
+          if (c.image && typeof c.image === 'string' && c.image.trim() && !c.image.includes('mock-cloud')) {
+            return c.image;
+          }
+          if (Array.isArray(c.images) && c.images.length > 0) {
+            const found = c.images.find(img => typeof img === 'string' && img.trim() && !img.includes('mock-cloud'));
+            if (found) return found;
+          }
+        }
+      }
+    }
+    return null;
+  };
+
   const dbWatches = products.filter(p => {
     const catName = p.category?.name || p.category?.toString() || '';
     const catSlug = p.category?.slug || '';
-    return catName.toLowerCase() === 'wearables' || 
-           catSlug.toLowerCase() === 'wearables' || 
-           catName.toLowerCase().includes('watch');
+    return catName.toLowerCase() === 'watch' ||
+      catName.toLowerCase() === 'watches' ||
+      catSlug.toLowerCase() === 'watch' ||
+      catSlug.toLowerCase() === 'watches' ||
+      catName.toLowerCase().includes('watch');
   }).map(p => {
-    const firstImg = p.image || (p.images && p.images[0]);
-    const isValidImg = firstImg && !firstImg.includes('mock-cloud');
+    const firstImg = extractFirstValidImage(p);
+    const isValidImg = !!firstImg;
     return {
       id: p._id || p.id,
       name: p.title || p.name,
@@ -894,9 +932,9 @@ export default function Watch() {
                   {/* Non-clickable configurations / actions */}
                   <div className="space-y-4 pt-2">
                     {/* Color Dot Options Row */}
-                    <div className="flex items-center justify-between gap-1.5 border-t border-zinc-100/60 pt-3">
+                    <div className="flex items-center justify-between gap-2 border-t border-zinc-100/60 pt-3">
                       <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Colors</span>
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-3 shrink-0 py-1">
                         {prod.colors.map((color) => {
                           const isSelected = selectedColors[prod.id] === color.name || (!selectedColors[prod.id] && prod.colors[0]?.name === color.name);
                           return (
@@ -904,8 +942,8 @@ export default function Watch() {
                               key={color.name}
                               onClick={() => handleColorChange(prod.id, color.name)}
                               style={{ backgroundColor: color.value }}
-                              className={`w-3.5 h-3.5 rounded-full cursor-pointer transition-all border ${
-                                isSelected ? 'scale-125 border-zinc-800 ring-1 ring-zinc-400' : 'border-zinc-300 hover:scale-110'
+                              className={`w-4 h-4 rounded-full cursor-pointer transition-all ${
+                                isSelected ? 'scale-110 ring-2 ring-offset-2 ring-zinc-800 shadow-sm z-10' : 'border border-zinc-300 hover:scale-105'
                               }`}
                               title={color.name}
                             />
