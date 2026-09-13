@@ -491,6 +491,7 @@ export default function Navbar() {
       title: 'Explore Watch',
       mainLink: { label: 'Explore All Watch', path: '/watch' },
       items: [
+        { label: 'Apple Watch Series 12', path: '/watch?search=Series 12', query: 'Series 12' },
         { label: 'Apple Watch Series 10', path: '/watch?search=Series 10', query: 'Series 10' },
         { label: 'Apple Watch Ultra 2', path: '/watch?search=Ultra', query: 'Ultra' },
         { label: 'Apple Watch SE', path: '/watch?search=SE', query: 'SE' },
@@ -920,12 +921,14 @@ export default function Navbar() {
 
     // Watch
     'Explore All Apple Watch': { name: 'Apple Watch Lineup', price: 'Browse All Apple Watches', image: '/apple_watch_three_models.jpg' },
-    'Apple Watch Series 10': { name: 'Apple Watch Series 10', price: 'Thinnest watch with biggest display. From ₹46,900', image: '/apple_watch_three_models.jpg' },
+    'Apple Watch Series 12': { name: 'Apple Watch Series 12', price: 'Advanced heart & health tracking. From ₹56,900', image: '/apple_watch_series_12.png' },
     'Apple Watch Series 11': { name: 'Apple Watch Series 11', price: 'Advanced fitness tracking. From ₹49,900', image: '/apple_watch_three_models.jpg' },
+    'Apple Watch Series 10': { name: 'Apple Watch Series 10', price: 'Thinnest watch with biggest display. From ₹46,900', image: '/apple_watch_three_models.jpg' },
     'Apple Watch SE': { name: 'Apple Watch SE', price: 'Essential features to stay connected. From ₹24,900', image: '/apple_watch_three_models.jpg' },
     'Apple Watch SE 3': { name: 'Apple Watch SE 3', price: 'Essential features. From ₹29,900', image: '/apple_watch_three_models.jpg' },
-    'Apple Watch Ultra 2': { name: 'Apple Watch Ultra 2', price: 'Rugged capability & adventure. From ₹89,900', image: '/apple_watch_ultra_2_single.png' },
+    'Apple Watch Ultra 4': { name: 'Apple Watch Ultra 4', price: 'Ultimate adventure watch. From ₹99,900', image: '/apple_watch_ultra_2_single.png' },
     'Apple Watch Ultra 3': { name: 'Apple Watch Ultra 3', price: 'Rugged capability. From ₹89,900', image: '/apple_watch_ultra_2_single.png' },
+    'Apple Watch Ultra 2': { name: 'Apple Watch Ultra 2', price: 'Rugged capability & adventure. From ₹89,900', image: '/apple_watch_ultra_2_single.png' },
     'Apple Watch Nike': { name: 'Apple Watch Nike', price: 'Sport bands & faces', image: '/apple_watch_three_models.jpg' },
 
     // AirPods
