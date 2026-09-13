@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { ShieldAlert, Star } from 'lucide-react';
-import { fetchProductById, fetchProducts } from '../redux/productSlice';
+import { fetchProductById, fetchProducts, setCurrentProduct } from '../redux/productSlice';
 import { addToCart } from '../redux/cartSlice';
 import Loader from '../components/Loader';
 import axiosClient from '../services/axiosClient';
+import { subscribeToLiveSync } from '../services/liveSyncService';
 
 // Fallback definitions removed in favor of real database records
 
@@ -18,11 +19,14 @@ export default function ProductDetails() {
   const { isAuthenticated } = useSelector((state) => state.auth);
 
   const [activeImage, setActiveImage] = useState('');
+  const [processedImage, setProcessedImage] = useState('');
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedStorage, setSelectedStorage] = useState('');
+
+
 
   const handleGalleryMouseMove = (e) => {
     const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
@@ -106,8 +110,29 @@ export default function ProductDetails() {
     }
   };
 
+
   useEffect(() => {
-    dispatch(fetchProductById(id));
+    if (id) {
+      if (currentProduct && (currentProduct._id !== id && currentProduct.id !== id && currentProduct.slug !== id)) {
+        dispatch(setCurrentProduct(null));
+      }
+      setActiveImage('');
+      setProcessedImage('');
+      setSelectedColor(null);
+
+      if (id.match(/^[0-9a-fA-F]{24}$/)) {
+        dispatch(fetchProductById(id));
+      } else {
+        dispatch(fetchProducts());
+      }
+    }
+    const unsubscribe = subscribeToLiveSync(() => {
+      dispatch(fetchProducts());
+      if (id && id.match(/^[0-9a-fA-F]{24}$/)) {
+        dispatch(fetchProductById(id));
+      }
+    });
+    return () => unsubscribe();
   }, [id, dispatch]);
 
   useEffect(() => {
@@ -140,60 +165,355 @@ export default function ProductDetails() {
     }
   };
 
+  const FALLBACK_PRODUCTS_MAP = {
+    'default-iphone-15': {
+      id: 'default-iphone-15',
+      _id: 'default-iphone-15',
+      title: 'iPhone 15',
+      name: 'iPhone 15',
+      price: 69900,
+      priceStr: '₹69,900',
+      category: 'iphone',
+      image: '/iphone_nav/iphone_15.png',
+      images: ['/iphone_nav/iphone_15.png', '/iphone16_group.jpg'],
+      description: 'Dynamic Island, 48MP Main camera, and USB-C. All in a durable color-infused glass and aluminum design.',
+      colors: [
+        { name: 'Black', value: '#111111', image: '/iphone_nav/iphone_15.png' },
+        { name: 'Blue', value: '#bae6fd', image: '/iphone_nav/iphone_15.png' },
+        { name: 'Green', value: '#bbf7d0', image: '/iphone_nav/iphone_15.png' },
+        { name: 'Yellow', value: '#eab308', image: '/iphone_nav/iphone_15.png' },
+        { name: 'Pink', value: '#ec4899', image: '/iphone_nav/iphone_15.png' }
+      ],
+      storage: ['128GB', '256GB', '512GB'],
+      variants: [
+        { storage: '128GB', price: 69900 },
+        { storage: '256GB', price: 79900 },
+        { storage: '512GB', price: 99900 }
+      ],
+      rating: 4.8
+    },
+    'default-iphone-se': {
+      id: 'default-iphone-se',
+      _id: 'default-iphone-se',
+      title: 'iPhone SE',
+      name: 'iPhone SE',
+      price: 49900,
+      priceStr: '₹49,900',
+      category: 'iphone',
+      image: '/iphone_nav/iphone_se.png',
+      images: ['/iphone_nav/iphone_se.png', '/iphone17e_group.jpg'],
+      description: 'Serious power in a compact design. Lightning-fast A15 Bionic chip and great battery life.',
+      colors: [
+        { name: 'Midnight', value: '#1e293b', image: '/iphone_nav/iphone_se.png' },
+        { name: 'Starlight', value: '#f5f5f4', image: '/iphone_nav/iphone_se.png' },
+        { name: 'RED', value: '#e0115f', image: '/iphone_nav/iphone_se.png' }
+      ],
+      storage: ['64GB', '128GB', '256GB'],
+      variants: [
+        { storage: '64GB', price: 49900 },
+        { storage: '128GB', price: 54900 },
+        { storage: '256GB', price: 64900 }
+      ],
+      rating: 4.7
+    },
+    'default-iphone-air': {
+      id: 'default-iphone-air',
+      _id: 'default-iphone-air',
+      title: 'iPhone Air',
+      name: 'iPhone Air',
+      price: 119900,
+      priceStr: '₹1,19,900',
+      category: 'iphone',
+      image: '/iphone_nav/dropdown_iphone_air.png',
+      images: ['/iphone_nav/dropdown_iphone_air.png', '/iphone_air_group.jpg'],
+      description: 'Impossibly thin. Unbelievably powerful. Built for Apple Intelligence.',
+      colors: [
+        { name: 'Silver', value: '#e5e6e8', image: '/iphone_nav/dropdown_iphone_air.png' },
+        { name: 'Space Gray', value: '#4b4c4e', image: '/iphone_nav/dropdown_iphone_air.png' }
+      ],
+      storage: ['256GB', '512GB', '1TB'],
+      variants: [
+        { storage: '256GB', price: 119900 },
+        { storage: '512GB', price: 139900 },
+        { storage: '1TB', price: 179900 }
+      ],
+      rating: 4.9
+    },
+    'default-iphone-17': {
+      id: 'default-iphone-17',
+      _id: 'default-iphone-17',
+      title: 'iPhone 17',
+      name: 'iPhone 17',
+      price: 79900,
+      priceStr: '₹79,900',
+      category: 'iphone',
+      image: '/iphone_nav/iphone_17.png',
+      images: ['/iphone_nav/iphone_17.png', '/iphone17_group.jpg'],
+      description: 'Next-generation performance with A19 chip and ProMotion display.',
+      colors: [
+        { name: 'Lavender', value: '#d8b4fe', image: '/iphone_nav/iphone_17.png' },
+        { name: 'Sage Green', value: '#a7f3d0', image: '/iphone_nav/iphone_17.png' },
+        { name: 'Starlight', value: '#fafaf9', image: '/iphone_nav/iphone_17.png' }
+      ],
+      storage: ['128GB', '256GB', '512GB'],
+      variants: [
+        { storage: '128GB', price: 79900 },
+        { storage: '256GB', price: 89900 },
+        { storage: '512GB', price: 109900 }
+      ],
+      rating: 4.9
+    },
+    'default-iphone-17e': {
+      id: 'default-iphone-17e',
+      _id: 'default-iphone-17e',
+      title: 'iPhone 17e',
+      name: 'iPhone 17e',
+      price: 59900,
+      priceStr: '₹59,900',
+      category: 'iphone',
+      image: '/iphone_nav/dropdown_iphone_17e.png',
+      images: ['/iphone_nav/dropdown_iphone_17e.png', '/iphone17e_group.jpg'],
+      description: 'Essential Apple performance at a groundbreaking value.',
+      colors: [
+        { name: 'Soft Pink', value: '#fbcfe8', image: '/iphone_nav/dropdown_iphone_17e.png' },
+        { name: 'White', value: '#ffffff', image: '/iphone_nav/dropdown_iphone_17e.png' },
+        { name: 'Midnight', value: '#1e293b', image: '/iphone_nav/dropdown_iphone_17e.png' }
+      ],
+      storage: ['128GB', '256GB'],
+      variants: [
+        { storage: '128GB', price: 59900 },
+        { storage: '256GB', price: 69900 }
+      ],
+      rating: 4.8
+    },
+    'default-iphone-17-pro': {
+      id: 'default-iphone-17-pro',
+      _id: 'default-iphone-17-pro',
+      title: 'iPhone 17 Pro',
+      name: 'iPhone 17 Pro',
+      price: 134900,
+      priceStr: '₹1,34,900',
+      category: 'iphone',
+      image: '/iphone_nav/iphone_17_pro.png',
+      images: ['/iphone_nav/iphone_17_pro.png', '/iphone17p_white.jpg'],
+      description: 'Forged in titanium. Powered by A19 Pro chip with breakthrough camera capabilities.',
+      colors: [
+        { name: 'Cosmic Orange', value: '#e07a5f', image: '/iphone_nav/iphone_17_pro.png' },
+        { name: 'White Titanium', value: '#f4f4f6', image: '/iphone17p_white.jpg' },
+        { name: 'Black Titanium', value: '#323335', image: '/iphone_nav/iphone_17_pro.png' }
+      ],
+      storage: ['128GB', '256GB', '512GB', '1TB'],
+      variants: [
+        { storage: '128GB', price: 134900 },
+        { storage: '256GB', price: 144900 },
+        { storage: '512GB', price: 164900 },
+        { storage: '1TB', price: 184900 }
+      ],
+      rating: 5.0
+    },
+    'default-iphone-16-pro': {
+      id: 'default-iphone-16-pro',
+      _id: 'default-iphone-16-pro',
+      title: 'iPhone 16 Pro',
+      name: 'iPhone 16 Pro',
+      price: 119900,
+      priceStr: '₹1,19,900',
+      category: 'iphone',
+      image: '/iphone_nav/iphone_16_pro.png',
+      images: ['/iphone_nav/iphone_16_pro.png'],
+      description: 'Titanium design with A18 Pro chip and 48MP Fusion camera.',
+      colors: [
+        { name: 'Desert Titanium', value: '#e6c2b9', image: '/iphone_nav/iphone_16_pro.png' },
+        { name: 'Natural Titanium', value: '#a39e99', image: '/iphone_nav/iphone_16_pro.png' },
+        { name: 'Black Titanium', value: '#232426', image: '/iphone_nav/iphone_16_pro.png' },
+        { name: 'White Titanium', value: '#f2f1ed', image: '/iphone_nav/iphone_16_pro.png' }
+      ],
+      storage: ['128GB', '256GB', '512GB', '1TB'],
+      variants: [
+        { storage: '128GB', price: 119900 },
+        { storage: '256GB', price: 129900 },
+        { storage: '512GB', price: 149900 },
+        { storage: '1TB', price: 169900 }
+      ],
+      rating: 5.0
+    },
+    'default-iphone-16': {
+      id: 'default-iphone-16',
+      _id: 'default-iphone-16',
+      title: 'iPhone 16',
+      name: 'iPhone 16',
+      price: 79900,
+      priceStr: '₹79,900',
+      category: 'iphone',
+      image: '/iphone_nav/iphone_16.png',
+      images: ['/iphone_nav/iphone_16.png', '/iphone16_group.jpg'],
+      description: 'Camera Control, 48MP Fusion camera, A18 chip, and Vibrant colors.',
+      colors: [
+        { name: 'Ultramarine', value: '#2a4b7c', image: '/iphone_nav/iphone_16.png' },
+        { name: 'Teal', value: '#1d3557', image: '/iphone_nav/iphone_16.png' },
+        { name: 'Pink', value: '#ec4899', image: '/iphone_nav/iphone_16.png' },
+        { name: 'White', value: '#ffffff', image: '/iphone_nav/iphone_16.png' },
+        { name: 'Black', value: '#111111', image: '/iphone_nav/iphone_16.png' }
+      ],
+      storage: ['128GB', '256GB', '512GB'],
+      variants: [
+        { storage: '128GB', price: 79900 },
+        { storage: '256GB', price: 89900 },
+        { storage: '512GB', price: 109900 }
+      ],
+      rating: 4.9
+    },
+    'default-iphone-18-pro': {
+      id: 'default-iphone-18-pro',
+      _id: 'default-iphone-18-pro',
+      title: 'iPhone 18 Pro',
+      name: 'iPhone 18 Pro',
+      price: 164900,
+      priceStr: '₹1,64,900',
+      category: 'iphone',
+      image: '/iphone_nav/iphone_18_pro.jpg',
+      images: ['/iphone_nav/iphone_18_pro.jpg'],
+      description: 'The pinnacle of mobile engineering and Apple Intelligence.',
+      colors: [
+        { name: 'Burgundy', value: '#4a1525', image: '/iphone_nav/iphone_18_pro.jpg' },
+        { name: 'Glacier', value: '#e4effb', image: '/iphone_nav/iphone_18_pro.jpg' },
+        { name: 'Silver', value: '#e5e6e8', image: '/iphone_nav/iphone_18_pro.jpg' }
+      ],
+      storage: ['256GB', '512GB', '1TB', '2TB'],
+      variants: [
+        { storage: '256GB', price: 164900 },
+        { storage: '512GB', price: 189000 },
+        { storage: '1TB', price: 239900 },
+        { storage: '2TB', price: 314900 }
+      ],
+      rating: 5.0
+    },
+    'default-iphone-duo': {
+      id: 'default-iphone-duo',
+      _id: 'default-iphone-duo',
+      title: 'iPhone Duo',
+      name: 'iPhone Duo',
+      price: 299900,
+      priceStr: '₹2,99,900',
+      category: 'iphone',
+      image: '/iphone_nav/dropdown_iphone_duo.png',
+      images: ['/iphone_nav/dropdown_iphone_duo.png'],
+      description: 'Revolutionary dual display iPhone experience.',
+      colors: [
+        { name: 'Star White', value: '#fafafa', image: '/iphone_nav/dropdown_iphone_duo.png' },
+        { name: 'Night Sky', value: '#353e4a', image: '/iphone_nav/dropdown_iphone_duo.png' }
+      ],
+      storage: ['512GB', '1TB'],
+      variants: [
+        { storage: '512GB', price: 299900 },
+        { storage: '1TB', price: 349900 }
+      ],
+      rating: 5.0
+    },
+    'iphone-duo': {
+      id: 'default-iphone-duo',
+      _id: 'default-iphone-duo',
+      title: 'iPhone Duo',
+      name: 'iPhone Duo',
+      price: 299900,
+      priceStr: '₹2,99,900',
+      category: 'iphone',
+      image: '/iphone_nav/dropdown_iphone_duo.png',
+      images: ['/iphone_nav/dropdown_iphone_duo.png'],
+      description: 'Revolutionary dual display iPhone experience.',
+      colors: [
+        { name: 'Star White', value: '#fafafa', image: '/iphone_nav/dropdown_iphone_duo.png' },
+        { name: 'Night Sky', value: '#353e4a', image: '/iphone_nav/dropdown_iphone_duo.png' }
+      ],
+      storage: ['512GB', '1TB'],
+      variants: [
+        { storage: '512GB', price: 299900 },
+        { storage: '1TB', price: 349900 }
+      ],
+      rating: 5.0
+    },
+    'iphone_duo': {
+      id: 'default-iphone-duo',
+      _id: 'default-iphone-duo',
+      title: 'iPhone Duo',
+      name: 'iPhone Duo',
+      price: 299900,
+      priceStr: '₹2,99,900',
+      category: 'iphone',
+      image: '/iphone_nav/dropdown_iphone_duo.png',
+      images: ['/iphone_nav/dropdown_iphone_duo.png'],
+      description: 'Revolutionary dual display iPhone experience.',
+      colors: [
+        { name: 'Star White', value: '#fafafa', image: '/iphone_nav/dropdown_iphone_duo.png' },
+        { name: 'Night Sky', value: '#353e4a', image: '/iphone_nav/dropdown_iphone_duo.png' }
+      ],
+      storage: ['512GB', '1TB'],
+      variants: [
+        { storage: '512GB', price: 299900 },
+        { storage: '1TB', price: 349900 }
+      ],
+      rating: 5.0
+    }
+  };
+
+  // Synchronously reset image and selection state when route param `id` changes
+  const [prevId, setPrevId] = useState(id);
+  if (id !== prevId) {
+    setPrevId(id);
+    setActiveImage('');
+    setProcessedImage('');
+    setSelectedColor(null);
+  }
+
   const getProductFromStore = (prodId) => {
-    if (!products || products.length === 0 || !prodId) return null;
+    if (!prodId) return null;
 
-    // 1. Direct _id / id match
-    const directMatch = products.find(p => (p._id || p.id) === prodId);
-    if (directMatch) return directMatch;
+    if (products && products.length > 0) {
+      // 1. Direct _id, id, or slug match in products array
+      const directMatch = products.find(p => (p._id === prodId || p.id === prodId || p.slug === prodId));
+      if (directMatch) return directMatch;
 
-    // 2. Mock map or title substring match
-    const mockIdMap = {
-      'iphone-18-pro': 'iPhone 18 Pro',
-      'default-iphone-18-pro': 'iPhone 18 Pro',
-      'ip17pm': 'iPhone 17 Pro Max',
-      'ip17p': 'iPhone 17 Pro',
-      'iphone-17-pro': 'iPhone 17 Pro',
-      'ipair': 'iPhone Air',
-      'iphone-air': 'iPhone Air',
-      'ip17': 'iPhone 17',
-      'iphone-17': 'iPhone 17',
-      'ip16pm': 'iPhone 17e',
-      'iphone-17e': 'iPhone 17e',
-      'ip16': 'iPhone 16',
-      'iphone-16': 'iPhone 16',
-      'mbneo': 'MacBook Neo',
-      'mac-neo-a18': 'MacBook Neo',
-      'mac-air-13-m5': 'MacBook Air',
-      'mac-pro-14-m5': 'MacBook Pro',
-      'ipadpro13': 'iPad Pro 13',
-      'ipad-pro-13-m4': 'iPad Pro',
-      'ipadair13': 'iPad Air',
-      'ipad-air-11-m2': 'iPad Air',
-      'ipad10': 'iPad 10',
-      'ipad-10th-gen': 'iPad',
-      'ipad-mini-a17': 'iPad mini',
-      'appletv4k': 'Apple TV 4K',
-      'homepodmini': 'HomePod mini',
-      'belkin3in1': 'Belkin UltraCharge',
-      'herschelsling': 'Herschel Cloud Sling',
-      'herscheltote': 'Herschel AirPods',
-      'watchultra2': 'Apple Watch Ultra',
-      'watchseries10': 'Apple Watch Series',
-      'watchse': 'Apple Watch SE',
-      'airpodsmax': 'AirPods Max',
-      'airpodspro2': 'AirPods Pro',
-      'airpods4': 'AirPods 4'
-    };
+      // Do not match aliases for 24-char MongoDB ObjectIds
+      if (prodId.match(/^[0-9a-fA-F]{24}$/)) {
+        return null;
+      }
 
-    const targetTitle = mockIdMap[prodId] || prodId;
-    const matchedProduct = products.find(p => {
-      const pTitle = (p.title || p.name || '').toLowerCase();
-      const tLower = targetTitle.toLowerCase();
-      return pTitle.includes(tLower) || tLower.includes(pTitle);
-    });
+      // 2. Title substring match against real database products
+      const mockIdMap = {
+        'iphone-18-pro': 'iPhone 18 Pro',
+        'default-iphone-18-pro': 'iPhone 18 Pro',
+        'iphone-duo': 'iPhone Duo',
+        'default-iphone-duo': 'iPhone Duo',
+        'ip17pm': 'iPhone 17 Pro Max',
+        'ip17p': 'iPhone 17 Pro',
+        'iphone-17-pro': 'iPhone 17 Pro',
+        'ipair': 'iPhone Air',
+        'iphone-air': 'iPhone Air',
+        'ip17': 'iPhone 17',
+        'iphone-17': 'iPhone 17',
+        'ip17e': 'iPhone 17e',
+        'iphone-17e': 'iPhone 17e',
+        'ip16pm': 'iPhone 16 Pro Max',
+        'ip16p': 'iPhone 16 Pro',
+        'iphone-16-pro': 'iPhone 16 Pro',
+        'ip16': 'iPhone 16',
+        'iphone-16': 'iPhone 16',
+        'ip15': 'iPhone 15',
+        'iphone-15': 'iPhone 15',
+        'ipse': 'iPhone SE',
+        'iphone-se': 'iPhone SE'
+      };
 
-    return matchedProduct || null;
+      const targetTitle = mockIdMap[prodId] || prodId.replace(/^default-/, '').replace(/-/g, ' ');
+      const matchedProduct = products.find(p => {
+        const pTitle = (p.title || p.name || '').toLowerCase();
+        const tLower = targetTitle.toLowerCase();
+        return pTitle === tLower || pTitle.includes(tLower) || tLower.includes(pTitle);
+      });
+      if (matchedProduct) return matchedProduct;
+    }
+
+    return null;
   };
 
   const getCategoryGroup = (prod) => {
@@ -262,8 +582,106 @@ export default function ProductDetails() {
     return catId || catName || 'other';
   };
 
+  const isValidCurrentProduct = currentProduct && 
+    (currentProduct._id === id || currentProduct.id === id || currentProduct.slug === id);
+
   const localProduct = getProductFromStore(id);
-  const product = currentProduct || localProduct;
+  const product = isValidCurrentProduct ? currentProduct : localProduct;
+
+  useEffect(() => {
+    const rawTarget = activeImage || (product ? (colors[0]?.image || product.images?.[0] || product.image) : '');
+    if (!rawTarget) return;
+
+    let isMounted = true;
+    let targetSrc = rawTarget.trim();
+    if (targetSrc.startsWith('uploads/')) targetSrc = `/${targetSrc}`;
+
+    setProcessedImage(targetSrc);
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = targetSrc;
+
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const w = img.naturalWidth || img.width;
+        const h = img.naturalHeight || img.height;
+        if (w === 0 || h === 0) return;
+
+        canvas.width = w;
+        canvas.height = h;
+        ctx.drawImage(img, 0, 0);
+
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const data = imgData.data;
+
+        const samplePoints = [
+          [0, 0], [w - 1, 0], [0, h - 1], [w - 1, h - 1],
+          [Math.floor(w / 2), 0], [0, Math.floor(h / 2)],
+          [w - 1, Math.floor(h / 2)], [Math.floor(w / 2), h - 1]
+        ];
+
+        let bgR = 0, bgG = 0, bgB = 0, validSamples = 0;
+        samplePoints.forEach(([x, y]) => {
+          const idx = (y * w + x) * 4;
+          if (data[idx + 3] > 200) {
+            bgR += data[idx];
+            bgG += data[idx + 1];
+            bgB += data[idx + 2];
+            validSamples++;
+          }
+        });
+
+        if (validSamples > 0) {
+          bgR = Math.round(bgR / validSamples);
+          bgG = Math.round(bgG / validSamples);
+          bgB = Math.round(bgB / validSamples);
+
+          // Clean off-white/light-grey background colors (> 180, e.g. #f5f5f7 or #f0f0f2)
+          if (bgR > 180 && bgG > 180 && bgB > 180) {
+            const tolerance = 45;
+            let modified = false;
+
+            for (let i = 0; i < data.length; i += 4) {
+              const r = data[i];
+              const g = data[i + 1];
+              const b = data[i + 2];
+              const a = data[i + 3];
+
+              if (a > 0) {
+                const diff = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
+                if (diff <= tolerance) {
+                  data[i + 3] = 0;
+                  modified = true;
+                } else if (diff <= tolerance + 25) {
+                  const factor = (diff - tolerance) / 25;
+                  data[i + 3] = Math.round(a * factor);
+                  modified = true;
+                }
+              }
+            }
+
+            if (modified && isMounted) {
+              ctx.putImageData(imgData, 0, 0);
+              setProcessedImage(canvas.toDataURL('image/png'));
+              return;
+            }
+          }
+        }
+      } catch (e) {
+        // Fallback for CORS or canvas errors
+      }
+      if (isMounted) setProcessedImage(targetSrc);
+    };
+
+    img.onerror = () => {
+      if (isMounted) setProcessedImage(targetSrc);
+    };
+
+    return () => { isMounted = false; };
+  }, [activeImage, product]);
 
   const resolveColorValue = (cVal) => {
     if (!cVal) return '#cbd5e1';
@@ -532,8 +950,10 @@ export default function ProductDetails() {
         setActiveImage(imgs[0]);
       } else if (product.images && product.images.length > 0) {
         setActiveImage(product.images[0]);
+      } else if (product.image) {
+        setActiveImage(product.image);
       } else {
-        setActiveImage('/iphone17p_orange_close.jpg');
+        setActiveImage('');
       }
     }
   }, [selectedColor, product]);
@@ -815,22 +1235,15 @@ export default function ProductDetails() {
   const totalPrice = finalUnitPrice * quantity;
 
   if (!product) {
-    if (loading) {
-      return <Loader message="Loading product details..." />;
-    }
     return (
-      <div className="flex flex-col items-center justify-center p-20 text-slate-400">
-        <ShieldAlert className="h-12 w-12 text-zinc-400 mb-3 animate-bounce" />
-        <h2 className="text-xl font-bold text-zinc-800">Product Not Found</h2>
-        <p className="text-sm text-zinc-550 mt-1">The product you are looking for does not exist in our database.</p>
-        <Link to="/shop" className="mt-6 text-xs font-bold bg-zinc-950 text-white px-5 py-2.5 rounded-xl hover:bg-zinc-850 transition-colors">
-          Explore Products
-        </Link>
+      <div className="page-smooth-enter min-h-[60vh] flex items-center justify-center">
+        <Loader message="Loading product details..." />
       </div>
     );
   }
 
   const handleAddToCart = () => {
+    if (!product) return;
     const colorName = selectedColor?.name || (colors[0]?.name || 'Standard');
     const activeVar = getActiveVariant();
     const partNum = activeVar?.partNumber || product.partNumber || product.modelNumber || '';
@@ -855,7 +1268,7 @@ export default function ProductDetails() {
       id: `${id}-${selectedSize || 'std'}-${selectedStorage || 'std'}-${selectedRam || 'std'}-${glassVal || 'std'}-${selectedAppleCare ? 'ac' : 'noac'}-${colorName}`,
       name: `${cleanProductTitle(product.name || product.title)} (${nameDetails})`,
       price: finalUnitPrice,
-      image: activeImage,
+      image: activeImage || processedImage || colors[0]?.image || product.images?.[0] || product.image,
       quantity,
       size: selectedSize,
       storage: selectedStorage,
@@ -899,10 +1312,6 @@ export default function ProductDetails() {
     const whatsappUrl = `https://wa.me/918607222417?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
   };
-
-  if (loading && !localProduct) {
-    return <Loader message="Loading product details..." />;
-  }
 
   const colorName = selectedColor?.name || (colors[0]?.name || 'Standard');
 
@@ -968,7 +1377,7 @@ export default function ProductDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-[#1D1D1F] font-sans pb-12">
+    <div className="min-h-screen bg-white text-[#1D1D1F] font-sans pb-12 page-smooth-enter">
 
       {/* Dynamic Style Sheet block to inject template layout styles */}
       <style dangerouslySetInnerHTML={{
@@ -987,13 +1396,14 @@ export default function ProductDetails() {
 
         .gallery { position: sticky; top: 90px; align-self: start; }
         .gallery-main {
-          width: 100%; height: 460px; aspect-ratio: 1/1; border-radius: 18px; background: #ffffff;
+          width: 100%; height: 520px; aspect-ratio: 1/1; border-radius: 20px; background: #ffffff;
           display: flex; align-items: center; justify-content: center;
-          border: 1px solid var(--line); overflow: hidden; padding: 20px;
-          transition: background .3s ease;
+          border: 1px solid var(--line); overflow: hidden; padding: 10px;
+          transition: background .3s ease, border-color .3s ease;
         }
         .gallery-main img {
-          max-width: 90%; max-height: 90%; object-fit: contain; width: auto; height: auto; display: block; margin: 0 auto;
+          max-width: 98%; max-height: 98%; width: 95%; height: 95%; object-fit: contain; display: block; margin: 0 auto;
+          transition: opacity 0.35s ease-out, transform 0.35s ease-out;
         }
         .gallery-thumbs { display: flex; gap: 10px; margin-top: 14px; overflow-x: auto; padding-bottom: 4px; }
         .gthumb { width: 64px; height: 64px; shrink: 0; border-radius: 8px; border: 1px solid var(--line); background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; flex-shrink: 0; }
@@ -1108,15 +1518,15 @@ export default function ProductDetails() {
               onMouseLeave={handleGalleryMouseLeave}
             >
               <img
-                src={activeImage || product.images?.[0] || '/iphone17p_orange.jpg'}
-                alt={product.name}
+                src={processedImage || activeImage || colors[0]?.image || product.images?.[0] || product.image || ''}
+                alt={product.name || product.title || ''}
                 className="mix-blend-multiply transition-transform duration-150 ease-out pointer-events-none"
                 style={{
-                  transform: isZoomed ? 'scale(2.4)' : 'scale(1)',
+                  transform: isZoomed ? 'scale(2.4)' : 'scale(1.22)',
                   transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`
                 }}
                 onError={(e) => {
-                  e.currentTarget.src = '/iphone17p_orange.jpg';
+                  e.currentTarget.style.opacity = '0.5';
                 }}
               />
               {isZoomed && (

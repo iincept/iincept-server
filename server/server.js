@@ -63,7 +63,7 @@ app.use("/api/enquiries", enquiryRoutes);
 
 if (require.main === module) {
   const PORT = process.env.PORT || 5088;
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
   });
 }

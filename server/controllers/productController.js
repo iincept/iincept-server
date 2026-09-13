@@ -225,9 +225,13 @@ const getProducts = async (req, res) => {
 
     // 1. Search Filter (title, description, brand, sku, partNumber, modelNumber, variants)
     if (search) {
-      const searchRegex = { $regex: search, $options: "i" };
+      const cleanSearch = search.trim();
+      const normSearch = cleanSearch.replace(/^i(?=[a-z])/i, '');
+      const searchRegex = { $regex: cleanSearch, $options: "i" };
+      const normRegex = { $regex: normSearch, $options: "i" };
       query.$or = [
         { title: searchRegex },
+        { title: normRegex },
         { description: searchRegex },
         { brand: searchRegex },
         { sku: searchRegex },

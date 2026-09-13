@@ -75,12 +75,18 @@ const getSettings = async (req, res) => {
       }
     }
 
-    if (!settings.homeNewArrivals || settings.homeNewArrivals.length === 0) {
-      settings.homeNewArrivals = [
-        { id: '1', productId: '', name: 'iPhone 17 Pro', tagline: 'All out Pro.', price: 'From ₹1,34,900', monthlyPrice: 'or ₹5,621/mo.*', image: '/iphone_nav/iphone_17_pro.png', path: '/iphone', isActive: true },
-        { id: '2', productId: '', name: 'MacBook Neo', tagline: 'Amazing Mac. Surprising price.', price: 'From ₹79,900', monthlyPrice: 'or ₹3,329/mo.*', image: '/mac_nav/macbook_neo.png', path: '/macbook', isActive: true },
-        { id: '3', productId: '', name: 'Apple Watch Series 11', tagline: 'Smarter. Fitter. Brighter.', price: 'From ₹46,900', monthlyPrice: 'or ₹1,954/mo.*', image: '/watch_category_uploaded.png', path: '/watch', isActive: true }
-      ];
+    const defaultArrivals = [
+      { id: '1', productId: '', name: 'iPhone Duo', tagline: 'Hello, hello.', price: 'From ₹2,99,900.00', monthlyPrice: 'or ₹12,495/mo.*', image: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/store-card-40-iphone-duo-202609_GEO_IN?wid=800&hei=1000&fmt=p-jpg&qlt=80', path: '/iphone', isActive: true },
+      { id: '2', productId: '', name: 'iPhone 18 Pro', tagline: 'The ultimate performance and camera of any iPhone, with exceptional battery life.', price: 'From ₹1,64,900.00', monthlyPrice: 'or ₹6,870/mo.*', image: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/store-card-40-iphone-18-pro-202609?wid=800&hei=1000&fmt=p-jpg&qlt=80', path: '/iphone', isDark: true, isActive: true },
+      { id: '3', productId: '', name: 'Apple Watch Series 12', tagline: 'The most accurate heart rate sensing in a wearable.', price: 'From ₹56,900.00', monthlyPrice: 'or ₹2,370/mo.*', image: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/store-card-40-watch-series-12-202609?wid=800&hei=1000&fmt=p-jpg&qlt=80', path: '/watch', isDark: true, isActive: true },
+      { id: '4', productId: '', name: 'Apple Watch Ultra 4', tagline: 'The ultimate sports and adventure watch.', price: 'From ₹89,900.00', monthlyPrice: 'or ₹3,745/mo.*', image: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/store-card-40-watch-ultra-4-202609_GEO_IN?wid=800&hei=1000&fmt=p-jpg&qlt=80', path: '/watch', isDark: true, isActive: true },
+      { id: '5', productId: '', name: 'AirPods 5', tagline: 'Discover the magic of Active Noise Cancellation.', price: 'From ₹14,900.00', monthlyPrice: 'or ₹620/mo.*', image: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/store-card-40-airpods-5-202609?wid=800&hei=1000&fmt=p-jpg&qlt=80', path: '/airpods', isDark: false, isActive: true }
+    ];
+
+    const hasWrongNames = settings.homeNewArrivals && settings.homeNewArrivals.some(i => i.name === 'iPhone 17 Pro' || i.name === 'MacBook Neo' || i.name === 'Apple Watch Series 11');
+    if (!settings.homeNewArrivals || settings.homeNewArrivals.length !== 5 || hasWrongNames) {
+      settings.homeNewArrivals = defaultArrivals;
+      settings.markModified('homeNewArrivals');
       await settings.save();
     }
 

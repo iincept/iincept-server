@@ -11,24 +11,46 @@ export default function CleanProductImage({
   src,
   alt = '',
   className = 'max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 select-none',
-  containerClassName = 'w-full h-64 sm:h-72 bg-[#f5f5f7] rounded-2xl flex items-center justify-center p-6 overflow-hidden relative mb-5 transition-colors duration-300 group-hover:bg-[#f2f2f4]',
+  containerClassName = 'w-full h-64 sm:h-72 bg-white rounded-2xl flex items-center justify-center p-6 overflow-hidden relative mb-5 transition-colors duration-300 group-hover:bg-[#f0f0f2]',
   mixBlend = true,
+  fallbackSrc = '',
 }) {
-  const [processedSrc, setProcessedSrc] = useState(src);
+  const NEUTRAL_PLACEHOLDER = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300" fill="none"><rect width="300" height="300" rx="16" fill="%23f5f5f7"/><path d="M150 120c-16.569 0-30 13.431-30 30s13.431 30 30 30 30-13.431 30-30-13.431-30-30-30z" fill="%23e5e5e7"/></svg>';
+
+  const getSmartFallback = (name, rawSrc) => {
+    if (fallbackSrc) return fallbackSrc;
+    return NEUTRAL_PLACEHOLDER;
+  };
+
+  const sanitizeSrc = (inputSrc) => {
+    if (!inputSrc || typeof inputSrc !== 'string' || inputSrc.trim() === '' || inputSrc.includes('undefined') || inputSrc.includes('null')) {
+      return getSmartFallback(alt, inputSrc);
+    }
+    const trimmed = inputSrc.trim();
+    if (trimmed.startsWith('uploads/')) {
+      return `/${trimmed}`;
+    }
+    return trimmed;
+  };
+
+  const initialSrc = sanitizeSrc(src);
+  const [processedSrc, setProcessedSrc] = useState(initialSrc);
   const [isBlackBg, setIsBlackBg] = useState(false);
+  const [hasFailed, setHasFailed] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
-    if (!src) return;
+    const currentSrc = sanitizeSrc(src);
 
-    // Reset state for new src
-    setProcessedSrc(src);
+    setProcessedSrc(currentSrc);
     setIsBlackBg(false);
+    setHasFailed(false);
 
-    // If it's a data URL or local svg, try processing
+    if (!currentSrc) return;
+
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.src = src;
+    img.src = currentSrc;
 
     img.onload = () => {
       try {
@@ -46,7 +68,6 @@ export default function CleanProductImage({
         const imgData = ctx.getImageData(0, 0, w, h);
         const data = imgData.data;
 
-        // Sample corners and borders to check for solid background box
         const samplePoints = [
           [0, 0],
           [w - 1, 0],
@@ -71,16 +92,12 @@ export default function CleanProductImage({
           }
         });
 
-        if (validSamples === 0) {
-          // Already transparent
-          return;
-        }
+        if (validSamples === 0) return;
 
         bgR = Math.round(bgR / validSamples);
         bgG = Math.round(bgG / validSamples);
         bgB = Math.round(bgB / validSamples);
 
-        // Check corner color uniformity (max color difference among corners)
         let maxDiff = 0;
         samplePoints.forEach(([x, y]) => {
           const idx = (y * w + x) * 4;
@@ -90,13 +107,11 @@ export default function CleanProductImage({
           }
         });
 
-        // Detect if background is solid black or very dark
         const isDark = bgR < 40 && bgG < 40 && bgB < 40;
         if (isDark && isMounted) {
           setIsBlackBg(true);
         }
 
-        // If background color is uniform across all corners (solid background square)
         if (maxDiff < 60) {
           const tolerance = 40;
           let modified = false;
@@ -110,10 +125,9 @@ export default function CleanProductImage({
             if (a > 0) {
               const diff = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
               if (diff <= tolerance) {
-                data[i + 3] = 0; // Set alpha to transparent
+                data[i + 3] = 0;
                 modified = true;
               } else if (diff <= tolerance + 25) {
-                // Soft edge antialiasing
                 const factor = (diff - tolerance) / 25;
                 data[i + 3] = Math.round(a * factor);
                 modified = true;
@@ -128,18 +142,24 @@ export default function CleanProductImage({
           }
         }
       } catch (e) {
-        // Fallback to original image if CORS or canvas errors occur
+        // Ignore canvas error
       }
     };
 
     img.onerror = () => {
-      // Keep original
+      if (isMounted) {
+        const fb = getSmartFallback(alt, currentSrc);
+        if (processedSrc !== fb) {
+          setProcessedSrc(fb);
+          setHasFailed(true);
+        }
+      }
     };
 
     return () => {
       isMounted = false;
     };
-  }, [src]);
+  }, [src, alt]);
 
   return (
     <div className={containerClassName}>
@@ -149,9 +169,11 @@ export default function CleanProductImage({
         className={`${className} ${
           mixBlend && !isBlackBg ? 'mix-blend-multiply' : ''
         }`}
-        onError={(e) => {
-          if (processedSrc !== src) {
-            setProcessedSrc(src);
+        onError={() => {
+          if (!hasFailed) {
+            const fb = getSmartFallback(alt, src);
+            setProcessedSrc(fb);
+            setHasFailed(true);
           }
         }}
       />

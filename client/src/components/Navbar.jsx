@@ -10,6 +10,7 @@ import { fetchProducts } from '../redux/productSlice';
 import { openCart, fetchCart } from '../redux/cartSlice';
 import { fetchWishlist } from '../redux/wishlistSlice';
 import axiosClient from '../services/axiosClient';
+import { subscribeToLiveSync } from '../services/liveSyncService';
 
 const AppleIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -462,9 +463,10 @@ export default function Navbar() {
       title: 'Explore iPhone',
       mainLink: { label: 'Explore All iPhone', path: '/iphone' },
       items: [
+        { label: 'iPhone Duo', path: '/iphone?search=iPhone Duo', query: 'iPhone Duo' },
+        { label: 'iPhone 18 Pro', path: '/iphone?search=iPhone 18 Pro', query: 'iPhone 18 Pro' },
         { label: 'iPhone 17 Pro Max', path: '/iphone?search=iPhone 17 Pro Max', query: 'iPhone 17 Pro Max' },
         { label: 'iPhone 17 Pro', path: '/iphone?search=iPhone 17 Pro', query: 'iPhone 17 Pro' },
-        { label: 'iPhone 17 Air', path: '/iphone?search=iPhone 17 Air', query: 'iPhone 17 Air' },
         { label: 'iPhone 17', path: '/iphone?search=iPhone 17', query: 'iPhone 17' },
         { label: 'iPhone 17e', path: '/iphone?search=iPhone 17e', query: 'iPhone 17e' },
         { label: 'iPhone 16', path: '/iphone?search=iPhone 16', query: 'iPhone 16' },
@@ -598,6 +600,8 @@ export default function Navbar() {
         else img = '/ipad_nav/dropdown_ipad.png';
       } else if (catKey === 'iphone' || combinedStr.includes('iphone')) {
         if (combinedStr.includes('applecare')) img = '/applecare_official_hero.png';
+        else if (combinedStr.includes('duo')) img = '/iphone_nav/dropdown_iphone_duo.png';
+        else if (combinedStr.includes('18')) img = '/iphone_nav/dropdown_iphone_18_pro.jpg';
         else if (combinedStr.includes('pro')) img = '/iphone_nav/dropdown_iphone_17_pro.png';
         else if (combinedStr.includes('air')) img = '/iphone_nav/dropdown_iphone_air.png';
         else if (combinedStr.includes('17e')) img = '/iphone_nav/dropdown_iphone_17e.png';
@@ -899,6 +903,11 @@ export default function Navbar() {
 
     // iPhone
     'Explore All iPhone': { name: 'iPhone Catalogue', price: 'Compare all models', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/iphone/home-img-1776683084_2967.png' },
+    'iPhone Duo': { name: 'iPhone Duo', price: 'The Foldable Revolution. From ₹2,99,900', image: '/iphone_nav/dropdown_iphone_duo.png' },
+    'Iphone Duo': { name: 'iPhone Duo', price: 'The Foldable Revolution. From ₹2,99,900', image: '/iphone_nav/dropdown_iphone_duo.png' },
+    'iPhone 18 Pro Max': { name: 'iPhone 18 Pro Max', price: 'Crimson Titanium. From ₹1,64,900', image: '/iphone_nav/dropdown_iphone_18_pro.jpg' },
+    'iPhone 18 Pro': { name: 'iPhone 18 Pro', price: 'Crimson Titanium. From ₹1,44,900', image: '/iphone_nav/dropdown_iphone_18_pro.jpg' },
+    'Iphone 18 pro': { name: 'iPhone 18 Pro', price: 'Crimson Titanium. From ₹1,44,900', image: '/iphone_nav/dropdown_iphone_18_pro.jpg' },
     'iPhone 17 Pro Max': { name: 'iPhone 17 Pro Max', price: 'Peak Performance. From ₹1,64,900', image: '/iphone_category_v2.jpg' },
     'iPhone 17 Pro': { name: 'iPhone 17 Pro', price: 'Titanium Build. From ₹1,34,900', image: '/iphone_category_v2.jpg' },
     'iPhone 17': { name: 'iPhone 17', price: 'Sleek & Durable. From ₹79,900', image: '/iphone_nav/dropdown_iphone_17.png' },
@@ -947,7 +956,7 @@ export default function Navbar() {
               src={hoveredProduct.image}
               alt={hoveredProduct.name || 'Preview'}
               className="w-full h-full object-cover p-0 transition-transform duration-500 hover:scale-105"
-              style={{ mixBlendMode: 'multiply', objectPosition: 'center' }}
+              style={{ mixBlendMode: hoveredProduct.image?.includes('18_pro') ? 'normal' : 'multiply', objectPosition: 'center' }}
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = '/macbook_category_v3.jpg';
@@ -963,11 +972,18 @@ export default function Navbar() {
     );
   };
 
+
+
   const [dynamicNavItems, setDynamicNavItems] = useState(null);
 
   useEffect(() => {
     fetchHeaderCategories();
-  }, []);
+    const unsubscribe = subscribeToLiveSync(() => {
+      fetchHeaderCategories();
+      dispatch(fetchProducts());
+    });
+    return () => unsubscribe();
+  }, [dispatch]);
 
   const fetchHeaderCategories = async () => {
     try {
@@ -1152,12 +1168,11 @@ export default function Navbar() {
             {/* Left: Logo */}
             <Link to="/" className="flex items-center shrink-0 group pl-1 py-1">
               <img 
-                src="/iincept_logo.svg" 
+                src="/iincept_navbar_logo.png" 
                 alt="iiNCEPT" 
-                className="h-10 sm:h-11 md:h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-105" 
+                className="h-8 sm:h-9 md:h-10 w-auto object-contain transition-transform duration-200 group-hover:scale-105" 
                 style={{
-                  mixBlendMode: 'multiply',
-                  filter: isIphonePage ? 'none' : 'brightness(1.05) contrast(1.05)'
+                  mixBlendMode: 'multiply'
                 }}
               />
             </Link>

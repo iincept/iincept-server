@@ -87,7 +87,7 @@ const settingSchema = new mongoose.Schema(
     },
     dealImage: {
       type: String,
-      default: "/mac_nav/macbook_neo.png",
+      default: "/mac_deal_fan.png",
     },
     homeCategoryIcons: [
       {

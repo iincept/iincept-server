@@ -91,9 +91,10 @@ export default function NavbarManager() {
             isActive: true,
             dropdownItems: [
               { label: 'Explore All iPhone', path: '/iphone', query: 'iPhone', image: '/iphone_category_v2.jpg', price: 'iPhone Catalogue', isActive: true },
+              { label: 'iPhone Duo', path: '/iphone?search=iPhone Duo', query: 'iPhone Duo', image: '/iphone_nav/dropdown_iphone_duo.png', price: 'The Foldable. From ₹2,99,900', isActive: true },
+              { label: 'iPhone 18 Pro', path: '/iphone?search=iPhone 18 Pro', query: 'iPhone 18 Pro', image: '/iphone_nav/dropdown_iphone_18_pro.jpg', price: 'Crimson Titanium. From ₹1,44,900', isActive: true },
               { label: 'iPhone 17 Pro Max', path: '/iphone?search=iPhone 17 Pro Max', query: 'iPhone 17 Pro Max', image: '/iphone17p_orange.jpg', price: 'Peak Performance. From ₹1,64,900', isActive: true },
               { label: 'iPhone 17 Pro', path: '/iphone?search=iPhone 17 Pro', query: 'iPhone 17 Pro', image: '/iphone17p_white.jpg', price: 'Titanium Build. From ₹1,34,900', isActive: true },
-              { label: 'iPhone 17 Air', path: '/iphone?search=iPhone 17 Air', query: 'iPhone 17 Air', image: '/iphone17_green.jpg', price: 'Ultra Thin Design', isActive: true },
               { label: 'iPhone 17', path: '/iphone?search=iPhone 17', query: 'iPhone 17', image: '/iphone17_green.jpg', price: 'Sleek & Durable. From ₹79,900', isActive: true },
               { label: 'iPhone 17e', path: '/iphone?search=iPhone 17e', query: 'iPhone 17e', image: '/iphone17_green.jpg', price: 'Essential Performance', isActive: true },
               { label: 'iPhone 16', path: '/iphone?search=iPhone 16', query: 'iPhone 16', image: '/iphone_category_uploaded.jpg', price: 'Proven Classic. From ₹69,900', isActive: true },
