@@ -963,7 +963,7 @@ export default function Navbar() {
             <img
               src={hoveredProduct.image}
               alt={hoveredProduct.name || 'Preview'}
-              className={isSeries12 ? "max-w-[60%] max-h-[60%] object-contain transition-transform duration-500 hover:scale-105 select-none" : "w-full h-full object-cover p-0 transition-transform duration-500 hover:scale-105"}
+              className={isSeries12 ? "max-w-[80%] max-h-[80%] object-contain transition-transform duration-500 hover:scale-105 select-none p-2" : "w-full h-full object-cover p-0 transition-transform duration-500 hover:scale-105"}
               style={{ mixBlendMode: (hoveredProduct.image?.includes('18_pro') || isSeries12) ? 'normal' : 'multiply', objectPosition: 'center' }}
               onError={(e) => {
                 e.currentTarget.onerror = null;
