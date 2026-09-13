@@ -954,6 +954,8 @@ export default function Navbar() {
   };
 
   const renderProductPreview = () => {
+    const isSeries12 = (hoveredProduct?.name || '').includes('Series 12') || (hoveredProduct?.image || '').includes('series_12');
+
     return (
       <div className="hidden md:flex md:col-span-6 pl-4 flex-col text-left shrink-0 justify-center items-center">
         {hoveredProduct ? (
@@ -961,8 +963,8 @@ export default function Navbar() {
             <img
               src={hoveredProduct.image}
               alt={hoveredProduct.name || 'Preview'}
-              className="w-full h-full object-cover p-0 transition-transform duration-500 hover:scale-105"
-              style={{ mixBlendMode: hoveredProduct.image?.includes('18_pro') ? 'normal' : 'multiply', objectPosition: 'center' }}
+              className={isSeries12 ? "max-w-[60%] max-h-[60%] object-contain transition-transform duration-500 hover:scale-105 select-none" : "w-full h-full object-cover p-0 transition-transform duration-500 hover:scale-105"}
+              style={{ mixBlendMode: (hoveredProduct.image?.includes('18_pro') || isSeries12) ? 'normal' : 'multiply', objectPosition: 'center' }}
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = '/macbook_category_v3.jpg';
