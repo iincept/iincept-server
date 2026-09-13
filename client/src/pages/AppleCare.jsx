@@ -1321,13 +1321,13 @@ export default function AppleCare() {
 
       {/* Pricing Modal Overlay for All Models */}
       {isPricingModalOpen && (
-        <div className="modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 pt-4 sm:pt-8 pb-4 bg-black/60 backdrop-blur-md sm:backdrop-blur-lg animate-in fade-in duration-200" role="dialog" aria-modal="true">
-          <div className="modal-content-container bg-white rounded-[24px] sm:rounded-[30px] max-w-xl sm:max-w-2xl md:max-w-3xl w-full h-[92vh] max-h-[94vh] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-6 sm:p-10 md:p-12 pt-6 sm:pt-8 relative shadow-2xl space-y-8 animate-in zoom-in-95 duration-200 text-left mt-0">
+        <div className="modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 pt-4 sm:pt-8 pb-4 bg-black/60 backdrop-blur-md sm:backdrop-blur-lg animate-in fade-in duration-200" role="dialog" aria-modal="true">
+          <div className="modal-content-container bg-white rounded-[24px] sm:rounded-[32px] max-w-3xl lg:max-w-4xl xl:max-w-5xl w-full h-[90vh] max-h-[92vh] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-6 sm:p-10 md:p-14 pt-6 sm:pt-8 relative shadow-2xl space-y-8 animate-in zoom-in-95 duration-200 text-left mt-0">
 
             {/* Close Button matching official Apple SVG */}
             <button
               onClick={() => setIsPricingModalOpen(false)}
-              className="modal-close-button absolute top-5 right-5 sm:top-7 sm:right-7 w-9 h-9 rounded-full bg-[#E8E8ED] hover:bg-[#D2D2D7] text-[#1D1D1F] flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 z-20"
+              className="modal-close-button absolute top-5 right-5 sm:top-7 sm:right-7 w-10 h-10 rounded-full bg-[#E8E8ED] hover:bg-[#D2D2D7] text-[#1D1D1F] flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 z-20"
               aria-label="Close"
             >
               <span className="modal-close-icon w-4 h-4 text-[#1D1D1F]">
@@ -1360,44 +1360,44 @@ export default function AppleCare() {
             </h2>
 
             {/* Modal Tables Container */}
-            <div className="space-y-12 pt-2">
+            <div className="space-y-12 pt-2 w-full">
 
               {/* Table 1: AppleCare+ with Theft and Loss */}
               {(selectedCategory === 'iPhone' || !['Mac', 'Display', 'TV', 'HomePod', 'Watch', 'AirPods'].includes(selectedCategory)) && (
-                <div className="container space-y-2 max-w-[540px]">
+                <div className="container space-y-2 max-w-full w-full">
                   <div className="table flex flex-col w-full">
                     <div className="flex items-center w-full mb-1">
                       <div className="flex-1"></div>
-                      <div className="w-28 sm:w-32 text-right pr-0">
+                      <div className="w-36 sm:w-44 text-right pr-0">
                         <p className="header font-semibold text-sm sm:text-base text-[#FF2D55] leading-tight whitespace-nowrap">
                           AppleCare+ with Theft and Loss
                         </p>
                       </div>
                     </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-sm sm:text-base border-collapse">
+                    <div className="overflow-x-auto w-full">
+                      <table className="w-full text-left text-base sm:text-lg border-collapse">
                         <thead>
                           <tr className="text-[#1D1D1F] border-b border-[#D2D2D7]/70">
-                            <th className="py-2.5 font-bold text-left pr-4">Models</th>
-                            <th className="py-2.5 font-bold text-right pl-2 sm:pl-4 pr-0 w-28 sm:w-32">Annually</th>
+                            <th className="py-3 font-bold text-left pr-4">Models</th>
+                            <th className="py-3 font-bold text-right pl-2 sm:pl-4 pr-0 w-36 sm:w-44">Annually</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#E8E8ED] text-[#1D1D1F]">
                           <tr>
-                            <td className="py-3.5 font-medium text-[#1D1D1F] pr-4">iPhone 17e</td>
-                            <td className="py-3.5 text-right font-normal pl-2 sm:pl-4 pr-0">₹9999.00</td>
+                            <td className="py-4 font-medium text-[#1D1D1F] pr-4">iPhone 17e</td>
+                            <td className="py-4 text-right font-normal pl-2 sm:pl-4 pr-0">₹9999.00</td>
                           </tr>
                           <tr>
-                            <td className="py-3.5 font-medium text-[#1D1D1F] pr-4">iPhone 17, iPhone 16</td>
-                            <td className="py-3.5 text-right font-normal pl-2 sm:pl-4 pr-0">₹11499.00</td>
+                            <td className="py-4 font-medium text-[#1D1D1F] pr-4">iPhone 17, iPhone 16</td>
+                            <td className="py-4 text-right font-normal pl-2 sm:pl-4 pr-0">₹11499.00</td>
                           </tr>
                           <tr>
-                            <td className="py-3.5 font-medium text-[#1D1D1F] pr-4">iPhone 16 Plus</td>
-                            <td className="py-3.5 text-right font-normal pl-2 sm:pl-4 pr-0">₹12999.00</td>
+                            <td className="py-4 font-medium text-[#1D1D1F] pr-4">iPhone 16 Plus</td>
+                            <td className="py-4 text-right font-normal pl-2 sm:pl-4 pr-0">₹12999.00</td>
                           </tr>
                           <tr>
-                            <td className="py-3.5 font-medium text-[#1D1D1F] pr-4">iPhone Air, iPhone 17 Pro, iPhone 17 Pro Max</td>
-                            <td className="py-3.5 text-right font-normal pl-2 sm:pl-4 pr-0">₹14499.00</td>
+                            <td className="py-4 font-medium text-[#1D1D1F] pr-4">iPhone Air, iPhone 17 Pro, iPhone 17 Pro Max</td>
+                            <td className="py-4 text-right font-normal pl-2 sm:pl-4 pr-0">₹14499.00</td>
                           </tr>
                         </tbody>
                       </table>
@@ -1407,22 +1407,22 @@ export default function AppleCare() {
               )}
 
               {/* Table 2: Standard AppleCare+ */}
-              <div className="container space-y-2 max-w-[540px]">
+              <div className="container space-y-2 max-w-full w-full">
                 <div className="table flex flex-col w-full">
                   <div className="flex items-center w-full mb-1">
                     <div className="flex-1"></div>
-                    <div className="w-28 sm:w-32 text-right pr-0">
+                    <div className="w-36 sm:w-44 text-right pr-0">
                       <p className="header font-semibold text-sm sm:text-base text-[#FF2D55] whitespace-nowrap">
                         AppleCare+
                       </p>
                     </div>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm sm:text-base border-collapse">
+                  <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left text-base sm:text-lg border-collapse">
                       <thead>
                         <tr className="text-[#1D1D1F] border-b border-[#D2D2D7]/70">
-                          <th className="py-2.5 font-bold text-left pr-4">Models</th>
-                          <th className="py-2.5 font-bold text-right pl-2 sm:pl-4 pr-0 w-28 sm:w-32">
+                          <th className="py-3 font-bold text-left pr-4">Models</th>
+                          <th className="py-3 font-bold text-right pl-2 sm:pl-4 pr-0 w-36 sm:w-44">
                             {selectedCategory === 'Mac' || selectedCategory === 'TV' || selectedCategory === 'Display' ? '3 years' : '2 years'}
                           </th>
                         </tr>
