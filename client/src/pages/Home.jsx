@@ -157,14 +157,14 @@ export default function Home() {
       }
     } catch (e) { }
     return [
-      { name: 'Mac', actionText: 'Shop all models →', link: '/macbook', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/mac/home-img-1776683069_8064.png', icon: '💻' },
-      { name: 'iPhone', actionText: 'Shop all models →', link: '/iphone', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/iphone/home-img-1776683084_2967.png', icon: '📱' },
-      { name: 'iPad', actionText: 'Shop all models →', link: '/ipad', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/ipad/home-img-1776683096_1014.png', icon: '📱' },
-      { name: 'Watch', actionText: 'Shop all models →', link: '/watch', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/watch/home-img-1757682221_3904.jpg', icon: '⌚' },
-      { name: 'AirPods', actionText: 'Shop all models →', link: '/airpods', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/music/home-img-1757682200_3577.jpg', icon: '🎧' },
-      { name: 'TV & Home', actionText: 'Shop all models →', link: '/tv-home', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/tv/home-img-1694070636_757.png', icon: '📺' },
-      { name: 'Accessories', actionText: 'Shop all models →', link: '/accessories', image: '/accessories_category.png', icon: '🔌' },
-      { name: 'AppleCare+', actionText: 'Explore coverage →', link: '/applecare', image: '/applecare_official_hero.png', icon: '🛡️' },
+      { name: 'Mac', startingPrice: '₹89,900', actionText: 'Shop all models →', link: '/macbook', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/mac/home-img-1776683069_8064.png', icon: '💻' },
+      { name: 'iPhone', startingPrice: '₹59,900', actionText: 'Shop all models →', link: '/iphone', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/iphone/home-img-1776683084_2967.png', icon: '📱' },
+      { name: 'iPad', startingPrice: '₹34,900', actionText: 'Shop all models →', link: '/ipad', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/ipad/home-img-1776683096_1014.png', icon: '📱' },
+      { name: 'Watch', startingPrice: '₹29,900', actionText: 'Shop all models →', link: '/watch', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/watch/home-img-1757682221_3904.jpg', icon: '⌚' },
+      { name: 'AirPods', startingPrice: '₹12,900', actionText: 'Shop all models →', link: '/airpods', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/music/home-img-1757682200_3577.jpg', icon: '🎧' },
+      { name: 'TV & Home', startingPrice: '₹14,900', actionText: 'Shop all models →', link: '/tv-home', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/tv/home-img-1694070636_757.png', icon: '📺' },
+      { name: 'Accessories', startingPrice: '₹1,900', actionText: 'Shop all models →', link: '/accessories', image: '/accessories_category.png', icon: '🔌' },
+      { name: 'AppleCare+', startingPrice: '₹2,900', actionText: 'Explore coverage →', link: '/applecare', image: '/applecare_official_hero.png', icon: '🛡️' },
     ];
   });
 
@@ -1162,38 +1162,66 @@ export default function Home() {
           background: #ffffff;
           border-radius: 24px;
           overflow: hidden;
-          text-align: center;
-          transition: box-shadow 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+          text-align: left;
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
           cursor: pointer;
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
           text-decoration: none;
-          border: 1px solid rgba(0, 0, 0, 0.05);
+          border: 1px solid rgba(0, 0, 0, 0.08);
           display: flex;
           flex-direction: column;
+          justify-content: space-between;
         }
 
         .indiaistore-theme .category-card:hover {
-          box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+          transform: translateY(-4px);
+          box-shadow: 0 14px 36px rgba(0, 0, 0, 0.1);
+        }
+
+        .indiaistore-theme .category-card-body {
+          padding: 22px 24px 18px;
+          background: #ffffff;
+        }
+
+        .indiaistore-theme .category-card-eyebrow {
+          font-size: 13px;
+          font-weight: 600;
+          color: #e05600;
+          letter-spacing: 0.02em;
+          margin-bottom: 6px;
+        }
+
+        .indiaistore-theme .category-card-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: #1d1d1f;
+          line-height: 1.25;
+          letter-spacing: -0.01em;
+        }
+
+        .indiaistore-theme .category-card-title .text-primary {
+          color: #0066cc;
+          font-weight: 700;
         }
 
         .indiaistore-theme .category-icon {
           width: 100%;
-          height: 240px;
+          height: 220px;
           margin: 0;
-          background: #ffffff;
+          background: #f5f5f7;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 44px;
           overflow: hidden;
           padding: 24px 20px;
-          border-top-left-radius: 24px;
-          border-top-right-radius: 24px;
-          transition: background-color 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+          border-bottom-left-radius: 24px;
+          border-bottom-right-radius: 24px;
+          transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .indiaistore-theme .category-card:hover .category-icon {
-          background: #e5e5ea;
+          background: #ebebeb;
         }
 
         .indiaistore-theme .category-icon img {
@@ -1203,7 +1231,7 @@ export default function Home() {
           height: auto;
           object-fit: contain;
           mix-blend-mode: multiply;
-          transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), filter 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
           transform-style: preserve-3d;
@@ -1225,19 +1253,6 @@ export default function Home() {
           filter: brightness(1.02);
         }
 
-        .indiaistore-theme .category-name-strip {
-          background: #f8f8fa;
-          padding: 16px 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-bottom-left-radius: 24px;
-          border-bottom-right-radius: 24px;
-          border-top: 1px solid rgba(0, 0, 0, 0.03);
-        }
-
-        .indiaistore-theme .category-name {
-          font-size: 20px;
           font-weight: 700;
           letter-spacing: -0.3px;
           color: #1d1d1f;
@@ -2245,8 +2260,24 @@ export default function Home() {
           <div className="category-grid">
             {appleCategories.map((cat, idx) => {
               const displayImg = (cat.image || '').trim();
+              const displayPrice = cat.startingPrice || cat.price || (cat.name === 'Mac' ? '₹89,900' : cat.name === 'iPhone' ? '₹59,900' : cat.name === 'iPad' ? '₹34,900' : cat.name === 'Watch' ? '₹29,900' : cat.name === 'AirPods' ? '₹12,900' : cat.name === 'TV & Home' ? '₹14,900' : cat.name === 'Accessories' ? '₹1,900' : cat.name === 'AppleCare+' ? '₹2,900' : '');
+
               return (
                 <Link key={idx} to={cat.link || '/shop'} className="category-card">
+                  <div className="category-card-body">
+                    <div className="category-card-eyebrow">{cat.name}</div>
+                    <div className="category-card-title">
+                      {displayPrice ? (
+                        <>
+                          Starting at <span className="text-primary">{displayPrice}</span>
+                        </>
+                      ) : (
+                        <>
+                          Explore <span className="text-primary">{cat.name}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
                   <div className="category-icon">
                     {displayImg ? (
                       <img
@@ -2258,9 +2289,6 @@ export default function Home() {
                     ) : (
                       <span>{cat.icon || '📱'}</span>
                     )}
-                  </div>
-                  <div className="category-name-strip">
-                    <div className="category-name">{cat.name}</div>
                   </div>
                 </Link>
               );
