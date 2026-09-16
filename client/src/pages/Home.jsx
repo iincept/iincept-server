@@ -1863,7 +1863,7 @@ export default function Home() {
           .indiaistore-theme .hero-banner { height: 440px; }
           .indiaistore-theme .hero-banner h1 { font-size: 32px; }
           .indiaistore-theme .section { padding: 36px 16px; }
-          .indiaistore-theme .section-title { font-size: 24px; text-align: left; }
+          .indiaistore-theme .section-title { font-size: 24px; text-align: center; }
           
           .indiaistore-theme .new-arrivals-header,
           .indiaistore-theme .trending-header,
@@ -1871,8 +1871,8 @@ export default function Home() {
             display: flex !important;
             flex-direction: row !important;
             align-items: center !important;
-            justify-content: space-between !important;
-            text-align: left !important;
+            justify-content: center !important;
+            text-align: center !important;
             position: relative;
             margin-bottom: 20px;
             width: 100%;
@@ -1881,21 +1881,15 @@ export default function Home() {
           .indiaistore-theme .new-arrivals-header .section-title,
           .indiaistore-theme .trending-header .section-title,
           .indiaistore-theme .testimonials-section .section-title {
-            margin: 0 !important;
-            text-align: left !important;
+            margin: 0 auto !important;
+            text-align: center !important;
             font-size: 24px;
           }
 
           .indiaistore-theme .new-arrivals-header .slider-nav-btns,
           .indiaistore-theme .trending-header .slider-nav-btns,
           .indiaistore-theme .testimonials-section .slider-nav-btns {
-            position: static !important;
-            transform: none !important;
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            gap: 8px !important;
-            flex-shrink: 0 !important;
+            display: none !important;
           }
 
           .indiaistore-theme .slider-circle-btn {
