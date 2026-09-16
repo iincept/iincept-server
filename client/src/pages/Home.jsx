@@ -1150,12 +1150,12 @@ export default function Home() {
           padding: 64px 22px;
         }
 
-        .indiaistore-theme .categories-inner { max-width: 1200px; margin: 0 auto; }
+        .indiaistore-theme .categories-inner { max-width: 1340px; margin: 0 auto; }
 
         .indiaistore-theme .category-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 24px;
+          gap: 28px;
         }
 
         .indiaistore-theme .category-card {
@@ -1179,12 +1179,12 @@ export default function Home() {
         }
 
         .indiaistore-theme .category-card-body {
-          padding: 22px 24px 18px;
+          padding: 24px 26px 18px;
           background: #ffffff;
         }
 
         .indiaistore-theme .category-card-eyebrow {
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 600;
           color: #e05600;
           letter-spacing: 0.02em;
@@ -1192,7 +1192,7 @@ export default function Home() {
         }
 
         .indiaistore-theme .category-card-title {
-          font-size: 20px;
+          font-size: 22px;
           font-weight: 700;
           color: #1d1d1f;
           line-height: 1.25;
@@ -1206,15 +1206,15 @@ export default function Home() {
 
         .indiaistore-theme .category-icon {
           width: 100%;
-          height: 220px;
+          height: 260px;
           margin: 0;
           background: #f5f5f7;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 44px;
+          font-size: 48px;
           overflow: hidden;
-          padding: 24px 20px;
+          padding: 26px 22px;
           border-bottom-left-radius: 24px;
           border-bottom-right-radius: 24px;
           transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1937,7 +1937,11 @@ export default function Home() {
             padding: 6px 2px 16px;
           }
 
-          .indiaistore-theme .category-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+          .indiaistore-theme .category-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+          .indiaistore-theme .category-card-body { padding: 16px 16px 12px; }
+          .indiaistore-theme .category-card-eyebrow { font-size: 12px; }
+          .indiaistore-theme .category-card-title { font-size: 17px; }
+          .indiaistore-theme .category-icon { height: 180px; padding: 16px 12px; }
           .indiaistore-theme .testimonials-grid { grid-template-columns: 1fr; }
           .indiaistore-theme .form-row { grid-template-columns: 1fr; }
           .indiaistore-theme .category-strip-inner { justify-content: flex-start; }
