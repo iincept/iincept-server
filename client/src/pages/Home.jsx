@@ -26,6 +26,14 @@ export default function Home() {
   const testimonialSliderRef = useRef(null);
   const newArrivalsSliderRef = useRef(null);
   const trendingSliderRef = useRef(null);
+  const categoryStripRef = useRef(null);
+
+  const scrollCategoryStrip = (direction) => {
+    if (categoryStripRef.current) {
+      const scrollAmount = direction === 'left' ? -260 : 260;
+      categoryStripRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   const scrollNewArrivals = (direction) => {
     if (newArrivalsSliderRef.current) {
@@ -574,13 +582,32 @@ export default function Home() {
           border: 1px solid rgba(255,255,255,0.12);
         }
 
-        /* ========== CATEGORY STRIP (Apple Store style) ========== */
+        /* ========== CATEGORY STRIP (Apple Store style with side arrows) ========== */
+        .indiaistore-theme .category-strip-wrapper {
+          position: relative;
+          width: 100%;
+          background: #ffffff;
+          display: flex;
+          align-items: center;
+          border-bottom: none;
+        }
+
         .indiaistore-theme .category-strip {
-          background: var(--white);
-          border-bottom: 1px solid var(--border);
-          padding: 28px 0 24px;
+          background: #ffffff;
+          border-bottom: none;
+          padding: 24px 0 20px;
           overflow-x: auto;
+          scroll-behavior: smooth;
           -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+          width: 100%;
+        }
+
+        .indiaistore-theme .category-strip::-webkit-scrollbar {
+          display: none;
+          width: 0;
+          height: 0;
         }
 
         .indiaistore-theme .category-strip-inner {
@@ -589,8 +616,42 @@ export default function Home() {
           display: flex;
           justify-content: center;
           gap: 8px;
-          padding: 0 22px;
+          padding: 0 44px;
           min-width: max-content;
+        }
+
+        .indiaistore-theme .category-strip-arrow {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 10;
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.94);
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          outline: none;
+          color: #1d1d1f;
+        }
+
+        .indiaistore-theme .category-strip-arrow:hover {
+          background: #ffffff;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+          transform: translateY(-50%) scale(1.08);
+        }
+
+        .indiaistore-theme .category-strip-arrow-left {
+          left: 10px;
+        }
+
+        .indiaistore-theme .category-strip-arrow-right {
+          right: 10px;
         }
 
         .indiaistore-theme .strip-item {
@@ -1919,38 +1980,64 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 2. CATEGORY STRIP (Apple.com/store Style) */}
-      <div className="category-strip">
-        <div className="category-strip-inner">
-          {categoryStrip.map((rawItem, idx) => {
-            const item = sanitizeCategoryItem(rawItem);
-            if (!item) return null;
-            const hasImg = Boolean(item.image && item.image.trim());
-            return (
-              <Link key={idx} to={item.path || '/shop'} className="strip-item">
-                <div className="strip-icon">
-                  {hasImg ? (
-                    <img
-                      src={item.image.trim().startsWith('/') || item.image.trim().startsWith('http') ? item.image.trim() : '/' + item.image.trim()}
-                      alt={item.label || item.name}
-                      className={`w-full h-full object-contain ${ (item.name || item.label || '').toLowerCase().includes('tv') ? 'strip-img-appletv' : 'p-1' }`}
-                      onError={(e) => {
-                        const key = item.name || item.label;
-                        const fb = DEFAULT_CATEGORY_IMAGES[key] || '/macbook_category_uploaded.png';
-                        if (e.currentTarget.src !== window.location.origin + fb && e.currentTarget.src !== fb) {
-                          e.currentTarget.src = fb;
-                        }
-                      }}
-                    />
-                  ) : (
-                    <span>{item.icon || '📱'}</span>
-                  )}
-                </div>
-                <div className="strip-name">{item.label || item.name}</div>
-              </Link>
-            );
-          })}
+      {/* 2. CATEGORY STRIP (Apple.com/store Style with side navigation arrows) */}
+      <div className="category-strip-wrapper">
+        <button
+          type="button"
+          className="category-strip-arrow category-strip-arrow-left"
+          onClick={() => scrollCategoryStrip('left')}
+          title="Previous Categories"
+          aria-label="Previous Categories"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+
+        <div className="category-strip" ref={categoryStripRef}>
+          <div className="category-strip-inner">
+            {categoryStrip.map((rawItem, idx) => {
+              const item = sanitizeCategoryItem(rawItem);
+              if (!item) return null;
+              const hasImg = Boolean(item.image && item.image.trim());
+              return (
+                <Link key={idx} to={item.path || '/shop'} className="strip-item">
+                  <div className="strip-icon">
+                    {hasImg ? (
+                      <img
+                        src={item.image.trim().startsWith('/') || item.image.trim().startsWith('http') ? item.image.trim() : '/' + item.image.trim()}
+                        alt={item.label || item.name}
+                        className={`w-full h-full object-contain ${ (item.name || item.label || '').toLowerCase().includes('tv') ? 'strip-img-appletv' : 'p-1' }`}
+                        onError={(e) => {
+                          const key = item.name || item.label;
+                          const fb = DEFAULT_CATEGORY_IMAGES[key] || '/macbook_category_uploaded.png';
+                          if (e.currentTarget.src !== window.location.origin + fb && e.currentTarget.src !== fb) {
+                            e.currentTarget.src = fb;
+                          }
+                        }}
+                      />
+                    ) : (
+                      <span>{item.icon || '📱'}</span>
+                    )}
+                  </div>
+                  <div className="strip-name">{item.label || item.name}</div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
+
+        <button
+          type="button"
+          className="category-strip-arrow category-strip-arrow-right"
+          onClick={() => scrollCategoryStrip('right')}
+          title="Next Categories"
+          aria-label="Next Categories"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
       </div>
 
       {/* 3. NEW ARRIVALS SLIDER */}
