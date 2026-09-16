@@ -113,7 +113,7 @@ export default function Dashboard() {
 
         {/* Out of Stock Items */}
         <div 
-          onClick={() => navigate('/dashboard/products')}
+          onClick={() => navigate('/admin/products')}
           className="bg-white rounded-3xl p-6 border border-zinc-150 shadow-sm flex items-center justify-between cursor-pointer hover:bg-zinc-50 transition-colors"
         >
           <div>
@@ -129,7 +129,7 @@ export default function Dashboard() {
 
         {/* Low Stock Items */}
         <div 
-          onClick={() => navigate('/dashboard/products')}
+          onClick={() => navigate('/admin/products')}
           className="bg-white rounded-3xl p-6 border border-zinc-150 shadow-sm flex items-center justify-between cursor-pointer hover:bg-zinc-50 transition-colors"
         >
           <div>
@@ -151,7 +151,7 @@ export default function Dashboard() {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
           <button
-            onClick={() => navigate('/dashboard/products')}
+            onClick={() => navigate('/admin/products')}
             className="flex items-center gap-4 p-5 rounded-2xl bg-zinc-50 hover:bg-zinc-100/70 border border-zinc-100 hover:border-zinc-200 transition-all text-left cursor-pointer group"
           >
             <div className="h-11 w-11 rounded-xl bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center">
@@ -164,7 +164,7 @@ export default function Dashboard() {
           </button>
 
           <button
-            onClick={() => navigate('/dashboard/categories')}
+            onClick={() => navigate('/admin/categories')}
             className="flex items-center gap-4 p-5 rounded-2xl bg-zinc-50 hover:bg-zinc-100/70 border border-zinc-100 hover:border-zinc-200 transition-all text-left cursor-pointer group"
           >
             <div className="h-11 w-11 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">

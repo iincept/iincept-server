@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Check, ShieldAlert, Loader2, Info } from 'lucide-react';
+import { RefreshCw, Check, X, ShieldAlert, Loader2, Info } from 'lucide-react';
 import axiosClient from '../../services/axiosClient';
 
 export default function Returns() {
@@ -47,7 +47,7 @@ export default function Returns() {
   return (
     <div className="space-y-6 text-left">
       {success && (
-        <div className="fixed bottom-6 right-6 bg-zinc-900 text-white py-3.5 px-5 rounded-2xl shadow-xl flex items-center gap-3 border border-zinc-800 z-50">
+        <div className="fixed bottom-6 right-6 bg-zinc-900 text-white py-3.5 px-5 rounded-2xl shadow-xl flex items-center gap-3 border border-zinc-800 animate-in fade-in slide-in-from-bottom-5 duration-300 z-50">
           <Check className="h-5 w-5 text-emerald-400" />
           <span className="text-sm font-medium">{success}</span>
         </div>
@@ -55,7 +55,7 @@ export default function Returns() {
 
       <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold font-sans tracking-tight text-zinc-900">Return &amp; Refund Requests</h1>
+          <h1 className="text-2xl font-bold font-sans tracking-tight text-zinc-900">Return & Refund Requests</h1>
           <p className="text-zinc-500 mt-1 text-sm">Review, reject, approve product returns or issue refunds.</p>
         </div>
         <button
@@ -95,7 +95,7 @@ export default function Returns() {
                 <tr className="bg-zinc-50 text-zinc-500 uppercase text-[10px] tracking-widest font-extrabold border-b border-zinc-100">
                   <th className="py-4 px-6">Customer</th>
                   <th className="py-4 px-6">Order Details</th>
-                  <th className="py-4 px-6">Reason &amp; Comment</th>
+                  <th className="py-4 px-6">Reason & Comment</th>
                   <th className="py-4 px-6">Status</th>
                   <th className="py-4 px-6 text-right">Actions</th>
                 </tr>
@@ -145,7 +145,7 @@ export default function Returns() {
                             <button
                               onClick={() => handleUpdateReturnStatus(req._id, 'Refunded')}
                               disabled={updatingId === req._id}
-                              className="px-2.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-[10px] rounded-lg border-0 cursor-pointer transition-colors"
+                              className="px-2.5 py-1.5 bg-purple-650 hover:bg-purple-500 text-white font-bold text-[10px] rounded-lg border-0 cursor-pointer transition-colors"
                             >
                               Refund
                             </button>

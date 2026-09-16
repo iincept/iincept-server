@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon, Check, Loader2 } from 'lucide-react';
+import { Settings as SettingsIcon, Check, Loader2, User } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateUser } from '../../redux/authSlice';
 import axiosClient from '../../services/axiosClient';
@@ -31,6 +31,7 @@ export default function Settings() {
         email: form.email,
         password: form.password || undefined
       });
+      
       dispatch(updateUser(response.data));
       showSuccessMessage('Admin Profile updated successfully!');
     } catch (err) {
@@ -48,7 +49,7 @@ export default function Settings() {
   return (
     <div className="text-left space-y-6">
       {success && (
-        <div className="fixed bottom-6 right-6 bg-zinc-900 text-white py-3.5 px-5 rounded-2xl shadow-xl flex items-center gap-3 border border-zinc-800 z-50">
+        <div className="fixed bottom-6 right-6 bg-zinc-900 text-white py-3.5 px-5 rounded-2xl shadow-xl flex items-center gap-3 border border-zinc-800 animate-in fade-in slide-in-from-bottom-5 duration-300 z-50">
           <Check className="h-5 w-5 text-emerald-400" />
           <span className="text-sm font-medium">{success}</span>
         </div>

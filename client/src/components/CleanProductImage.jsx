@@ -37,6 +37,7 @@ export default function CleanProductImage({
   const [processedSrc, setProcessedSrc] = useState(initialSrc);
   const [isBlackBg, setIsBlackBg] = useState(false);
   const [hasFailed, setHasFailed] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -45,6 +46,7 @@ export default function CleanProductImage({
     setProcessedSrc(currentSrc);
     setIsBlackBg(false);
     setHasFailed(false);
+    setIsLoading(true);
 
     if (!currentSrc) return;
 
@@ -53,96 +55,101 @@ export default function CleanProductImage({
     img.src = currentSrc;
 
     img.onload = () => {
+      let finalSrc = currentSrc;
       try {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const w = img.naturalWidth || img.width;
         const h = img.naturalHeight || img.height;
 
-        if (w === 0 || h === 0) return;
+        if (w > 0 && h > 0) {
+          canvas.width = w;
+          canvas.height = h;
+          ctx.drawImage(img, 0, 0);
 
-        canvas.width = w;
-        canvas.height = h;
-        ctx.drawImage(img, 0, 0);
+          const imgData = ctx.getImageData(0, 0, w, h);
+          const data = imgData.data;
 
-        const imgData = ctx.getImageData(0, 0, w, h);
-        const data = imgData.data;
+          const samplePoints = [
+            [0, 0],
+            [w - 1, 0],
+            [0, h - 1],
+            [w - 1, h - 1],
+            [Math.floor(w / 2), 0],
+            [0, Math.floor(h / 2)],
+            [w - 1, Math.floor(h / 2)],
+            [Math.floor(w / 2), h - 1],
+          ];
 
-        const samplePoints = [
-          [0, 0],
-          [w - 1, 0],
-          [0, h - 1],
-          [w - 1, h - 1],
-          [Math.floor(w / 2), 0],
-          [0, Math.floor(h / 2)],
-          [w - 1, Math.floor(h / 2)],
-          [Math.floor(w / 2), h - 1],
-        ];
+          let bgR = 0, bgG = 0, bgB = 0, validSamples = 0;
 
-        let bgR = 0, bgG = 0, bgB = 0, validSamples = 0;
+          samplePoints.forEach(([x, y]) => {
+            const idx = (y * w + x) * 4;
+            const alpha = data[idx + 3];
+            if (alpha > 200) {
+              bgR += data[idx];
+              bgG += data[idx + 1];
+              bgB += data[idx + 2];
+              validSamples++;
+            }
+          });
 
-        samplePoints.forEach(([x, y]) => {
-          const idx = (y * w + x) * 4;
-          const alpha = data[idx + 3];
-          if (alpha > 200) {
-            bgR += data[idx];
-            bgG += data[idx + 1];
-            bgB += data[idx + 2];
-            validSamples++;
-          }
-        });
+          if (validSamples > 0) {
+            bgR = Math.round(bgR / validSamples);
+            bgG = Math.round(bgG / validSamples);
+            bgB = Math.round(bgB / validSamples);
 
-        if (validSamples === 0) return;
+            let maxDiff = 0;
+            samplePoints.forEach(([x, y]) => {
+              const idx = (y * w + x) * 4;
+              if (data[idx + 3] > 200) {
+                const diff = Math.abs(data[idx] - bgR) + Math.abs(data[idx + 1] - bgG) + Math.abs(data[idx + 2] - bgB);
+                if (diff > maxDiff) maxDiff = diff;
+              }
+            });
 
-        bgR = Math.round(bgR / validSamples);
-        bgG = Math.round(bgG / validSamples);
-        bgB = Math.round(bgB / validSamples);
+            const isDark = bgR < 40 && bgG < 40 && bgB < 40;
+            if (isDark && isMounted) {
+              setIsBlackBg(true);
+            }
 
-        let maxDiff = 0;
-        samplePoints.forEach(([x, y]) => {
-          const idx = (y * w + x) * 4;
-          if (data[idx + 3] > 200) {
-            const diff = Math.abs(data[idx] - bgR) + Math.abs(data[idx + 1] - bgG) + Math.abs(data[idx + 2] - bgB);
-            if (diff > maxDiff) maxDiff = diff;
-          }
-        });
+            if (maxDiff < 60) {
+              const tolerance = 40;
+              let modified = false;
 
-        const isDark = bgR < 40 && bgG < 40 && bgB < 40;
-        if (isDark && isMounted) {
-          setIsBlackBg(true);
-        }
+              for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                const a = data[i + 3];
 
-        if (maxDiff < 60) {
-          const tolerance = 40;
-          let modified = false;
+                if (a > 0) {
+                  const diff = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
+                  if (diff <= tolerance) {
+                    data[i + 3] = 0;
+                    modified = true;
+                  } else if (diff <= tolerance + 25) {
+                    const factor = (diff - tolerance) / 25;
+                    data[i + 3] = Math.round(a * factor);
+                    modified = true;
+                  }
+                }
+              }
 
-          for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-            const a = data[i + 3];
-
-            if (a > 0) {
-              const diff = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
-              if (diff <= tolerance) {
-                data[i + 3] = 0;
-                modified = true;
-              } else if (diff <= tolerance + 25) {
-                const factor = (diff - tolerance) / 25;
-                data[i + 3] = Math.round(a * factor);
-                modified = true;
+              if (modified) {
+                ctx.putImageData(imgData, 0, 0);
+                finalSrc = canvas.toDataURL('image/png');
               }
             }
           }
-
-          if (modified && isMounted) {
-            ctx.putImageData(imgData, 0, 0);
-            const dataUrl = canvas.toDataURL('image/png');
-            setProcessedSrc(dataUrl);
-          }
         }
       } catch (e) {
-        // Ignore canvas error
+        // Ignore canvas CORS error
+      }
+
+      if (isMounted) {
+        setProcessedSrc(finalSrc);
+        setIsLoading(false);
       }
     };
 
@@ -153,6 +160,7 @@ export default function CleanProductImage({
           setProcessedSrc(fb);
           setHasFailed(true);
         }
+        setIsLoading(false);
       }
     };
 
@@ -162,19 +170,24 @@ export default function CleanProductImage({
   }, [src, alt]);
 
   return (
-    <div className={containerClassName}>
+    <div className={`${containerClassName} relative overflow-hidden`}>
+      {isLoading && (
+        <div className="absolute inset-0 bg-zinc-100 animate-pulse flex items-center justify-center rounded-2xl z-10" />
+      )}
       <img
         src={processedSrc}
         alt={alt}
+        onLoad={() => setIsLoading(false)}
         className={`${className} ${
           mixBlend && !isBlackBg ? 'mix-blend-multiply' : ''
-        }`}
+        } ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
         onError={() => {
           if (!hasFailed) {
             const fb = getSmartFallback(alt, src);
             setProcessedSrc(fb);
             setHasFailed(true);
           }
+          setIsLoading(false);
         }}
       />
     </div>

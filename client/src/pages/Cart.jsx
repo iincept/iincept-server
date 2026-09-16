@@ -112,8 +112,8 @@ export default function Cart() {
             >
               {/* Product Thumbnail & Name */}
               <div className="flex items-center gap-4 w-full sm:w-auto">
-                <div className="h-20 w-20 rounded-xl overflow-hidden bg-zinc-50 shrink-0 border border-zinc-200">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                <div className="h-20 w-20 rounded-xl overflow-hidden bg-white shrink-0 border border-zinc-200 p-1.5 flex items-center justify-center">
+                  <img src={item.image} alt={item.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
                 </div>
                 <div className="text-left">
                   <h3 className="font-bold text-zinc-800 text-sm line-clamp-1">{item.name}</h3>

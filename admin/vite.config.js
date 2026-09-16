@@ -14,8 +14,8 @@ export default defineConfig({
       'react-router-dom': path.resolve(import.meta.dirname, './node_modules/react-router-dom'),
       'react-redux': path.resolve(import.meta.dirname, './node_modules/react-redux'),
       'lucide-react': path.resolve(import.meta.dirname, './node_modules/lucide-react'),
-      // Point to client admin pages to avoid duplicating large files
-      '@admin-pages': path.resolve(import.meta.dirname, '../client/src/pages/admin'),
+      // Standalone admin pages
+      '@admin-pages': path.resolve(import.meta.dirname, './src/pages/admin'),
       // Services and redux from THIS admin project (correct standalone imports)
       '@admin-services': path.resolve(import.meta.dirname, './src/services'),
       '@admin-redux': path.resolve(import.meta.dirname, './src/redux'),

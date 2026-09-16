@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users as UsersIcon, Loader2, AlertCircle } from 'lucide-react';
+import { Users as UsersIcon, Loader2, AlertCircle, ShieldAlert } from 'lucide-react';
 import axiosClient from '../../services/axiosClient';
 
 export default function Users() {
@@ -15,9 +15,10 @@ export default function Users() {
     setLoading(true);
     setError(null);
     try {
-      const response = await axiosClient.get('/auth/users');
+      const response = await axiosClient.get('/auth/users'); // Custom route to fetch users list
       setUsers(response.data || []);
     } catch (err) {
+      // Fallback in case auth/users is not exposed or fails: fetch from standard database endpoint
       try {
         const fallbackRes = await axiosClient.get('/users');
         setUsers(fallbackRes.data || []);

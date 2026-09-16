@@ -1,3 +1,4 @@
+const path = require("path");
 require("dotenv").config();
 
 const express = require("express");
@@ -28,8 +29,6 @@ app.use(
     credentials: true,
   })
 );
-
-const path = require("path");
 
 app.use("/uploads", express.static(path.join(__dirname, "../client/public/uploads")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

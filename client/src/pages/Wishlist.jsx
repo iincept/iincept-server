@@ -60,10 +60,10 @@ export default function Wishlist() {
             className="group rounded-2xl border border-slate-850 bg-slate-900/40 hover:bg-slate-900 hover:border-slate-800 transition-all duration-300 overflow-hidden flex flex-col justify-between"
           >
             {/* Thumbnail */}
-            <div className="relative h-48 bg-slate-955 overflow-hidden flex items-center justify-center">
+            <div className="relative h-48 bg-white overflow-hidden flex items-center justify-center p-3 border-b border-slate-800">
               <button 
                 onClick={() => handleRemove(item.id, item.name)}
-                className="absolute top-3 right-3 p-2 bg-slate-900/80 backdrop-blur-sm border border-slate-800 text-slate-500 hover:text-rose-400 rounded-full z-10 transition-colors cursor-pointer"
+                className="absolute top-3 right-3 p-2 bg-slate-900/80 backdrop-blur-sm border border-slate-800 text-slate-400 hover:text-rose-400 rounded-full z-10 transition-colors cursor-pointer"
                 aria-label="Remove from wishlist"
               >
                 <Trash2 className="h-4 w-4" />
@@ -71,7 +71,7 @@ export default function Wishlist() {
               <img 
                 src={item.image} 
                 alt={item.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 mix-blend-multiply"
               />
             </div>
 

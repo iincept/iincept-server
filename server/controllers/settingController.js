@@ -61,8 +61,8 @@ const getSettings = async (req, res) => {
         const key = obj.name || obj.label;
         const currentImg = (obj.image || '').trim();
 
-        if (DEFAULT_CATEGORY_IMAGES[key]) {
-          if (!currentImg || !currentImg.startsWith('http') || currentImg.includes('_category_uploaded') || currentImg.includes('…') || currentImg.includes('traceId') || currentImg.startsWith('*') || currentImg.includes('_nav/')) {
+        if (!currentImg || currentImg.includes('…') || currentImg.includes('traceId') || currentImg.startsWith('*')) {
+          if (DEFAULT_CATEGORY_IMAGES[key]) {
             updated = true;
             return { ...obj, image: DEFAULT_CATEGORY_IMAGES[key] };
           }
@@ -83,8 +83,7 @@ const getSettings = async (req, res) => {
       { id: '5', productId: '', name: 'AirPods 5', tagline: 'Discover the magic of Active Noise Cancellation.', price: 'From ₹14,900.00', monthlyPrice: 'or ₹620/mo.*', image: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/store-card-40-airpods-5-202609?wid=800&hei=1000&fmt=p-jpg&qlt=80', path: '/airpods', isDark: false, isActive: true }
     ];
 
-    const hasWrongNames = settings.homeNewArrivals && settings.homeNewArrivals.some(i => i.name === 'iPhone 17 Pro' || i.name === 'MacBook Neo' || i.name === 'Apple Watch Series 11');
-    if (!settings.homeNewArrivals || settings.homeNewArrivals.length !== 5 || hasWrongNames) {
+    if (!settings.homeNewArrivals || settings.homeNewArrivals.length === 0) {
       settings.homeNewArrivals = defaultArrivals;
       settings.markModified('homeNewArrivals');
       await settings.save();
@@ -443,10 +442,66 @@ const getSettings = async (req, res) => {
           durationLabel: '2 years',
           isActive: true,
           rows: [
-            { model: 'iPhone 17e', monthly: '₹599.00', yearly: '₹11,900.00', isActive: true },
-            { model: 'iPhone 17, iPhone 16', monthly: '₹749.00', yearly: '₹14,900.00', isActive: true },
-            { model: 'iPhone 16 Plus', monthly: '₹899.00', yearly: '₹17,900.00', isActive: true },
-            { model: 'iPhone 17 Pro, iPhone 17 Pro Max', monthly: '₹1,049.00', yearly: '₹20,900.00', isActive: true }
+            {
+              model: 'iPhone 17e',
+              title: 'AppleCare+ for iPhone 17e',
+              description: '2 Years Apple-certified coverage for iPhone 17e',
+              sku: 'SCYW3HN/A',
+              mrp: '₹14,900.00',
+              discount: '18%',
+              salePrice: '11,900.00',
+              monthly: '₹599.00',
+              yearly: '11,900.00',
+              planType: 'APPLE CARE+ • 2 YEAR PLAN',
+              duration: '2 Years',
+              image: '',
+              isActive: true
+            },
+            {
+              model: 'iPhone 17, iPhone 16',
+              title: 'AppleCare+ for iPhone 17',
+              description: '2 Years Apple-certified coverage for iPhone 17, iPhone 16',
+              sku: 'SX2V2HN/A',
+              mrp: '₹27,900.00',
+              discount: '18%',
+              salePrice: '22,900.00',
+              monthly: '₹749.00',
+              yearly: '14,900.00',
+              planType: 'APPLE CARE+ • 2 YEAR PLAN',
+              duration: '2 Years',
+              image: '',
+              isActive: true
+            },
+            {
+              model: 'iPhone 16 Plus',
+              title: 'AppleCare+ for iPhone 16 Plus',
+              description: '2 Years Apple-certified coverage for iPhone 16 Plus',
+              sku: 'SX3V2HN/A',
+              mrp: '₹21,900.00',
+              discount: '18%',
+              salePrice: '17,900.00',
+              monthly: '₹899.00',
+              yearly: '17,900.00',
+              planType: 'APPLE CARE+ • 2 YEAR PLAN',
+              duration: '2 Years',
+              image: '',
+              isActive: true
+            },
+            {
+              model: 'iPhone Air, iPhone 17 Pro, iPhone 17 Pro Max',
+              title: 'AppleCare+ for iPhone 17 Pro',
+              description: '2 Years Apple-certified coverage for iPhone Air, 17 Pro & 17 Pro Max',
+              sku: 'SX4V2HN/A',
+              mrp: '₹25,900.00',
+              discount: '19%',
+              salePrice: '20,900.00',
+              monthly: '₹1,049.00',
+              yearly: '20,900.00',
+              planType: 'APPLE CARE+ • 2 YEAR PLAN',
+              duration: '2 Years',
+              image: '',
+              isActive: true
+            }
           ]
         },
         {

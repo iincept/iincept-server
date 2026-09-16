@@ -400,17 +400,17 @@ export default function Shop() {
                     className="group rounded-2xl border border-slate-850 bg-slate-900/40 hover:bg-slate-900 hover:border-slate-800 transition-all duration-300 overflow-hidden flex flex-col justify-between"
                   >
                     {/* Thumbnail */}
-                    <div className="relative h-48 bg-slate-955 overflow-hidden flex items-center justify-center">
+                    <div className="relative h-48 bg-white overflow-hidden flex items-center justify-center p-3 border-b border-slate-800">
                       <button 
                         onClick={() => handleAddToWishlist(prod)}
-                        className="absolute top-3 right-3 p-2 bg-slate-900/80 backdrop-blur-sm border border-slate-800 text-slate-400 hover:text-rose-505 hover:text-rose-400 rounded-full z-10 transition-colors"
+                        className="absolute top-3 right-3 p-2 bg-slate-900/80 backdrop-blur-sm border border-slate-800 text-slate-400 hover:text-rose-400 rounded-full z-10 transition-colors"
                       >
                         <Heart className="h-4 w-4" />
                       </button>
                       <img 
                         src={prod.image || (prod.images && prod.images[0]) || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80'} 
                         alt={prod.name || prod.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 mix-blend-multiply"
                       />
                     </div>
 

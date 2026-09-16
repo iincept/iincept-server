@@ -99,11 +99,11 @@ export default function Search() {
                 className="group bg-white border border-zinc-200 rounded-2xl overflow-hidden hover:border-zinc-300 transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-md animate-in fade-in duration-300"
               >
                 {/* Image panel */}
-                <div className="relative h-48 bg-zinc-50 overflow-hidden flex items-center justify-center border-b border-zinc-100">
+                <div className="relative h-48 bg-white border-b border-zinc-100 overflow-hidden flex items-center justify-center p-3">
                   <img 
                     src={productImg} 
                     alt={prod.title || prod.name}
-                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                    className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 mix-blend-multiply"
                   />
                   <button 
                     onClick={() => handleAddToWishlist(prod)}

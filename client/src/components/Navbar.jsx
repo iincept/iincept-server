@@ -32,9 +32,9 @@ export default function Navbar() {
   const isIphonePage = true;
 
   const getNavBtnClass = (isOpen) => {
-    return `transition-colors duration-200 uppercase font-bold text-[11px] cursor-pointer bg-transparent border-0 focus:outline-none ${isOpen
-      ? (isIphonePage ? 'text-black font-extrabold font-sans' : 'text-white font-extrabold')
-      : (isIphonePage ? 'text-zinc-500 hover:text-black font-sans' : 'text-zinc-400 hover:text-white')
+    return `transition-colors duration-200 font-semibold text-[13px] tracking-tight cursor-pointer bg-transparent border-0 focus:outline-none ${isOpen
+      ? (isIphonePage ? 'text-black font-bold font-sans' : 'text-white font-bold')
+      : (isIphonePage ? 'text-zinc-600 hover:text-black font-sans' : 'text-zinc-400 hover:text-white')
       }`;
   };
 
@@ -92,8 +92,8 @@ export default function Navbar() {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 32px;
-        padding: 8px 32px;
+        gap: 16px;
+        padding: 0 !important;
         border-radius: 0 !important;
         background: rgba(255, 255, 255, 0.95) !important;
         backdrop-filter: blur(20px) saturate(180%) !important;
@@ -108,7 +108,7 @@ export default function Navbar() {
         pointer-events: auto;
       }
       .pill-nav-stage.shrink .pill-nav-container {
-        padding: 6px 28px;
+        padding: 0 !important;
         box-shadow: 0 6px 24px rgba(0, 0, 0, 0.09) !important;
         background: rgba(255, 255, 255, 0.98) !important;
       }
@@ -159,6 +159,31 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Body scroll locking and ESC key listener for Mobile Navigation Drawer & Search Overlay
+  useEffect(() => {
+    if (isMobileMenuOpen || isSearchOpen) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (isMobileMenuOpen) setIsMobileMenuOpen(false);
+        if (isSearchOpen) setIsSearchOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMobileMenuOpen, isSearchOpen]);
 
   const macTimeoutRef = useRef(null);
   const ipadTimeoutRef = useRef(null);
@@ -515,6 +540,18 @@ export default function Navbar() {
         { label: 'HomePod', path: '/tv-home?search=HomePod', query: 'HomePod' },
         { label: 'HomePod Mini', path: '/tv-home?search=HomePod Mini', query: 'HomePod Mini' }
       ]
+    },
+    accessories: {
+      title: 'Explore Accessories',
+      mainLink: { label: 'Explore All Accessories', path: '/accessories' },
+      items: [
+        { label: 'Mac Accessories', path: '/accessories?product=mac', query: 'Mac' },
+        { label: 'iPad Accessories', path: '/accessories?product=ipad', query: 'iPad' },
+        { label: 'iPhone Accessories', path: '/accessories?product=iphone', query: 'iPhone' },
+        { label: 'Apple Watch Accessories', path: '/accessories?product=watch', query: 'Watch' },
+        { label: 'AirPods Accessories', path: '/accessories?product=airpods', query: 'AirPods' },
+        { label: 'TV & Home Accessories', path: '/accessories?product=tv-home', query: 'TV & Home' }
+      ]
     }
   };
 
@@ -575,19 +612,19 @@ export default function Navbar() {
       if (combinedStr.includes('applecare')) {
         img = '/applecare_official_hero.png';
       } else if (combinedStr.includes('neo')) {
-        img = '/mac_nav/macbook_neo_fan.jpg';
+        img = '/mac_nav/macbook_neo_user.jpg';
       } else if (combinedStr.includes('air') && (combinedStr.includes('mac') || combinedStr.includes('book'))) {
-        img = '/mac_nav/macbook_air_nav.jpg';
+        img = '/mac_nav/macbook_air_user.jpg';
       } else if (combinedStr.includes('pro') && (combinedStr.includes('mac') || combinedStr.includes('laptop') || combinedStr.includes('book'))) {
-        img = '/mac_nav/macbook_pro_nav.png';
+        img = '/mac_nav/macbook_pro_user.jpg';
       } else if (combinedStr.includes('imac')) {
-        img = '/mac_nav/imac_nav.jpg';
+        img = '/mac_nav/imac_user.jpg';
       } else if (combinedStr.includes('mini') && !combinedStr.includes('ipad') && !combinedStr.includes('homepod')) {
-        img = '/mac_nav/mac_mini_nav.jpg';
+        img = '/mac_nav/mac_mini_user.jpg';
       } else if (combinedStr.includes('studio') && !combinedStr.includes('display')) {
-        img = '/mac_nav/mac_studio_nav.jpg';
+        img = '/mac_nav/mac_studio_user.jpg';
       } else if (combinedStr.includes('display')) {
-        img = '/mac_nav/mac_displays_nav.jpg';
+        img = '/mac_nav/mac_displays_user.jpg';
       } else if (catKey === 'ipad' || combinedStr.includes('ipad')) {
         if (qLower === 'ipad' || defaultLabel?.toLowerCase() === 'ipad') img = '/ipad_nav/dropdown_ipad.png';
         else if (combinedStr.includes('applecare')) img = '/applecare_official_hero.png';
@@ -611,6 +648,18 @@ export default function Navbar() {
         else if (combinedStr.includes('compare')) img = '/iphone_nav/iphone_compare.png';
         else if (combinedStr.includes('accessori')) img = '/iphone_nav/dropdown_iphone_accessories.png';
         else img = '/iphone_nav/dropdown_iphone_17_pro.png';
+      } else if (catKey === 'watch' || combinedStr.includes('watch')) {
+        if (combinedStr.includes('series 12') || combinedStr.includes('12')) img = '/apple_watch_series_12.png';
+        else if (combinedStr.includes('ultra')) img = '/apple_watch_ultra_2_single.png';
+        else if (combinedStr.includes('series 10') || combinedStr.includes('10')) img = '/apple_watch_three_models.jpg';
+        else if (combinedStr.includes('se')) img = '/apple_watch_three_models.jpg';
+        else if (combinedStr.includes('compare')) img = '/apple_watch_three_models.jpg';
+        else img = '/watch_category_uploaded.png';
+      } else if (catKey === 'airpods' || combinedStr.includes('airpod')) {
+        if (combinedStr.includes('pro')) img = '/airpods_pro_uploaded.jpg';
+        else if (combinedStr.includes('max')) img = '/airpods_pro_uploaded.jpg';
+        else if (combinedStr.includes('4')) img = '/airpods_category_uploaded.png';
+        else img = '/airpods_category_uploaded.png';
       }
 
       if (!img) {
@@ -674,7 +723,7 @@ export default function Navbar() {
                     closeDropdown();
                     setHoveredProduct(null);
                   }}
-                  className="text-[22px] md:text-[24px] font-bold text-[#1D1D1F] dark:text-white leading-tight tracking-tight hover:text-[#0071e3] transition-colors block py-0.5"
+                  className="text-[16px] sm:text-[17px] font-semibold text-[#1D1D1F] dark:text-white leading-snug tracking-tight hover:text-[#0071e3] transition-colors block py-1"
                 >
                   {config.mainLink.label}
                 </Link>
@@ -689,7 +738,7 @@ export default function Navbar() {
                     closeDropdown();
                     setHoveredProduct(null);
                   }}
-                  className="text-[22px] md:text-[24px] font-bold text-[#1D1D1F] dark:text-white leading-tight tracking-tight hover:text-[#0071e3] transition-colors block py-0.5"
+                  className="text-[16px] sm:text-[17px] font-semibold text-[#1D1D1F] dark:text-white leading-snug tracking-tight hover:text-[#0071e3] transition-colors block py-1"
                 >
                   {item.label}
                 </Link>
@@ -705,7 +754,7 @@ export default function Navbar() {
                   closeDropdown();
                   setHoveredProduct(null);
                 }}
-                className="text-[22px] md:text-[24px] font-bold text-[#1D1D1F] dark:text-white leading-tight tracking-tight hover:text-[#0071e3] transition-colors block py-0.5"
+                className="text-[16px] sm:text-[17px] font-semibold text-[#1D1D1F] dark:text-white leading-snug tracking-tight hover:text-[#0071e3] transition-colors block py-1"
               >
                 {prod.title || prod.name}
               </Link>
@@ -881,14 +930,14 @@ export default function Navbar() {
   const productPreviews = {
     // Mac
     'Explore All Mac': { name: 'Mac Workstations', price: 'Procure M3/M4 Series', image: 'https://i3-prod-assets.indiaistore.com/files/uploads/categories/mac/home-img-1776683069_8064.png' },
-    'MacBook Neo': { name: 'MacBook Neo', price: 'High Performance Laptop', image: '/mac_nav/macbook_neo_fan.jpg' },
-    'MacBook Air': { name: 'MacBook Air', price: 'Light & Powerful. From ₹1,14,900', image: '/mac_nav/macbook_air_nav.jpg' },
-    'MacBook Pro': { name: 'MacBook Pro', price: 'Pro Workflow Leader. From ₹1,69,900', image: '/mac_nav/macbook_pro_nav.png' },
-    'iMac': { name: 'iMac 24"', price: 'All-in-one Desktop. From ₹1,29,900', image: '/mac_nav/imac_nav.jpg' },
-    'Mac Mini': { name: 'Mac Mini', price: 'Compact Powerhouse. From ₹54,900', image: '/mac_nav/mac_mini_nav.jpg' },
-    'Mac mini': { name: 'Mac Mini', price: 'Compact Powerhouse. From ₹54,900', image: '/mac_nav/mac_mini_nav.jpg' },
-    'Mac Studio': { name: 'Mac Studio', price: 'Creator Station. From ₹1,99,900', image: '/mac_nav/mac_studio_nav.jpg' },
-    'Displays': { name: 'Studio & Pro Display', price: 'Retina 5K & 6K Panels', image: '/mac_nav/mac_displays_nav.jpg' },
+    'MacBook Neo': { name: 'MacBook Neo', price: 'High Performance Laptop', image: '/mac_nav/macbook_neo_user.jpg' },
+    'MacBook Air': { name: 'MacBook Air', price: 'Light & Powerful. From ₹1,14,900', image: '/mac_nav/macbook_air_user.jpg' },
+    'MacBook Pro': { name: 'MacBook Pro', price: 'Pro Workflow Leader. From ₹1,69,900', image: '/mac_nav/macbook_pro_user.jpg' },
+    'iMac': { name: 'iMac 24"', price: 'All-in-one Desktop. From ₹1,29,900', image: '/mac_nav/imac_user.jpg' },
+    'Mac Mini': { name: 'Mac Mini', price: 'Compact Powerhouse. From ₹54,900', image: '/mac_nav/mac_mini_user.jpg' },
+    'Mac mini': { name: 'Mac Mini', price: 'Compact Powerhouse. From ₹54,900', image: '/mac_nav/mac_mini_user.jpg' },
+    'Mac Studio': { name: 'Mac Studio', price: 'Creator Station. From ₹1,99,900', image: '/mac_nav/mac_studio_user.jpg' },
+    'Displays': { name: 'Studio & Pro Display', price: 'Retina 5K & 6K Panels', image: '/mac_nav/mac_displays_user.jpg' },
     'AppleCare+': { name: 'AppleCare+ Protection', price: 'Official Apple Warranty', image: '/applecare_official_hero.png' },
     'AppleCare': { name: 'AppleCare+ Protection', price: 'Official Apple Warranty', image: '/applecare_official_hero.png' },
 
@@ -957,20 +1006,34 @@ export default function Navbar() {
     return (
       <div className="hidden md:flex md:col-span-6 pl-4 flex-col text-left shrink-0 justify-center items-center">
         {hoveredProduct ? (
-          <div className="w-full h-[340px] rounded-2xl bg-[#f5f5f7] border border-zinc-200/80 p-0 shadow-sm overflow-hidden flex items-center justify-center transition-all duration-300 animate-in fade-in">
-            <img
-              src={hoveredProduct.image}
-              alt={hoveredProduct.name || 'Preview'}
-              className="w-full h-full object-cover p-0 transition-transform duration-500 hover:scale-105"
-              style={{ mixBlendMode: (hoveredProduct.image?.includes('18_pro') || (hoveredProduct?.name || '').includes('Series 12') || (hoveredProduct?.image || '').includes('series_12')) ? 'normal' : 'multiply', objectPosition: 'center' }}
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = '/macbook_category_v3.jpg';
-              }}
-            />
+          <div className="w-full h-[320px] sm:h-[360px] rounded-2xl bg-white border border-zinc-200/80 p-3 shadow-xs overflow-hidden flex items-center justify-center transition-all duration-300 animate-in fade-in">
+            <div className="relative w-full h-full overflow-hidden flex items-center justify-center bg-white">
+              <img
+                src={hoveredProduct.image}
+                alt={hoveredProduct.name || 'Preview'}
+                className="max-w-full max-h-full object-contain object-center transition-transform duration-300 hover:scale-105"
+                style={{
+                  mixBlendMode: (
+                    hoveredProduct.image?.includes('18_pro') ||
+                    hoveredProduct.image?.includes('series_12') ||
+                    hoveredProduct.image?.endsWith('.png') ||
+                    (hoveredProduct?.name || '').includes('Series 12')
+                  )
+                    ? 'normal'
+                    : (hoveredProduct.image?.includes('airpods_pro') || hoveredProduct.image?.includes('uploaded'))
+                      ? 'screen'
+                      : 'multiply',
+                  objectPosition: 'center'
+                }}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = '/macbook_category_v3.jpg';
+                }}
+              />
+            </div>
           </div>
         ) : (
-          <div className="w-full h-[340px] rounded-2xl bg-[#f5f5f7] border border-dashed border-zinc-200 flex items-center justify-center">
+          <div className="w-full h-[320px] sm:h-[360px] rounded-2xl bg-white border border-dashed border-zinc-200 flex items-center justify-center">
             <span className="text-zinc-400 text-xs uppercase font-bold tracking-wider">Hover to Preview</span>
           </div>
         )}
@@ -1052,7 +1115,6 @@ export default function Navbar() {
       <div className={`pill-nav-stage ${isShrunk ? 'shrink' : ''}`}>
         <nav className="pill-nav-container select-none relative z-40 text-black border-none bg-transparent">
 
-          {/* Sliding Search Overlay */}
           {/* Sliding Search Overlay Input Pill */}
           {isSearchOpen && (
             <div className="absolute inset-0 z-50 animate-in fade-in duration-200 bg-white border border-zinc-200 rounded-full flex items-center px-6">
@@ -1169,10 +1231,10 @@ export default function Navbar() {
             </div>
           )}
 
-          <div className="w-full mx-auto px-4 sm:px-8 md:px-12 h-16 flex items-center justify-between gap-6">
+          <div className="w-full mx-auto px-3.5 sm:px-6 md:px-8 h-16 flex items-center justify-between gap-4">
 
             {/* Left: Logo */}
-            <Link to="/" className="flex items-center shrink-0 group pl-1 py-1">
+            <Link to="/" className="flex items-center shrink-0 group py-1">
               <img 
                 src="/iincept_navbar_logo.png" 
                 alt="iiNCEPT" 
@@ -1300,6 +1362,20 @@ export default function Navbar() {
                     </button>
                   );
                 }
+                if (labelLower.includes('applecare')) {
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        closeAllDropdowns();
+                        navigate('/applecare');
+                      }}
+                      className={getNavBtnClass(location.pathname === '/applecare')}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                }
                 if (labelLower.includes('bulk pricing')) {
                   return (
                     <a
@@ -1363,7 +1439,7 @@ export default function Navbar() {
             </div>
 
             {/* Right: Icon Group */}
-            <div className={`flex items-center gap-4 shrink-0 transition-colors duration-300 ${isIphonePage ? 'text-zinc-800' : 'text-zinc-300'}`}>
+            <div className="flex items-center gap-3 sm:gap-4.5 shrink-0 text-zinc-800">
 
               {/* Search Trigger Icon */}
               <button
@@ -1372,16 +1448,13 @@ export default function Navbar() {
                   clearAllTimeouts();
                   closeAllDropdowns();
                 }}
-                className={`p-1.5 rounded-full transition-colors cursor-pointer bg-transparent border-0 ${isIphonePage ? 'hover:text-black hover:bg-zinc-100' : 'hover:text-white hover:bg-zinc-900'}`}
+                className="p-1.5 rounded-full transition-colors cursor-pointer bg-transparent border-0 hover:text-black hover:bg-zinc-100 text-zinc-800"
                 aria-label="Search"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-5 w-5 stroke-[2]" />
               </button>
 
-
-
-
-              {/* Cart Icon with count badge */}
+              {/* Cart Icon with Always-Visible Red Count Badge (Matching Image 2 / iTech style) */}
               <button
                 onClick={() => {
                   dispatch(openCart());
@@ -1391,103 +1464,92 @@ export default function Navbar() {
                   clearAllTimeouts();
                   closeAllDropdowns();
                 }}
-                className={`p-1.5 rounded-full relative transition-all duration-200 shrink-0 cursor-pointer bg-transparent border-0 ${isIphonePage ? 'hover:text-black hover:bg-zinc-100 text-black' : 'hover:text-white hover:bg-zinc-900 text-zinc-300'}`}
+                className="p-1.5 rounded-full relative transition-all duration-200 shrink-0 cursor-pointer bg-transparent border-0 hover:text-black hover:bg-zinc-100 text-zinc-800"
                 aria-label="Shopping Cart"
               >
-                <ShoppingBag className="h-5 w-5" />
-                {cartCount > 0 && (
-                  <span className={`absolute -top-0.5 -right-0.5 text-[8px] font-extrabold h-4.5 w-4.5 rounded-full flex items-center justify-center ${isIphonePage ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-950'}`}>
-                    {cartCount}
-                  </span>
-                )}
+                <ShoppingBag className="h-5 w-5 stroke-[2]" />
+                <span className="absolute -top-1 -right-1.5 text-[10px] font-extrabold h-4.5 w-4.5 min-w-[18px] min-h-[18px] rounded-full flex items-center justify-center bg-[#e3000f] text-white shadow-xs leading-none">
+                  {cartCount || 0}
+                </span>
               </button>
 
               {/* Mobile Drawer Trigger */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`p-1.5 lg:hidden rounded-full focus:outline-none cursor-pointer bg-transparent border-0 ${isIphonePage ? 'hover:text-black hover:bg-zinc-100' : 'hover:text-white hover:bg-zinc-900'}`}
+                className="p-1.5 lg:hidden rounded-full focus:outline-none cursor-pointer bg-transparent border-0 hover:text-black hover:bg-zinc-100 text-zinc-800"
                 aria-label="Toggle Navigation Menu"
               >
-                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {isMobileMenuOpen ? <X className="h-5 w-5 stroke-[2]" /> : <Menu className="h-5 w-5 stroke-[2]" />}
               </button>
 
             </div>
           </div>
 
-          {/* Mobile Drawer menu */}
+          {/* Full-Screen Mobile Navigation Overlay (Covers entire viewport like Image 2) */}
           {isMobileMenuOpen && (
-            <div className={`lg:hidden border-t px-4 pt-2 pb-4 space-y-3 text-left transition-colors duration-300 ${isIphonePage ? 'border-zinc-200 bg-white' : 'border-zinc-800 bg-zinc-950'}`}>
-              <div className="grid grid-cols-2 gap-2 text-center text-xs font-semibold">
+            <div className="fixed inset-0 w-screen h-screen min-h-screen z-[9999] lg:hidden bg-white text-zinc-900 flex flex-col animate-in fade-in duration-200 select-none overflow-hidden">
+              {/* Header inside Menu Overlay */}
+              <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-zinc-100 shrink-0">
                 <Link
                   to="/"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`py-2.5 rounded-xl border transition-colors ${isIphonePage ? 'bg-zinc-100 border-zinc-200 text-black hover:bg-zinc-200' : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-850'}`}
+                  className="flex items-center shrink-0 group py-1"
                 >
-                  Home
+                  <img
+                    src="/iincept_navbar_logo.png"
+                    alt="iiNCEPT"
+                    className="h-8 sm:h-9 w-auto object-contain"
+                    style={{ mixBlendMode: 'multiply' }}
+                  />
                 </Link>
-                <Link
-                  to="/shop"
+                <button
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`py-2.5 rounded-xl border transition-colors ${isIphonePage ? 'bg-zinc-100 border-zinc-200 text-black hover:bg-zinc-200' : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-850'}`}
+                  className="p-2 rounded-full hover:bg-zinc-100 text-zinc-700 hover:text-zinc-950 transition-colors focus:outline-none cursor-pointer"
+                  aria-label="Close menu"
                 >
-                  Shop
-                </Link>
+                  <X className="h-7 w-7 stroke-[2]" />
+                </button>
+              </div>
 
-                <div className={`col-span-2 text-left rounded-xl p-3 space-y-2 border transition-colors ${isIphonePage ? 'bg-zinc-100 border-zinc-200' : 'bg-zinc-900 border-zinc-800'}`}>
-                  <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider block">Menu Categories</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {menuItems.map((item, idx) => {
-                      if (item.label === 'Bulk Pricing') {
-                        return (
-                          <a
-                            key={idx}
-                            href="/?scroll=procurement"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setIsMobileMenuOpen(false);
-                              if (location.pathname === '/') {
-                                const section = document.getElementById('procurement-section');
-                                if (section) {
-                                  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                }
-                              } else {
-                                navigate('/?scroll=procurement');
-                              }
-                            }}
-                            className={`py-1.5 px-2.5 rounded-lg border text-[11px] font-bold transition-all ${isIphonePage ? 'bg-zinc-950 border-zinc-950 text-white hover:bg-zinc-900' : 'bg-white border-white text-zinc-900 hover:bg-zinc-100'}`}
-                          >
-                            {item.label}
-                          </a>
-                        );
-                      }
+              {/* Main Navigation Links */}
+              <div className="flex-1 px-8 sm:px-12 py-6 overflow-y-auto overscroll-contain">
+                <nav className="flex flex-col space-y-1 text-left max-w-xl">
+                  {activeMenuItems.map((item, idx) => {
+                    if (item.label === 'Bulk Pricing') {
                       return (
-                        <Link
+                        <a
                           key={idx}
-                          to={item.path}
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className={`py-1.5 px-2.5 rounded-lg border text-[11px] font-bold transition-all ${isIphonePage ? 'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-100' : 'bg-zinc-950 border-zinc-800 text-zinc-300 hover:bg-zinc-850'}`}
+                          href="/?scroll=procurement"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setIsMobileMenuOpen(false);
+                            if (location.pathname === '/') {
+                              const section = document.getElementById('procurement-section');
+                              if (section) {
+                                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }
+                            } else {
+                              navigate('/?scroll=procurement');
+                            }
+                          }}
+                          className="text-[20px] sm:text-[22px] font-bold tracking-tight text-zinc-900 hover:text-zinc-500 transition-colors block py-3 border-b border-zinc-100/80"
                         >
                           {item.label}
-                        </Link>
+                        </a>
                       );
-                    })}
-                  </div>
-                </div>
-
-                <Link
-                  to="/wishlist"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`py-2.5 rounded-xl border col-span-1 text-rose-500 font-bold transition-colors ${isIphonePage ? 'bg-zinc-100 border-zinc-200 hover:bg-zinc-200' : 'bg-zinc-900 border-zinc-800 hover:bg-zinc-850'}`}
-                >
-                  Wishlist ({wishlistCount})
-                </Link>
-                <Link
-                  to="/cart"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`py-2.5 rounded-xl border col-span-1 font-bold transition-colors ${isIphonePage ? 'bg-zinc-100 border-zinc-200 text-black hover:bg-zinc-200' : 'bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-850'}`}
-                >
-                  Cart ({cartCount})
-                </Link>
+                    }
+                    return (
+                      <Link
+                        key={idx}
+                        to={item.path}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="text-[20px] sm:text-[22px] font-bold tracking-tight text-zinc-900 hover:text-zinc-500 transition-colors block py-3 border-b border-zinc-100/80"
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
               </div>
             </div>
           )}
@@ -1635,7 +1697,7 @@ export default function Navbar() {
                           key={sIdx}
                           to={sub.path}
                           onClick={() => setIsEntertainmentDropdownOpen(false)}
-                          className="text-lg sm:text-[24px] font-semibold tracking-tight text-white hover:text-zinc-300 transition-colors block leading-tight py-0.5"
+                          className="text-base sm:text-[17px] font-medium tracking-tight text-white hover:text-zinc-300 transition-colors block leading-snug py-1"
                         >
                           {sub.label}
                         </Link>
@@ -1682,40 +1744,8 @@ export default function Navbar() {
                 className={dropdownClass}
               >
                 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 font-sans items-start">
-
-                  {/* Column 1: Shop Accessories */}
-                  <div className="md:col-span-6 space-y-3 text-left">
-                    <span className="text-[12px] font-medium text-zinc-400 block mb-1">
-                      Shop Accessories
-                    </span>
-                    <div className="flex flex-col gap-2">
-                      {[
-                        { label: 'Shop All Accessories', path: '/accessories' },
-                        { label: 'Mac', path: '/accessories?product=mac' },
-                        { label: 'iPad', path: '/accessories?product=ipad' },
-                        { label: 'iPhone', path: '/accessories?product=iphone' },
-                        { label: 'Apple Watch', path: '/accessories?product=watch' },
-                        { label: 'AirPods', path: '/accessories?product=airpods' },
-                        { label: 'TV & Home', path: '/accessories?product=tv-home' }
-                      ].map((sub, sIdx) => (
-                        <Link
-                          key={sIdx}
-                          to={sub.path}
-                          onMouseEnter={() => setHoveredProduct(productPreviews[sub.label] || { name: sub.label, price: '', image: '/favicon.svg' })}
-                          onClick={() => {
-                            setIsAccessoriesDropdownOpen(false);
-                            setHoveredProduct(null);
-                          }}
-                          className="text-[13.5px] font-semibold tracking-wide transition-colors block py-1"
-                        >
-                          {sub.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-
+                  {renderProductCategoryList('accessories', 'Explore Accessories', '/accessories', () => setIsAccessoriesDropdownOpen(false))}
                   {renderProductPreview()}
-
                 </div>
               </div>
             </>
@@ -1750,7 +1780,7 @@ export default function Navbar() {
                           key={sIdx}
                           to={sub.path}
                           onClick={() => setIsSupportDropdownOpen(false)}
-                          className="text-lg sm:text-[24px] font-semibold tracking-tight text-white hover:text-zinc-300 transition-colors block leading-tight py-0.5"
+                          className="text-base sm:text-[17px] font-medium tracking-tight text-white hover:text-zinc-300 transition-colors block leading-snug py-1"
                         >
                           {sub.label}
                         </Link>

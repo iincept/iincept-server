@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axiosClient from '../../services/axiosClient';
+import { notifyAdminChange } from '../../services/liveSyncService';
 import { 
   Navigation, 
   Plus, 
@@ -91,10 +92,9 @@ export default function NavbarManager() {
             isActive: true,
             dropdownItems: [
               { label: 'Explore All iPhone', path: '/iphone', query: 'iPhone', image: '/iphone_category_v2.jpg', price: 'iPhone Catalogue', isActive: true },
-              { label: 'iPhone Duo', path: '/iphone?search=iPhone Duo', query: 'iPhone Duo', image: '/iphone_nav/dropdown_iphone_duo.png', price: 'The Foldable. From ₹2,99,900', isActive: true },
-              { label: 'iPhone 18 Pro', path: '/iphone?search=iPhone 18 Pro', query: 'iPhone 18 Pro', image: '/iphone_nav/dropdown_iphone_18_pro.jpg', price: 'Crimson Titanium. From ₹1,44,900', isActive: true },
               { label: 'iPhone 17 Pro Max', path: '/iphone?search=iPhone 17 Pro Max', query: 'iPhone 17 Pro Max', image: '/iphone17p_orange.jpg', price: 'Peak Performance. From ₹1,64,900', isActive: true },
               { label: 'iPhone 17 Pro', path: '/iphone?search=iPhone 17 Pro', query: 'iPhone 17 Pro', image: '/iphone17p_white.jpg', price: 'Titanium Build. From ₹1,34,900', isActive: true },
+              { label: 'iPhone 17 Air', path: '/iphone?search=iPhone 17 Air', query: 'iPhone 17 Air', image: '/iphone17_green.jpg', price: 'Ultra Thin Design', isActive: true },
               { label: 'iPhone 17', path: '/iphone?search=iPhone 17', query: 'iPhone 17', image: '/iphone17_green.jpg', price: 'Sleek & Durable. From ₹79,900', isActive: true },
               { label: 'iPhone 17e', path: '/iphone?search=iPhone 17e', query: 'iPhone 17e', image: '/iphone17_green.jpg', price: 'Essential Performance', isActive: true },
               { label: 'iPhone 16', path: '/iphone?search=iPhone 16', query: 'iPhone 16', image: '/iphone_category_uploaded.jpg', price: 'Proven Classic. From ₹69,900', isActive: true },
@@ -154,17 +154,17 @@ export default function NavbarManager() {
             link: '/applecare',
             isActive: true,
             dropdownItems: [
-              { label: 'Explore AppleCare+', path: '/applecare', query: 'AppleCare', image: '/applecare_category_uploaded.png', price: 'Official Warranty Protection', isActive: true },
-              { label: 'AppleCare+ for Mac', path: '/applecare', query: 'Mac', image: '/applecare_category_uploaded.png', price: '3-Year Protection Plan', isActive: true },
-              { label: 'AppleCare+ for iPhone', path: '/applecare', query: 'iPhone', image: '/applecare_category_uploaded.png', price: 'Accidental Damage Protection', isActive: true },
-              { label: 'AppleCare+ for iPad', path: '/applecare', query: 'iPad', image: '/applecare_category_uploaded.png', price: 'Hardware & Battery Coverage', isActive: true }
+              { label: 'Explore AppleCare+', path: '/applecare', query: 'AppleCare', image: '/applecare_official_hero.png', price: 'Official Warranty Protection', isActive: true },
+              { label: 'AppleCare+ for Mac', path: '/applecare', query: 'Mac', image: '/applecare_official_hero.png', price: '3-Year Protection Plan', isActive: true },
+              { label: 'AppleCare+ for iPhone', path: '/applecare', query: 'iPhone', image: '/applecare_official_hero.png', price: 'Accidental Damage Protection', isActive: true },
+              { label: 'AppleCare+ for iPad', path: '/applecare', query: 'iPad', image: '/applecare_official_hero.png', price: 'Hardware & Battery Coverage', isActive: true }
             ]
           }
         ]);
       }
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to load navbar menu settings');
-    } fontFinally: {
+    } finally {
       setLoading(false);
     }
   };
@@ -320,6 +320,7 @@ export default function NavbarManager() {
     setError(null);
     try {
       await axiosClient.put('/settings', { navbarMenuItems: navItems });
+      notifyAdminChange('categories', { action: 'update_navbar' });
       showSuccessMessage('Navbar Menu & Dropdown Sub-Items updated successfully!');
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to save navbar items');
