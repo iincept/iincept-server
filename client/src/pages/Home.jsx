@@ -1764,15 +1764,110 @@ export default function Home() {
         }
 
         @media (max-width: 768px) {
-          .indiaistore-theme .hero-banner { height: 480px; }
-          .indiaistore-theme .hero-banner h1 { font-size: 36px; }
-          .indiaistore-theme .section { padding: 48px 16px; }
+          .indiaistore-theme .hero-banner { height: 440px; }
+          .indiaistore-theme .hero-banner h1 { font-size: 32px; }
+          .indiaistore-theme .section { padding: 36px 16px; }
+          .indiaistore-theme .section-title { font-size: 24px; text-align: left; }
+          
+          .indiaistore-theme .new-arrivals-header,
+          .indiaistore-theme .trending-header,
+          .indiaistore-theme .testimonials-section .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-align: left;
+            position: relative;
+            margin-bottom: 20px;
+            width: 100%;
+          }
+
+          .indiaistore-theme .new-arrivals-header .section-title,
+          .indiaistore-theme .trending-header .section-title,
+          .indiaistore-theme .testimonials-section .section-title {
+            margin: 0;
+            text-align: left;
+            font-size: 24px;
+          }
+
+          .indiaistore-theme .new-arrivals-header .slider-nav-btns,
+          .indiaistore-theme .trending-header .slider-nav-btns,
+          .indiaistore-theme .testimonials-section .slider-nav-btns {
+            position: static;
+            transform: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+          }
+
+          .indiaistore-theme .slider-circle-btn {
+            width: 34px;
+            height: 34px;
+          }
+
+          .indiaistore-theme .rf-ccard-40 {
+            width: 270px;
+            flex: 0 0 270px;
+            height: 360px;
+            min-width: 260px;
+            border-radius: 20px;
+          }
+          .indiaistore-theme .rf-ccard-content-info {
+            padding: 18px 16px;
+          }
+          .indiaistore-theme .rf-ccard-content-headerlink {
+            font-size: 20px;
+            line-height: 1.2;
+          }
+          .indiaistore-theme .rf-ccard-content-desccontent {
+            font-size: 13px;
+          }
+          .indiaistore-theme .rf-ccard-content-descprice {
+            font-size: 12px;
+          }
+          .indiaistore-theme .new-arrivals-slider {
+            gap: 14px;
+            padding: 6px 2px 16px;
+          }
+
           .indiaistore-theme .category-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
           .indiaistore-theme .testimonials-grid { grid-template-columns: 1fr; }
           .indiaistore-theme .form-row { grid-template-columns: 1fr; }
           .indiaistore-theme .category-strip-inner { justify-content: flex-start; }
-          .indiaistore-theme .product-card { flex: 0 0 260px; min-width: 240px; }
-          .indiaistore-theme .trending-card { flex: 0 0 200px; min-width: 180px; }
+          .indiaistore-theme .product-card { flex: 0 0 240px; min-width: 220px; padding: 14px; }
+          .indiaistore-theme .trending-card { flex: 0 0 190px; min-width: 170px; }
+        }
+
+        @media (max-width: 480px) {
+          .indiaistore-theme .section { padding: 28px 14px; }
+          .indiaistore-theme .section-title { font-size: 22px; }
+          
+          .indiaistore-theme .new-arrivals-header .section-title,
+          .indiaistore-theme .trending-header .section-title,
+          .indiaistore-theme .testimonials-section .section-title {
+            font-size: 22px;
+          }
+
+          .indiaistore-theme .rf-ccard-40 {
+            width: 250px;
+            flex: 0 0 250px;
+            height: 340px;
+            min-width: 240px;
+            border-radius: 18px;
+          }
+          .indiaistore-theme .rf-ccard-content-info {
+            padding: 14px 14px;
+          }
+          .indiaistore-theme .rf-ccard-content-headerlink {
+            font-size: 18px;
+          }
+          .indiaistore-theme .rf-ccard-content-header-eyebrow {
+            font-size: 10px;
+          }
+          .indiaistore-theme .slider-circle-btn {
+            width: 30px;
+            height: 30px;
+          }
         }
       `}</style>
 
