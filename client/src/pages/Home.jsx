@@ -749,10 +749,6 @@ export default function Home() {
         .indiaistore-theme .section-link:hover { text-decoration: underline; }
 
         @media (max-width: 640px) {
-          .indiaistore-theme .section-header {
-            flex-direction: column;
-            gap: 8px;
-          }
           .indiaistore-theme .section-link {
             position: static;
             transform: none;
@@ -1839,10 +1835,11 @@ export default function Home() {
           .indiaistore-theme .new-arrivals-header,
           .indiaistore-theme .trending-header,
           .indiaistore-theme .testimonials-section .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            text-align: left;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            text-align: left !important;
             position: relative;
             margin-bottom: 20px;
             width: 100%;
@@ -1851,20 +1848,21 @@ export default function Home() {
           .indiaistore-theme .new-arrivals-header .section-title,
           .indiaistore-theme .trending-header .section-title,
           .indiaistore-theme .testimonials-section .section-title {
-            margin: 0;
-            text-align: left;
+            margin: 0 !important;
+            text-align: left !important;
             font-size: 24px;
           }
 
           .indiaistore-theme .new-arrivals-header .slider-nav-btns,
           .indiaistore-theme .trending-header .slider-nav-btns,
           .indiaistore-theme .testimonials-section .slider-nav-btns {
-            position: static;
-            transform: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
+            position: static !important;
+            transform: none !important;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 8px !important;
+            flex-shrink: 0 !important;
           }
 
           .indiaistore-theme .slider-circle-btn {
