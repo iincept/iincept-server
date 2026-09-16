@@ -646,12 +646,40 @@ export default function Home() {
           transform: translateY(-50%) scale(1.08);
         }
 
-        .indiaistore-theme .category-strip-arrow-left {
-          left: 10px;
+        .indiaistore-theme .category-strip-arrow-left,
+        .indiaistore-theme .slider-side-arrow-left {
+          left: 6px;
         }
 
-        .indiaistore-theme .category-strip-arrow-right {
-          right: 10px;
+        .indiaistore-theme .category-strip-arrow-right,
+        .indiaistore-theme .slider-side-arrow-right {
+          right: 6px;
+        }
+
+        .indiaistore-theme .slider-side-arrow {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 10;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.94);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          display: none; /* Hidden on desktop */
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          outline: none;
+          color: #1d1d1f;
+        }
+
+        .indiaistore-theme .slider-side-arrow:hover {
+          background: #ffffff;
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+          transform: translateY(-50%) scale(1.08);
         }
 
         .indiaistore-theme .strip-item {
@@ -1821,8 +1849,13 @@ export default function Home() {
         }
 
         @media (max-width: 900px) {
-          .indiaistore-theme .category-strip-arrow {
+          .indiaistore-theme .category-strip-arrow,
+          .indiaistore-theme .slider-side-arrow {
             display: flex;
+          }
+          .indiaistore-theme .new-arrivals-header .slider-nav-btns,
+          .indiaistore-theme .trending-header .slider-nav-btns {
+            display: none !important;
           }
         }
 
@@ -2074,6 +2107,18 @@ export default function Home() {
           </div>
         </div>
         <div className="new-arrivals-slider-wrap">
+          <button
+            type="button"
+            className="slider-side-arrow slider-side-arrow-left"
+            onClick={() => scrollNewArrivals('left')}
+            title="Previous New Arrivals"
+            aria-label="Previous New Arrivals"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+
           <div ref={newArrivalsSliderRef} className="new-arrivals-slider">
             {newArrivalsList.map((item, idx) => {
               const card1ImgWebp = "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/store-card-40-iphone-duo-202609_GEO_IN?wid=800&hei=1000&fmt=webp&qlt=90&.v=UzBXQnlhUWdraTNvNU1Kb3pEQlpXTmRieWJxSUI5TWh3VExiQnFCdzRFUVIzWjZtanZvZXBzWDFVU2JjN3Z3cXBxK0ZBNmxGbmUyUFZlUkRMaDBrbFIrM1V0MXQ3L01IeDRJOXlOYjZtNC9JTVpqRTIzSGM4czgvT0dWYlpqZnY&traceId=1";
@@ -2182,6 +2227,18 @@ export default function Home() {
               );
             })}
           </div>
+
+          <button
+            type="button"
+            className="slider-side-arrow slider-side-arrow-right"
+            onClick={() => scrollNewArrivals('right')}
+            title="Next New Arrivals"
+            aria-label="Next New Arrivals"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
         </div>
       </section>
 
@@ -2248,6 +2305,18 @@ export default function Home() {
           </div>
         </div>
         <div className="trending-slider-wrap">
+          <button
+            type="button"
+            className="slider-side-arrow slider-side-arrow-left"
+            onClick={() => scrollTrending('left')}
+            title="Previous Trending"
+            aria-label="Previous Trending"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+
           <div ref={trendingSliderRef} className="trending-grid">
             {trendingList.map((item) => (
               <Link key={item.id} to={item.path} className="trending-card">
@@ -2274,6 +2343,18 @@ export default function Home() {
               </Link>
             ))}
           </div>
+
+          <button
+            type="button"
+            className="slider-side-arrow slider-side-arrow-right"
+            onClick={() => scrollTrending('right')}
+            title="Next Trending"
+            aria-label="Next Trending"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
         </div>
       </section>
 
