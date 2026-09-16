@@ -1150,22 +1150,22 @@ export default function Home() {
           padding: 64px 22px;
         }
 
-        .indiaistore-theme .categories-inner { max-width: 1340px; margin: 0 auto; }
+        .indiaistore-theme .categories-inner { max-width: 1440px; margin: 0 auto; }
 
         .indiaistore-theme .category-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 28px;
+          gap: 32px;
         }
 
         .indiaistore-theme .category-card {
           background: #ffffff;
-          border-radius: 24px;
+          border-radius: 28px;
           overflow: hidden;
           text-align: left;
           transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
           cursor: pointer;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
           text-decoration: none;
           border: 1px solid rgba(0, 0, 0, 0.08);
           display: flex;
@@ -1174,12 +1174,12 @@ export default function Home() {
         }
 
         .indiaistore-theme .category-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 14px 36px rgba(0, 0, 0, 0.1);
+          transform: translateY(-6px);
+          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
         }
 
         .indiaistore-theme .category-card-body {
-          padding: 24px 26px 18px;
+          padding: 26px 28px 20px;
           background: #ffffff;
         }
 
@@ -1192,11 +1192,11 @@ export default function Home() {
         }
 
         .indiaistore-theme .category-card-title {
-          font-size: 22px;
+          font-size: 24px;
           font-weight: 700;
           color: #1d1d1f;
           line-height: 1.25;
-          letter-spacing: -0.01em;
+          letter-spacing: -0.015em;
         }
 
         .indiaistore-theme .category-card-title .text-primary {
@@ -1206,17 +1206,17 @@ export default function Home() {
 
         .indiaistore-theme .category-icon {
           width: 100%;
-          height: 260px;
+          height: 290px;
           margin: 0;
           background: #f5f5f7;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 48px;
+          font-size: 52px;
           overflow: hidden;
-          padding: 26px 22px;
-          border-bottom-left-radius: 24px;
-          border-bottom-right-radius: 24px;
+          padding: 28px 24px;
+          border-bottom-left-radius: 28px;
+          border-bottom-right-radius: 28px;
           transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -1937,11 +1937,11 @@ export default function Home() {
             padding: 6px 2px 16px;
           }
 
-          .indiaistore-theme .category-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-          .indiaistore-theme .category-card-body { padding: 16px 16px 12px; }
-          .indiaistore-theme .category-card-eyebrow { font-size: 12px; }
-          .indiaistore-theme .category-card-title { font-size: 17px; }
-          .indiaistore-theme .category-icon { height: 180px; padding: 16px 12px; }
+          .indiaistore-theme .category-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+          .indiaistore-theme .category-card-body { padding: 18px 18px 14px; }
+          .indiaistore-theme .category-card-eyebrow { font-size: 13px; }
+          .indiaistore-theme .category-card-title { font-size: 18px; }
+          .indiaistore-theme .category-icon { height: 210px; padding: 18px 14px; }
           .indiaistore-theme .testimonials-grid { grid-template-columns: 1fr; }
           .indiaistore-theme .form-row { grid-template-columns: 1fr; }
           .indiaistore-theme .category-strip-inner { justify-content: flex-start; }
