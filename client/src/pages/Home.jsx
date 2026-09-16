@@ -1150,12 +1150,12 @@ export default function Home() {
           padding: 64px 22px;
         }
 
-        .indiaistore-theme .categories-inner { max-width: 1400px; margin: 0 auto; }
+        .indiaistore-theme .categories-inner { max-width: 1200px; margin: 0 auto; }
 
         .indiaistore-theme .category-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 28px;
+          gap: 24px;
         }
 
         .indiaistore-theme .category-card {
