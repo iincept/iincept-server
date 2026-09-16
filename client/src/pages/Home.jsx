@@ -616,7 +616,7 @@ export default function Home() {
           display: flex;
           justify-content: center;
           gap: 8px;
-          padding: 0 44px;
+          padding: 0 22px;
           min-width: max-content;
         }
 
@@ -631,7 +631,7 @@ export default function Home() {
           background: rgba(255, 255, 255, 0.94);
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
           border: 1px solid rgba(0, 0, 0, 0.08);
-          display: flex;
+          display: none; /* Hidden on desktop */
           align-items: center;
           justify-content: center;
           cursor: pointer;
@@ -1822,6 +1822,12 @@ export default function Home() {
           .indiaistore-theme .deal-banner { flex-direction: column; text-align: center; padding: 36px 24px; }
           .indiaistore-theme .deal-visual { width: 100%; max-width: 360px; height: 260px; }
           .indiaistore-theme .b2b-inner { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 900px) {
+          .indiaistore-theme .category-strip-arrow {
+            display: flex;
+          }
         }
 
         @media (max-width: 768px) {
