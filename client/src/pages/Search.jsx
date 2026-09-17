@@ -91,7 +91,7 @@ export default function Search() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.map((prod) => {
-            const productImg = prod.image || (prod.images && prod.images[0]) || '/avatar.png';
+            const productImg = prod.displayImage || prod.image || (prod.images && prod.images[0]) || '/avatar.png';
             const matchedSku = getMatchingSku(prod, query);
             return (
               <div 

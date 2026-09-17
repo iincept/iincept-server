@@ -618,7 +618,7 @@ export default function ProductDetails() {
   const product = isValidCurrentProduct ? currentProduct : localProduct;
 
   useEffect(() => {
-    const rawTarget = activeImage || (product ? (colors[0]?.image || product.images?.[0] || product.image) : '');
+    const rawTarget = activeImage || (selectedColor ? (colors.find(c => c.name === selectedColor.name)?.image || product?.images?.[0]) : (product?.displayImage || colors[0]?.image || product?.images?.[0] || product?.image)) || '';
     if (!rawTarget) return;
 
     let isMounted = true;

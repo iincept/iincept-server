@@ -408,7 +408,7 @@ export default function Shop() {
                         <Heart className="h-4 w-4" />
                       </button>
                       <img 
-                        src={prod.image || (prod.images && prod.images[0]) || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80'} 
+                        src={prod.displayImage || prod.image || (prod.images && prod.images[0]) || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80'} 
                         alt={prod.name || prod.title}
                         className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 mix-blend-multiply"
                       />

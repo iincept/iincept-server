@@ -53,6 +53,8 @@ const createProduct = async (req, res) => {
       variants,
       partNumber,
       modelNumber,
+      displayImage,
+      colorImages,
     } = req.body;
 
     // Validate category exists
@@ -83,6 +85,8 @@ const createProduct = async (req, res) => {
       variants,
       partNumber,
       modelNumber,
+      displayImage: displayImage || "",
+      colorImages: colorImages || {},
     });
 
     res.status(201).json(product);
@@ -126,6 +130,8 @@ const updateProduct = async (req, res) => {
       variants,
       partNumber,
       modelNumber,
+      displayImage,
+      colorImages,
     } = req.body;
 
     const product = await Product.findById(productId);
@@ -163,6 +169,8 @@ const updateProduct = async (req, res) => {
     if (variants !== undefined) product.variants = variants;
     if (partNumber !== undefined) product.partNumber = partNumber;
     if (modelNumber !== undefined) product.modelNumber = modelNumber;
+    if (displayImage !== undefined) product.displayImage = displayImage;
+    if (colorImages !== undefined) product.colorImages = colorImages;
 
     // Auto-sync parent product price with lowest variant price if variants exist
     if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {

@@ -464,9 +464,21 @@ export default function Airpods() {
   };
 
   const getProductImage = (prod) => {
+    const hasUserSelectedColor = Boolean(selectedColors[prod.id]);
+    if (!hasUserSelectedColor && prod.displayImage) {
+      return prod.displayImage;
+    }
+
     const selectedColorName = selectedColors[prod.id] || (prod.colors && prod.colors[0] ? (prod.colors[0].name || (typeof prod.colors[0] === 'string' ? prod.colors[0] : '')) : null);
     if (selectedColorName) {
-      const foundColor = prod.colors.find((c) => c.name === selectedColorName);
+      if (prod.colorImages && typeof prod.colorImages === 'object') {
+        const targetNorm = selectedColorName.replace(/\s+/g, ' ').trim().toLowerCase();
+        const matchedKey = Object.keys(prod.colorImages).find(k => k.replace(/\s+/g, ' ').trim().toLowerCase() === targetNorm);
+        if (matchedKey && prod.colorImages[matchedKey]) {
+          return prod.colorImages[matchedKey];
+        }
+      }
+      const foundColor = prod.colors.find((c) => (c.name || c) === selectedColorName);
       if (foundColor && foundColor.image) {
         return foundColor.image;
       }
@@ -475,7 +487,7 @@ export default function Airpods() {
         return prod.images[colorIdx];
       }
     }
-    return prod.image;
+    return prod.displayImage || prod.image;
   };
 
   const handleAddToCart = (prod) => {
@@ -547,7 +559,9 @@ export default function Airpods() {
       name: p.title || p.name,
       price: p.price,
       priceStr: `₹${p.price.toLocaleString()}`,
-      image: isValidImg ? firstImg : '/airpods_pro_3.jpg',
+      displayImage: p.displayImage || '',
+      colorImages: p.colorImages || {},
+      image: p.displayImage || (isValidImg ? firstImg : '/airpods_pro_3.jpg'),
       images: p.images || [],
       colors: Array.isArray(p.colors) ? p.colors.map(c => {
         const name = typeof c === 'string' ? c : (c.name || '');
@@ -896,12 +910,6 @@ export default function Airpods() {
 
         return (
           <>
-            {/* Controller Bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-150 pb-6 mb-8 text-sm font-sans uppercase font-bold text-zinc-500 tracking-wider">
-              <div className="text-zinc-800 text-xs tracking-widest">
-                SHOWING ALL {filteredProducts.length} RESULTS
-              </div>
-            </div>
 
             {/* Filter Drawer */}
             {filterOpen && (

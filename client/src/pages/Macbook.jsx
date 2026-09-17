@@ -398,9 +398,21 @@ export default function Macbook() {
   };
 
   const getProductImage = (prod) => {
+    const hasUserSelectedColor = Boolean(selectedColors[prod.id]);
+    if (!hasUserSelectedColor && prod.displayImage) {
+      return prod.displayImage;
+    }
+
     const selectedColorName = selectedColors[prod.id] || (prod.colors && prod.colors[0] ? (prod.colors[0].name || prod.colors[0].rawName || (typeof prod.colors[0] === 'string' ? prod.colors[0] : '')) : null);
     if (selectedColorName) {
       const targetNorm = selectedColorName.replace(/\s+/g, ' ').trim().toLowerCase();
+
+      if (prod.colorImages && typeof prod.colorImages === 'object') {
+        const matchedKey = Object.keys(prod.colorImages).find(k => k.replace(/\s+/g, ' ').trim().toLowerCase() === targetNorm);
+        if (matchedKey && prod.colorImages[matchedKey]) {
+          return prod.colorImages[matchedKey];
+        }
+      }
 
       // 1. Match in prod.colors by name or rawName
       const foundColor = prod.colors?.find((c) => {
@@ -433,6 +445,10 @@ export default function Macbook() {
           return prod.images[colorIdx];
         }
       }
+    }
+
+    if (prod.displayImage) {
+      return prod.displayImage;
     }
 
     if (prod.image && !prod.image.includes('macbook_category')) {
@@ -587,7 +603,9 @@ export default function Macbook() {
       name: p.title || p.name,
       price: effectivePrice,
       priceStr: `₹${effectivePrice.toLocaleString('en-IN')}`,
-      image: isValidImg ? firstImg : '/macbook_category_v3.jpg',
+      displayImage: p.displayImage || '',
+      colorImages: p.colorImages || {},
+      image: p.displayImage || (isValidImg ? firstImg : '/macbook_category_v3.jpg'),
       images: p.images || [],
       variants: p.variants || [],
       colors: Array.isArray(p.colors) ? p.colors.map(c => {
@@ -970,14 +988,20 @@ export default function Macbook() {
           );
         }
 
+        const currentSearchVal = searchParams.get('search') || '';
         return (
           <>
-            {/* Top Filter and View Controller Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 mb-6 text-sm font-sans uppercase font-bold text-zinc-500 tracking-wider">
-        <div className="text-zinc-800 text-xs tracking-widest">
-          SHOWING ALL {filteredProducts.length} RESULTS
-        </div>
-      </div>
+            {currentSearchVal && (
+              <div className="flex items-center justify-between gap-4 pb-4 mb-4 text-sm font-sans uppercase font-bold text-zinc-500 tracking-wider">
+                <button
+                  onClick={() => setSearchParams({})}
+                  className="text-xs font-semibold text-[#0071e3] hover:underline cursor-pointer flex items-center gap-1"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Clear Search Filter ("{currentSearchVal}")
+                </button>
+              </div>
+            )}
 
       {/* Slide-out Filter Drawer */}
       {filterOpen && (

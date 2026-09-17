@@ -172,6 +172,8 @@ export default function Products() {
     processors: [],
     material: [],
     features: [],
+    displayImage: '',
+    colorImages: {},
     images: [],
     variants: [],
     partNumber: '',
@@ -205,6 +207,38 @@ export default function Products() {
       setError(err.response?.data?.message || err.message || 'Failed to fetch catalog data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDisplayImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append('images', file);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axiosClient.post('/upload/multiple', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const uploadedUrl = response.data[0]?.url;
+      if (uploadedUrl) {
+        setProductForm(prev => ({
+          ...prev,
+          displayImage: uploadedUrl,
+          images: prev.images.includes(uploadedUrl) ? prev.images : [uploadedUrl, ...prev.images]
+        }));
+        showSuccessMessage('Display Image uploaded successfully!');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Display Image upload failed');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -462,11 +496,16 @@ export default function Products() {
       storage: finalStorage,
       ram: finalRam,
       processors: finalProcessors,
-      variants: finalVariantsWithPrice
+      variants: finalVariantsWithPrice,
+      displayImage: productForm.displayImage || '',
+      colorImages: productForm.colorImages || {}
     };
 
     // Auto-populate top-level images from all variant images
     const allImages = [];
+    if (productForm.displayImage && !allImages.includes(productForm.displayImage)) {
+      allImages.push(productForm.displayImage);
+    }
     if (productForm.images && productForm.images.length > 0) {
       productForm.images.forEach(img => {
         if (!allImages.includes(img)) allImages.push(img);
@@ -482,7 +521,7 @@ export default function Products() {
     formattedProduct.images = allImages;
 
     if (formattedProduct.images.length === 0) {
-      setError('Please upload at least one product image or variant image');
+      setError('Please upload at least one product image, display image, or variant image');
       setLoading(false);
       return;
     }
@@ -537,6 +576,8 @@ export default function Products() {
       processors: Array.isArray(prod.processors) ? prod.processors : (prod.processor ? [prod.processor] : []),
       material: prod.material || [],
       features: prod.features || [],
+      displayImage: prod.displayImage || '',
+      colorImages: prod.colorImages || {},
       images: prod.images || [],
       variants: prodVariants,
       partNumber: prod.partNumber || '',
@@ -590,6 +631,8 @@ export default function Products() {
       glasses: [],
       material: [],
       features: [],
+      displayImage: '',
+      colorImages: {},
       images: [],
       variants: [],
       partNumber: '',
@@ -655,10 +698,15 @@ export default function Products() {
 
   const getPreviewImages = () => {
     // Collect all images matching selected color variant or fallback
-    if (productForm.variants && productForm.variants.length > 0) {
+    if (selectedPreviewColor && productForm.variants && productForm.variants.length > 0) {
       const match = productForm.variants.find(v => v.color === selectedPreviewColor);
       if (match && match.images && match.images.length > 0) return match.images;
-
+    }
+    if (productForm.displayImage) {
+      const restImages = (productForm.images || []).filter(img => img !== productForm.displayImage);
+      return [productForm.displayImage, ...restImages];
+    }
+    if (productForm.variants && productForm.variants.length > 0) {
       const anyVarWithImg = productForm.variants.find(v => v.images && v.images.length > 0);
       if (anyVarWithImg) return anyVarWithImg.images;
     }
@@ -674,7 +722,7 @@ export default function Products() {
     } else {
       setActivePreviewMainImage('/iphone_category_v2.jpg');
     }
-  }, [selectedPreviewColor, productForm.variants, productForm.images]);
+  }, [selectedPreviewColor, productForm.variants, productForm.images, productForm.displayImage]);
 
   return (
     <div className="w-full text-left font-sans">
@@ -770,12 +818,17 @@ export default function Products() {
                     {filteredProducts.map((prod) => (
                       <tr key={prod._id} className="hover:bg-zinc-50/50 transition-colors">
                         <td className="py-4 px-6 flex items-center gap-3">
-                          <div className="h-12 w-12 rounded-xl bg-white border border-zinc-150 p-1 flex items-center justify-center overflow-hidden shrink-0">
+                          <div className="h-12 w-12 rounded-xl bg-white border border-zinc-150 p-1 flex items-center justify-center overflow-hidden shrink-0 relative">
                             <img
-                              src={prod.images?.[0] || '/iphone_category_v2.jpg'}
+                              src={prod.displayImage || prod.images?.[0] || '/iphone_category_v2.jpg'}
                               alt=""
                               className="w-full h-full object-contain"
                             />
+                            {prod.displayImage && (
+                              <span className="absolute bottom-0.5 right-0.5 bg-[#0071e3] text-white text-[9px] font-bold px-1 py-0 rounded" title="Display Image Active">
+                                ★
+                              </span>
+                            )}
                           </div>
                           <div>
                             <span className="font-semibold text-zinc-900 block font-sans text-sm">
@@ -1109,10 +1162,93 @@ export default function Products() {
                   </div>
                 </div>
 
+                {/* Primary Display Image (Card Cover Image) */}
+                <div className="border-t border-zinc-150 pt-4 space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="block text-[10px] font-extrabold text-[#0071e3] uppercase tracking-wider">
+                        🖼️ Primary Display Image (Hero Card Cover Image)
+                      </label>
+                      {productForm.displayImage && (
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          Display Image Active
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-zinc-500 mt-0.5">
+                      This image is shown on store product cards (Mac, iPhone, iPad, Watch, AirPods) as default cover before a color swatch is clicked.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-blue-50/50 p-3.5 rounded-xl border border-blue-100">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="display-image-upload"
+                      onChange={handleDisplayImageUpload}
+                      className="hidden"
+                    />
+
+                    {/* Current Display Image Preview */}
+                    {productForm.displayImage ? (
+                      <div className="relative h-24 w-24 rounded-xl border border-blue-200 bg-white overflow-hidden p-1 flex items-center justify-center shrink-0 shadow-sm">
+                        <img src={productForm.displayImage} alt="Display Image" className="w-full h-full object-contain" />
+                        <button
+                          type="button"
+                          onClick={() => setProductForm(prev => ({ ...prev, displayImage: '' }))}
+                          className="absolute top-1 right-1 h-5 w-5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] rounded-full flex items-center justify-center cursor-pointer border-0 shadow-sm"
+                          title="Remove Display Image"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="h-24 w-24 rounded-xl border-2 border-dashed border-blue-200 bg-white flex flex-col items-center justify-center text-center p-2 text-zinc-400 shrink-0">
+                        <Package className="h-6 w-6 mb-1 text-blue-400" />
+                        <span className="text-[9px] font-bold text-zinc-400 uppercase">No Image</span>
+                      </div>
+                    )}
+
+                    {/* Controls & URL input */}
+                    <div className="flex-1 space-y-2.5 w-full">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          type="button"
+                          disabled={uploadingImage}
+                          onClick={() => document.getElementById('display-image-upload').click()}
+                          className="px-3.5 py-2 bg-[#0071e3] hover:bg-blue-600 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 cursor-pointer border-0 shadow-xs transition-all"
+                        >
+                          {uploadingImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                          Upload Display Image
+                        </button>
+                        {productForm.images && productForm.images.length > 0 && !productForm.displayImage && (
+                          <button
+                            type="button"
+                            onClick={() => setProductForm(prev => ({ ...prev, displayImage: prev.images[0] }))}
+                            className="px-3 py-2 bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-700 font-bold rounded-xl text-xs cursor-pointer shadow-xs"
+                          >
+                            Set First Product Image
+                          </button>
+                        )}
+                      </div>
+
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Or paste Display Image URL (e.g. /mac_nav/macbook_air_m3.png or https://...)"
+                          value={productForm.displayImage || ''}
+                          onChange={(e) => setProductForm({ ...productForm, displayImage: e.target.value })}
+                          className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-xs outline-none bg-white font-mono focus:border-[#0071e3]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* General Product Image Upload (Used if no variants exist) */}
                 <div className="border-t border-zinc-150 pt-4">
                   <label className="block text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider mb-2">
-                    Base Product Images (For non-variant items)
+                    Base Product Gallery Images
                   </label>
                   <div className="flex flex-wrap items-center gap-3">
                     <input
@@ -1124,23 +1260,40 @@ export default function Products() {
                       className="hidden"
                     />
 
-                    {productForm.images && productForm.images.map((imgUrl, imgIdx) => (
-                      <div key={imgIdx} className="relative h-16 w-16 rounded-xl border border-zinc-200 bg-white overflow-hidden p-1 flex items-center justify-center shrink-0 shadow-sm">
-                        <img src={imgUrl} alt="" className="w-full h-full object-contain" />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setProductForm(prev => ({
-                              ...prev,
-                              images: prev.images.filter((_, i) => i !== imgIdx)
-                            }));
-                          }}
-                          className="absolute top-1 right-1 h-5 w-5 bg-black/60 hover:bg-black text-white font-bold text-[10px] rounded-full flex items-center justify-center cursor-pointer border-0 shadow-sm"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
+                    {productForm.images && productForm.images.map((imgUrl, imgIdx) => {
+                      const isDisplay = productForm.displayImage === imgUrl;
+                      return (
+                        <div key={imgIdx} className={`relative h-16 w-16 rounded-xl border ${isDisplay ? 'border-2 border-[#0071e3] ring-2 ring-blue-100' : 'border-zinc-200'} bg-white overflow-hidden p-1 flex items-center justify-center shrink-0 shadow-sm group`}>
+                          <img src={imgUrl} alt="" className="w-full h-full object-contain" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setProductForm(prev => ({
+                                ...prev,
+                                displayImage: isDisplay ? '' : imgUrl
+                              }));
+                            }}
+                            className={`absolute bottom-1 left-1 h-5 w-5 ${isDisplay ? 'bg-[#0071e3] text-white' : 'bg-black/40 hover:bg-black text-white'} font-bold text-[10px] rounded-full flex items-center justify-center cursor-pointer border-0 shadow-sm`}
+                            title={isDisplay ? "Current Display Image" : "Set as Display Image"}
+                          >
+                            ★
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setProductForm(prev => ({
+                                ...prev,
+                                images: prev.images.filter((_, i) => i !== imgIdx),
+                                displayImage: prev.displayImage === imgUrl ? '' : prev.displayImage
+                              }));
+                            }}
+                            className="absolute top-1 right-1 h-5 w-5 bg-black/60 hover:bg-black text-white font-bold text-[10px] rounded-full flex items-center justify-center cursor-pointer border-0 shadow-sm"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      );
+                    })}
 
                     <button
                       type="button"

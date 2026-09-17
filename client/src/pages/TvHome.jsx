@@ -797,12 +797,6 @@ export default function TvHome() {
 
         return (
           <>
-            {/* Controller Bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-150 pb-6 mb-8 text-sm font-sans uppercase font-bold text-zinc-500 tracking-wider">
-              <div className="text-zinc-800 text-xs tracking-widest">
-                SHOWING ALL {filteredProducts.length} RESULTS
-              </div>
-            </div>
 
             {/* Filter Drawer */}
             {filterOpen && (

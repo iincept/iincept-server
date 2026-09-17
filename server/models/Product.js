@@ -77,6 +77,14 @@ const productSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    displayImage: {
+      type: String,
+      default: "",
+    },
+    colorImages: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
     colors: {
       type: [mongoose.Schema.Types.Mixed],
       default: [],

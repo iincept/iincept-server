@@ -651,8 +651,22 @@ export default function Iphone() {
   const getProductImage = (prod) => {
     if (!prod) return '/iphone_category_v2.jpg';
 
+    const hasUserSelectedColor = Boolean(selectedColors[prod.id]);
+    if (!hasUserSelectedColor && isValidImageString(prod.displayImage)) {
+      return prod.displayImage;
+    }
+
     const lowerName = (prod.name || prod.title || '').toLowerCase();
     const userSelectedColor = selectedColors[prod.id] || (prod.colors && prod.colors[0] ? (prod.colors[0].name || prod.colors[0].rawName || (typeof prod.colors[0] === 'string' ? prod.colors[0] : '')) : null);
+
+    // Check for color-specific image map
+    if (userSelectedColor && prod.colorImages && typeof prod.colorImages === 'object') {
+      const targetNorm = userSelectedColor.replace(/\s+/g, ' ').trim().toLowerCase();
+      const matchedKey = Object.keys(prod.colorImages).find(k => k.replace(/\s+/g, ' ').trim().toLowerCase() === targetNorm);
+      if (matchedKey && isValidImageString(prod.colorImages[matchedKey])) {
+        return prod.colorImages[matchedKey];
+      }
+    }
 
     // Check for color-specific image
     if (userSelectedColor && prod.colors && Array.isArray(prod.colors)) {
@@ -807,7 +821,9 @@ export default function Iphone() {
       name: (p.title || p.name || '').replace(/^phone\b/i, 'iPhone'),
       price: p.price,
       priceStr: `₹${p.price.toLocaleString('en-IN')}`,
-      image: isValidImg ? firstImg : '/iphone_category_v2.jpg',
+      displayImage: p.displayImage || '',
+      colorImages: p.colorImages || {},
+      image: p.displayImage || (isValidImg ? firstImg : '/iphone_category_v2.jpg'),
       images: p.images || [],
       variants: p.variants || [],
       stock: p.stock,
@@ -1216,13 +1232,8 @@ export default function Iphone() {
 
         return (
           <>
-            {/* Top Filter and View Controller Bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-150 pb-6 mb-8 text-sm font-sans uppercase font-bold text-zinc-500 tracking-wider">
-              <div className="text-zinc-800 text-xs tracking-widest flex items-center gap-2">
-                <span>SHOWING ALL {filteredProducts.length} RESULTS</span>
-              </div>
-
-              {searchQuery && (
+            {searchQuery && (
+              <div className="flex items-center justify-between gap-4 pb-4 mb-4 text-sm font-sans uppercase font-bold text-zinc-500 tracking-wider">
                 <button
                   onClick={() => setSearchParams({})}
                   className="text-xs font-semibold text-[#0071e3] hover:underline cursor-pointer flex items-center gap-1"
@@ -1230,8 +1241,8 @@ export default function Iphone() {
                   <X className="w-3.5 h-3.5" />
                   Clear Search Filter ("{searchQuery}")
                 </button>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Slide-out Filter Drawer */}
             {filterOpen && (

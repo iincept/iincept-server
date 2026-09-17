@@ -489,9 +489,21 @@ export default function Ipad() {
   };
 
   const getProductImage = (prod) => {
+    const hasUserSelectedColor = Boolean(selectedColors[prod.id]);
+    if (!hasUserSelectedColor && prod.displayImage) {
+      return prod.displayImage;
+    }
+
     const selectedColorName = selectedColors[prod.id] || (prod.colors && prod.colors[0] ? (prod.colors[0].name || prod.colors[0].rawName || (typeof prod.colors[0] === 'string' ? prod.colors[0] : '')) : null);
     if (selectedColorName) {
       const targetNorm = selectedColorName.replace(/\s+/g, ' ').trim().toLowerCase();
+
+      if (prod.colorImages && typeof prod.colorImages === 'object') {
+        const matchedKey = Object.keys(prod.colorImages).find(k => k.replace(/\s+/g, ' ').trim().toLowerCase() === targetNorm);
+        if (matchedKey && prod.colorImages[matchedKey]) {
+          return prod.colorImages[matchedKey];
+        }
+      }
 
       const foundColor = prod.colors.find((c) => {
         const cNorm = (c.name || c.rawName || c).replace(/\s+/g, ' ').trim().toLowerCase();
@@ -524,6 +536,10 @@ export default function Ipad() {
       if (targetNorm.includes('space gray') || targetNorm.includes('black') || targetNorm.includes('dark')) return '/ipad_category.jpg';
       if (targetNorm.includes('purple') || targetNorm.includes('pink')) return '/ipad_category_v3.png';
       if (targetNorm.includes('starlight') || targetNorm.includes('silver') || targetNorm.includes('white')) return '/ipad_category_v2.jpg';
+    }
+
+    if (prod.displayImage) {
+      return prod.displayImage;
     }
 
     if (prod.image && !prod.image.includes('ipad_category')) {
@@ -637,7 +653,9 @@ export default function Ipad() {
       name: p.title || p.name,
       price: p.price,
       priceStr: `₹${p.price.toLocaleString()}`,
-      image: isValidImg ? firstImg : '/ipad_category_v2.jpg',
+      displayImage: p.displayImage || '',
+      colorImages: p.colorImages || {},
+      image: p.displayImage || (isValidImg ? firstImg : '/ipad_category_v2.jpg'),
       images: p.images || [],
       variants: p.variants || [],
       colors: Array.isArray(p.colors) ? p.colors.map(c => {
@@ -1048,12 +1066,6 @@ export default function Ipad() {
 
         return (
           <>
-            {/* Controller Bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-150 pb-6 mb-8 text-sm font-sans uppercase font-bold text-zinc-500 tracking-wider">
-              <div className="text-zinc-800 text-xs tracking-widest">
-                SHOWING ALL {filteredProducts.length} RESULTS
-              </div>
-            </div>
 
             {/* Filter Drawer */}
             {filterOpen && (

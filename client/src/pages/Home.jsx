@@ -1155,7 +1155,7 @@ export default function Home() {
         .indiaistore-theme .category-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 32px;
+          gap: 18px;
         }
 
         .indiaistore-theme .category-card {
@@ -1181,14 +1181,16 @@ export default function Home() {
         .indiaistore-theme .category-card-body {
           padding: 26px 28px 20px;
           background: #ffffff;
+          text-align: center;
         }
 
         .indiaistore-theme .category-card-eyebrow {
-          font-size: 14px;
-          font-weight: 600;
-          color: #e05600;
-          letter-spacing: 0.02em;
-          margin-bottom: 6px;
+          font-size: 22px;
+          font-weight: 700;
+          color: #1d1d1f;
+          letter-spacing: -0.015em;
+          margin-bottom: 0;
+          text-align: center;
         }
 
         .indiaistore-theme .category-card-title {
@@ -1296,7 +1298,7 @@ export default function Home() {
 
         .indiaistore-theme .trending-grid {
           display: flex;
-          gap: 28px;
+          gap: 16px;
           overflow-x: auto;
           scroll-behavior: smooth;
           -webkit-overflow-scrolling: touch;
@@ -1316,8 +1318,8 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-          flex: 0 0 calc((100% - 84px) / 4);
-          min-width: 315px;
+          flex: 0 0 calc((100% - 48px) / 4);
+          min-width: 280px;
           box-sizing: border-box;
         }
 
@@ -1855,21 +1857,84 @@ export default function Home() {
           color: var(--apple-gray);
         }
 
-        /* ========== RESPONSIVE ========== */
         @media (max-width: 1100px) {
           .indiaistore-theme .category-grid { grid-template-columns: repeat(4, 1fr); }
-          .indiaistore-theme .deal-banner { flex-direction: column; text-align: center; padding: 36px 24px; }
-          .indiaistore-theme .deal-visual { width: 100%; max-width: 360px; height: 260px; }
+          .indiaistore-theme .deal-banner {
+            flex-direction: row !important;
+            text-align: left !important;
+            padding: 22px 18px !important;
+            margin: 0 16px 44px !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 10px !important;
+            overflow: hidden !important;
+            position: relative !important;
+            border-radius: 24px !important;
+          }
+          .indiaistore-theme .deal-content {
+            flex: 1 !important;
+            max-width: 58% !important;
+            text-align: left !important;
+            z-index: 2 !important;
+          }
+          .indiaistore-theme .deal-eyebrow {
+            font-size: 10px !important;
+            letter-spacing: 0.5px !important;
+            margin-bottom: 4px !important;
+            color: #f59e0b !important;
+          }
+          .indiaistore-theme .deal-title {
+            font-size: 16px !important;
+            line-height: 1.2 !important;
+            margin-bottom: 6px !important;
+          }
+          .indiaistore-theme .deal-desc {
+            font-size: 10px !important;
+            line-height: 1.35 !important;
+            margin-bottom: 10px !important;
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
+          }
+          .indiaistore-theme .deal-price {
+            font-size: 18px !important;
+            margin-bottom: 10px !important;
+          }
+          .indiaistore-theme .deal-price span {
+            font-size: 11px !important;
+            margin-left: 6px !important;
+          }
+          .indiaistore-theme .deal-banner .btn {
+            font-size: 11px !important;
+            padding: 7px 16px !important;
+            border-radius: 20px !important;
+            margin-top: 0 !important;
+            display: inline-flex !important;
+          }
+          .indiaistore-theme .deal-visual {
+            width: 46% !important;
+            max-width: 205px !important;
+            height: 145px !important;
+            shrink: 0 !important;
+            margin-left: auto !important;
+            position: relative !important;
+            overflow: visible !important;
+          }
+          .indiaistore-theme .deal-visual img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important;
+            transform: translateY(8px) scale(1.32) !important;
+          }
           .indiaistore-theme .b2b-inner { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 900px) {
           .indiaistore-theme .category-strip-arrow,
-          .indiaistore-theme .slider-side-arrow {
-            display: flex;
-          }
-          .indiaistore-theme .new-arrivals-header .slider-nav-btns,
-          .indiaistore-theme .trending-header .slider-nav-btns {
+          .indiaistore-theme .slider-side-arrow,
+          .indiaistore-theme .slider-nav-btns,
+          .indiaistore-theme .slider-circle-btn {
             display: none !important;
           }
         }
@@ -1937,16 +2002,49 @@ export default function Home() {
             padding: 6px 2px 16px;
           }
 
-          .indiaistore-theme .category-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-          .indiaistore-theme .category-card-body { padding: 18px 18px 14px; }
-          .indiaistore-theme .category-card-eyebrow { font-size: 13px; }
+          .indiaistore-theme .category-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+          .indiaistore-theme .category-card-body { padding: 18px 18px 14px; text-align: center; }
+          .indiaistore-theme .category-card-eyebrow { font-size: 16px; font-weight: 700; color: #1d1d1f; text-align: center; }
           .indiaistore-theme .category-card-title { font-size: 18px; }
           .indiaistore-theme .category-icon { height: 210px; padding: 18px 14px; }
           .indiaistore-theme .testimonials-grid { grid-template-columns: 1fr; }
           .indiaistore-theme .form-row { grid-template-columns: 1fr; }
-          .indiaistore-theme .category-strip-inner { justify-content: flex-start; }
+          .indiaistore-theme .category-strip-wrapper { padding: 12px 10px 16px; background: #ffffff; }
+          .indiaistore-theme .category-strip { padding: 0; overflow-x: visible; }
+          .indiaistore-theme .category-strip-inner {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 16px 10px !important;
+            min-width: 100% !important;
+            width: 100% !important;
+            padding: 0 !important;
+            justify-content: center !important;
+          }
+          .indiaistore-theme .strip-item {
+            min-width: 0 !important;
+            width: 100% !important;
+            padding: 6px 2px !important;
+            gap: 6px !important;
+            align-items: center !important;
+          }
+          .indiaistore-theme .strip-icon {
+            width: 100% !important;
+            height: 64px !important;
+          }
+          .indiaistore-theme .strip-icon img {
+            max-height: 58px !important;
+            filter: none !important;
+            mix-blend-mode: multiply !important;
+          }
+          .indiaistore-theme .strip-name {
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            color: #475569 !important;
+            text-align: center !important;
+          }
           .indiaistore-theme .product-card { flex: 0 0 240px; min-width: 220px; padding: 14px; }
-          .indiaistore-theme .trending-card { flex: 0 0 190px; min-width: 170px; }
+          .indiaistore-theme .trending-card { flex: 0 0 280px; min-width: 260px; }
+          .indiaistore-theme .trending-img { height: 220px; }
         }
 
         @media (max-width: 480px) {
@@ -2093,7 +2191,7 @@ export default function Home() {
       {/* 3. NEW ARRIVALS SLIDER */}
       <section className="section">
         <div className="section-header new-arrivals-header">
-          <h2 className="section-title">New Arrivals</h2>
+          <h2 className="section-title">THE LATEST FROM APPLE</h2>
           <div className="slider-nav-btns">
             <button
               type="button"
@@ -2259,7 +2357,7 @@ export default function Home() {
       <section className="categories">
         <div className="categories-inner">
           <div className="section-header" style={{ marginBottom: '28px' }}>
-            <h2 className="section-title">Shop by Category</h2>
+            <h2 className="section-title">Explore By Category</h2>
           </div>
           <div className="category-grid">
             {appleCategories.map((cat, idx) => {
@@ -2270,17 +2368,6 @@ export default function Home() {
                 <Link key={idx} to={cat.link || '/shop'} className="category-card">
                   <div className="category-card-body">
                     <div className="category-card-eyebrow">{cat.name}</div>
-                    <div className="category-card-title">
-                      {displayPrice ? (
-                        <>
-                          Starting at <span className="text-primary">{displayPrice}</span>
-                        </>
-                      ) : (
-                        <>
-                          Explore <span className="text-primary">{cat.name}</span>
-                        </>
-                      )}
-                    </div>
                   </div>
                   <div className="category-icon">
                     {displayImg ? (
@@ -2386,7 +2473,7 @@ export default function Home() {
 
       {/* 5.5 WHY BUY FROM AUTHORISED RESELLER */}
       <div className="wby-section">
-        <h2 className="wby-title">Why Buy from an Authorised Reseller?</h2>
+        <h2 className="wby-title">WHY CHOOSE iiNCEPT?</h2>
 
         <div className="wby-grid">
           <div className="wby-card">
@@ -2457,7 +2544,7 @@ export default function Home() {
       <section id="b2b-section" className="b2b">
         <div className="b2b-inner">
           <div className="b2b-text">
-            <h2>Corporate & B2B Orders</h2>
+            <h2>BUSINESS SOLUTIONS BY iiNCEPT</h2>
             <p>Looking for volume purchases, education pricing or enterprise solutions? Our dedicated team helps businesses get the right Apple setup with preferential pricing and support.</p>
             <ul className="b2b-features">
               <li>Volume & bulk pricing</li>
