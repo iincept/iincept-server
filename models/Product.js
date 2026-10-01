@@ -2,12 +2,15 @@ const mongoose = require("mongoose");
 
 const VariantSchema = new mongoose.Schema({
   size: String,
+  bandSize: String,
+  connectivity: String,
   color: String,
   storage: String,
   ram: String,
   glass: String,
   processor: String,
   chip: String,
+  accessoriesSize: String,
   displayTitle: String,
   title: String,
   price: { type: Number, required: true },
@@ -17,7 +20,7 @@ const VariantSchema = new mongoose.Schema({
   partNumber: String,
   modelNumber: String,
   images: [String]
-});
+}, { strict: false });
 
 const productSchema = new mongoose.Schema(
   {
@@ -76,6 +79,26 @@ const productSchema = new mongoose.Schema(
     sizes: {
       type: [String],
       default: [],
+    },
+    accessoriesSizes: {
+      type: [String],
+      default: [],
+    },
+    bandSizes: {
+      type: [String],
+      default: [],
+    },
+    connectivities: {
+      type: [String],
+      default: [],
+    },
+    displayImage: {
+      type: String,
+      default: "",
+    },
+    colorImages: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
     colors: {
       type: [mongoose.Schema.Types.Mixed],

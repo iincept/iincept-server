@@ -18,6 +18,42 @@ const slugify = (text) => {
 const ALL_MOCK_PRODUCTS = [
   // --- iPhones ---
   {
+    title: "iPhone 18 Pro",
+    description: "The ultimate performance and camera of any iPhone, with exceptional battery life and next-generation A20 Pro Bionic chip.",
+    price: 164900,
+    images: ["https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/store-card-40-iphone-18-pro-202609?wid=800&hei=1000&fmt=p-jpg&qlt=80"],
+    categoryName: "Smartphones",
+    brand: "Apple",
+    stock: 15,
+    rating: 5.0,
+    sizes: ["256GB", "512GB", "1TB"],
+    colors: ["Deep Crimson", "Titanium Natural", "Space Black"]
+  },
+  {
+    title: "iPhone Duo",
+    description: "Reimagined dual-screen mobile experience. Hello, hello.",
+    price: 299900,
+    images: ["https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/store-card-40-iphone-duo-202609_GEO_IN?wid=800&hei=1000&fmt=p-jpg&qlt=80"],
+    categoryName: "Smartphones",
+    brand: "Apple",
+    stock: 8,
+    rating: 4.9,
+    sizes: ["512GB", "1TB"],
+    colors: ["Space Black", "Silver"]
+  },
+  {
+    title: "Apple Watch Series 12",
+    description: "The most accurate heart rate sensing in a wearable. Thinnest design ever with groundbreaking health sensors.",
+    price: 56900,
+    images: ["https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/store-card-40-watch-series-12-202609?wid=800&hei=1000&fmt=p-jpg&qlt=80"],
+    categoryName: "Wearables",
+    brand: "Apple",
+    stock: 20,
+    rating: 4.9,
+    sizes: ["42mm", "46mm"],
+    colors: ["Jet Black", "Rose Gold", "Silver"]
+  },
+  {
     title: "iPhone 17 Pro Max",
     description: "The pinnacle of mobile engineering. Built with Desert Titanium, features A19 Pro chip and dynamic camera lenses.",
     price: 149900,
@@ -308,6 +344,18 @@ const ALL_MOCK_PRODUCTS = [
     brand: "Apple",
     stock: 30,
     rating: 4.6,
+    sizes: ["40mm", "44mm"],
+    colors: ["Midnight", "Starlight", "Silver"]
+  },
+  {
+    title: "Apple Watch SE 3",
+    description: "Essential health & fitness features with upgraded performance. Available in 40mm and 44mm aluminum case options.",
+    price: 29900,
+    images: ["/apple_watch_three_models.jpg", "/watch_nav/watch_se.png"],
+    categoryName: "Wearables",
+    brand: "Apple",
+    stock: 25,
+    rating: 4.8,
     sizes: ["40mm", "44mm"],
     colors: ["Midnight", "Starlight", "Silver"]
   },

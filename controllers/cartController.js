@@ -18,7 +18,9 @@ const addToCart = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    if (product.stock < quantity) {
+    // Only block if stock is explicitly configured (> 0) and less than requested quantity.
+    // stock=0 means 'not explicitly set' in this ordering system — treat as available.
+    if (product.stock > 0 && product.stock < quantity) {
       return res.status(400).json({ message: `Insufficient stock. Only ${product.stock} available.` });
     }
 
@@ -28,7 +30,7 @@ const addToCart = async (req, res) => {
     if (cartItem) {
       // Check if updating quantity exceeds stock
       const newQuantity = cartItem.quantity + Number(quantity);
-      if (product.stock < newQuantity) {
+      if (product.stock > 0 && product.stock < newQuantity) {
         return res.status(400).json({ message: `Insufficient stock. Cannot add. Only ${product.stock} available.` });
       }
       cartItem.quantity = newQuantity;
@@ -67,7 +69,7 @@ const updateQuantity = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    if (product.stock < Number(quantity)) {
+    if (product.stock > 0 && product.stock < Number(quantity)) {
       return res.status(400).json({ message: `Insufficient stock. Only ${product.stock} available.` });
     }
 

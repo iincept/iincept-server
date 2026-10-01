@@ -18,15 +18,15 @@ const getSettings = async (req, res) => {
     if (!settings.homeHeroSecondaryBtnLink) settings.homeHeroSecondaryBtnLink = "#store-locator";
 
     const DEFAULT_CATEGORY_IMAGES = {
-      'Mac': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-mac-nav-202410?wid=200&hei=130&fmt=png-alpha&.v=1728342368663',
-      'iPhone': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-iphone-nav-202409?wid=200&hei=130&fmt=png-alpha&.v=1724258295052',
-      'iPad': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-ipad-nav-202405?wid=200&hei=130&fmt=png-alpha&.v=1714846430310',
-      'Watch': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-watch-nav-202409?wid=200&hei=130&fmt=png-alpha',
-      'AirPods': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-airpods-nav-202409?wid=200&hei=130&fmt=png-alpha',
-      'AirTag': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-airtags-nav-202108?wid=200&hei=130&fmt=png-alpha',
-      'Apple TV 4K': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-appletv-nav-202210?wid=200&hei=130&fmt=png-alpha',
-      'HomePod': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-homepod-nav-202301?wid=200&hei=130&fmt=png-alpha',
-      'Accessories': 'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/store-card-13-accessories-nav-202409?wid=200&hei=130&fmt=png-alpha',
+      'Mac': '/mac_category_uploaded.png',
+      'iPhone': '/iphone_category_uploaded.png',
+      'iPad': '/ipad_category_uploaded.png',
+      'Watch': '/watch_category_uploaded.png',
+      'AirPods': '/airpods_category_uploaded.png',
+      'AirTag': '/airtag_category_uploaded.png',
+      'Apple TV 4K': '/appletv_category_uploaded.png',
+      'HomePod': '/homepod_category_uploaded.png',
+      'Accessories': '/accessories_category_uploaded.png',
     };
 
     if (!settings.homeCategoryIcons || settings.homeCategoryIcons.length === 0) {
@@ -61,7 +61,7 @@ const getSettings = async (req, res) => {
         const key = obj.name || obj.label;
         const currentImg = (obj.image || '').trim();
 
-        if (!currentImg || currentImg.includes('…') || currentImg.includes('traceId') || currentImg.startsWith('*')) {
+        if (!currentImg || currentImg.includes('…') || currentImg.includes('traceId') || currentImg.startsWith('*') || currentImg.includes('/category_strip/')) {
           if (DEFAULT_CATEGORY_IMAGES[key]) {
             updated = true;
             return { ...obj, image: DEFAULT_CATEGORY_IMAGES[key] };
@@ -86,6 +86,47 @@ const getSettings = async (req, res) => {
     if (!settings.homeNewArrivals || settings.homeNewArrivals.length === 0) {
       settings.homeNewArrivals = defaultArrivals;
       settings.markModified('homeNewArrivals');
+      await settings.save();
+    }
+
+    const defaultDealBanners = [
+      {
+        id: 'deal-1',
+        internalName: 'MacBook Neo – Stock Clearance',
+        dealEyebrow: 'DEAL OF THE WEEK',
+        dealTitle: 'MacBook Neo – Stock Clearance',
+        dealDesc: 'Amazing Mac at a surprising price. Limited stock this week. Exclusive bank offers + free AppleCare+ for first 50 buyers.',
+        productId: '',
+        dealImage: '/mac_deal_fan.png',
+        mrp: 79900,
+        discount: 8.76,
+        dealPrice: 72900,
+        dealButtonText: 'Grab the Deal',
+        dealButtonLink: '/macbook',
+        displayOrder: 1,
+        isActive: true
+      },
+      {
+        id: 'deal-2',
+        internalName: 'MacBook Neo – Limited Time Deal',
+        dealEyebrow: 'DEAL OF THE WEEK',
+        dealTitle: 'MacBook Neo – Limited Time Deal',
+        dealDesc: 'Get the incredible MacBook Neo with extraordinary battery life and performance. Limited time discount offer.',
+        productId: '',
+        dealImage: '/mac_deal_fan.png',
+        mrp: 79900,
+        discount: 10,
+        dealPrice: 71910,
+        dealButtonText: 'Grab the Deal',
+        dealButtonLink: '/macbook',
+        displayOrder: 2,
+        isActive: true
+      }
+    ];
+
+    if (!settings.homeDealBanners || settings.homeDealBanners.length === 0) {
+      settings.homeDealBanners = defaultDealBanners;
+      settings.markModified('homeDealBanners');
       await settings.save();
     }
 
@@ -590,25 +631,33 @@ const updateSettings = async (req, res) => {
         {
           stars: 5,
           text: '"Procured 40 MacBooks for our new office in 3 days, GST invoice sorted same week."',
-          author: '— IT Head, Fintech firm, Bengaluru',
+          author: '— IT Head, Fintech firm',
+          location: 'Bengaluru',
+          sub: 'Bengaluru',
           isActive: true
         },
         {
           stars: 5,
           text: '"Our gifting desk orders AirPods every quarter — consolidated billing makes finance happy."',
-          author: '— Procurement Lead, D2C brand, Mumbai',
+          author: '— Procurement Lead, D2C brand',
+          location: 'Mumbai',
+          sub: 'Mumbai',
           isActive: true
         },
         {
           stars: 5,
           text: '"Quote turnaround was faster than two other resellers we checked."',
-          author: '— Ops Manager, Consulting firm, Delhi NCR',
+          author: '— Ops Manager, Consulting firm',
+          location: 'Delhi NCR',
+          sub: 'Delhi NCR',
           isActive: true
         },
         {
           stars: 5,
           text: '"Reliable for repeat bulk orders, delivered to three city offices without issue."',
-          author: '— Admin Head, BPO, Pune',
+          author: '— Admin Head, BPO',
+          location: 'Pune',
+          sub: 'Pune',
           isActive: true
         }
       ];
@@ -720,6 +769,11 @@ const updateSettings = async (req, res) => {
     if (dealButtonLink !== undefined) settings.dealButtonLink = dealButtonLink;
     if (dealImage !== undefined) settings.dealImage = dealImage;
 
+    if (req.body.homeDealBanners !== undefined) {
+      settings.homeDealBanners = req.body.homeDealBanners;
+      settings.markModified('homeDealBanners');
+    }
+
     if (heroTitle1 !== undefined) settings.heroTitle1 = heroTitle1;
     if (heroSubtitle1 !== undefined) settings.heroSubtitle1 = heroSubtitle1;
     if (heroButtonText1 !== undefined) settings.heroButtonText1 = heroButtonText1;
@@ -749,7 +803,51 @@ const updateSettings = async (req, res) => {
     if (navbarMenuItems !== undefined) settings.navbarMenuItems = navbarMenuItems;
     if (categoryIconGroups !== undefined) settings.categoryIconGroups = categoryIconGroups;
     if (appleCarePlans !== undefined) settings.appleCarePlans = appleCarePlans;
-    if (appleCarePricingTables !== undefined) settings.appleCarePricingTables = appleCarePricingTables;
+    if (appleCarePricingTables !== undefined) {
+      const calcPrice = (mrp, disc) => {
+        const mrpNum = parseFloat(String(mrp || '').replace(/[^0-9.]/g, '')) || 0;
+        const discNum = Math.min(100, Math.max(0, parseFloat(String(disc || '').replace(/[^0-9.]/g, '')) || 0));
+        const finalNum = Math.max(0, Math.round(mrpNum - (mrpNum * discNum / 100)));
+        return `₹${finalNum.toLocaleString('en-IN')}`;
+      };
+
+      settings.appleCarePricingTables = appleCarePricingTables.map(table => {
+        if (!table.rows || !Array.isArray(table.rows)) return table;
+        const updatedRows = table.rows.map(row => {
+          const mrp1 = row.mrp1yr || '';
+          const disc1 = row.discount1yr !== undefined && row.discount1yr !== null ? String(row.discount1yr) : '';
+          const sale1 = row.salePrice1yr || (mrp1 ? calcPrice(mrp1, disc1) : '');
+
+          const mrp2 = row.mrp2yr || row.mrp || '';
+          const disc2 = row.discount2yr !== undefined && row.discount2yr !== null ? String(row.discount2yr) : (row.discount !== undefined ? String(row.discount) : '');
+          const sale2 = row.salePrice2yr || row.salePrice || row.yearly || (mrp2 ? calcPrice(mrp2, disc2) : '');
+
+          return {
+            ...row,
+            mrp1yr: mrp1,
+            discount1yr: disc1,
+            salePrice1yr: sale1,
+            sku1yr: row.sku1yr || '',
+            description1yr: row.description1yr || '',
+
+            mrp2yr: mrp2,
+            discount2yr: disc2,
+            salePrice2yr: sale2,
+            sku2yr: row.sku2yr || row.sku || '',
+            description2yr: row.description2yr || row.description || '',
+
+            mrp: mrp2,
+            discount: disc2,
+            salePrice: sale2,
+            yearly: sale2,
+            sku: row.sku2yr || row.sku || '',
+            description: row.description2yr || row.description || ''
+          };
+        });
+        return { ...table, rows: updatedRows };
+      });
+      settings.markModified('appleCarePricingTables');
+    }
     if (productAppleCare !== undefined) settings.productAppleCare = productAppleCare;
     if (footerSections !== undefined) settings.footerSections = footerSections;
 

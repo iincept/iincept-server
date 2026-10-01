@@ -1,5 +1,6 @@
 const Product = require("../models/Product");
 const Category = require("../models/Category");
+const XLSX = require("xlsx");
 
 // Helper to generate unique slugs
 const slugify = (text) => {
@@ -39,11 +40,18 @@ const createProduct = async (req, res) => {
       description,
       price,
       discountPrice,
+      discountPercent,
+      discount,
       images,
       category,
       brand,
       stock,
       sizes,
+      accessoriesSizes,
+      bandSizes,
+      connectivities,
+      glasses,
+      processors,
       colors,
       storage,
       ram,
@@ -53,6 +61,8 @@ const createProduct = async (req, res) => {
       variants,
       partNumber,
       modelNumber,
+      displayImage,
+      colorImages,
     } = req.body;
 
     // Validate category exists
@@ -69,20 +79,29 @@ const createProduct = async (req, res) => {
       description,
       price,
       discountPrice,
+      discountPercent,
+      discount,
       images,
       category,
       brand,
       stock,
-      sizes,
-      colors,
-      storage,
-      ram,
-      material,
-      features,
+      sizes: sizes || [],
+      accessoriesSizes: accessoriesSizes || [],
+      bandSizes: bandSizes || [],
+      connectivities: connectivities || [],
+      glasses: glasses || [],
+      processors: processors || [],
+      colors: colors || [],
+      storage: storage || [],
+      ram: ram || [],
+      material: material || [],
+      features: features || [],
       rating,
-      variants,
-      partNumber,
-      modelNumber,
+      variants: variants || [],
+      partNumber: partNumber || "",
+      modelNumber: modelNumber || "",
+      displayImage: displayImage || "",
+      colorImages: colorImages || {},
     });
 
     res.status(201).json(product);
@@ -112,11 +131,18 @@ const updateProduct = async (req, res) => {
       description,
       price,
       discountPrice,
+      discountPercent,
+      discount,
       images,
       category,
       brand,
       stock,
       sizes,
+      accessoriesSizes,
+      bandSizes,
+      connectivities,
+      glasses,
+      processors,
       colors,
       storage,
       ram,
@@ -126,6 +152,8 @@ const updateProduct = async (req, res) => {
       variants,
       partNumber,
       modelNumber,
+      displayImage,
+      colorImages,
     } = req.body;
 
     const product = await Product.findById(productId);
@@ -154,6 +182,11 @@ const updateProduct = async (req, res) => {
 
     if (stock !== undefined) product.stock = Number(stock);
     if (sizes) product.sizes = sizes;
+    if (accessoriesSizes) product.accessoriesSizes = accessoriesSizes;
+    if (bandSizes) product.bandSizes = bandSizes;
+    if (connectivities) product.connectivities = connectivities;
+    if (glasses) product.glasses = glasses;
+    if (processors) product.processors = processors;
     if (colors) product.colors = colors;
     if (storage) product.storage = storage;
     if (ram) product.ram = ram;
@@ -163,19 +196,31 @@ const updateProduct = async (req, res) => {
     if (variants !== undefined) product.variants = variants;
     if (partNumber !== undefined) product.partNumber = partNumber;
     if (modelNumber !== undefined) product.modelNumber = modelNumber;
+    if (displayImage !== undefined) product.displayImage = displayImage;
+    if (colorImages !== undefined) product.colorImages = colorImages;
+    if (discountPercent !== undefined) product.discountPercent = discountPercent;
+    if (discount !== undefined) product.discount = discount;
 
-    // Auto-sync parent product price with lowest variant price if variants exist
+    // Auto-sync parent product price & discountPrice with lowest variant price if variants exist
     if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
       const validVariantPrices = product.variants.map(v => Number(v.price)).filter(p => !isNaN(p) && p > 0);
+      const validVariantDiscPrices = product.variants.map(v => Number(v.discountPrice)).filter(p => !isNaN(p) && p > 0);
+
       if (validVariantPrices.length > 0) {
         product.price = Math.min(...validVariantPrices);
       } else if (price !== undefined) {
         product.price = price;
       }
-    } else if (price !== undefined) {
-      product.price = price;
+
+      if (discountPrice !== undefined && Number(discountPrice) > 0) {
+        product.discountPrice = Number(discountPrice);
+      } else if (validVariantDiscPrices.length > 0) {
+        product.discountPrice = Math.min(...validVariantDiscPrices);
+      }
+    } else {
+      if (price !== undefined) product.price = price;
+      if (discountPrice !== undefined) product.discountPrice = discountPrice;
     }
-    if (discountPrice !== undefined) product.discountPrice = discountPrice;
 
     const updatedProduct = await product.save();
 
@@ -383,6 +428,474 @@ const adminGetStockHistory = async (req, res) => {
   }
 };
 
+// Category matching helper
+const getCategoryIdsByKey = async (key) => {
+  if (!key || key === 'all') return null;
+  const k = key.toLowerCase().trim();
+  let query = {};
+  if (k === 'mac' || k === 'macbook' || k === 'laptops-pcs') {
+    query = { $or: [{ slug: /mac|laptops/i }, { name: /mac|laptops/i }] };
+  } else if (k === 'ipad' || k === 'ipads') {
+    query = { $or: [{ slug: /ipad/i }, { name: /ipad/i }] };
+  } else if (k === 'iphone' || k === 'smartphones') {
+    query = { $or: [{ slug: /iphone|smartphone/i }, { name: /iphone|smartphone/i }] };
+  } else if (k === 'watch' || k === 'wearables') {
+    query = { $or: [{ slug: /watch|wearable/i }, { name: /watch|wearable/i }] };
+  } else if (k === 'airpods' || k === 'premium-audio') {
+    query = { $or: [{ slug: /airpod|audio/i }, { name: /airpod|audio/i }] };
+  } else if (k === 'accessories') {
+    query = { $or: [{ slug: /accessor/i }, { name: /accessor/i }] };
+  } else if (k === 'tv-home' || k === 'tv') {
+    query = { $or: [{ slug: /tv|home/i }, { name: /tv|home/i }] };
+  } else {
+    query = { $or: [{ slug: new RegExp(k, 'i') }, { name: new RegExp(k, 'i') }] };
+  }
+  const cats = await Category.find(query);
+  return cats.map(c => c._id);
+};
+
+const getCategoryDocByKey = async (key) => {
+  if (!key || key === 'all') key = 'mac';
+  const catIds = await getCategoryIdsByKey(key);
+  if (catIds && catIds.length > 0) {
+    return await Category.findById(catIds[0]);
+  }
+  const nameMap = {
+    mac: 'Laptops & PCs',
+    ipad: 'iPads',
+    iphone: 'Smartphones',
+    watch: 'Wearables',
+    airpods: 'AirPods',
+    accessories: 'Accessories',
+    'tv-home': 'TV & Home'
+  };
+  const catName = nameMap[key] || key.charAt(0).toUpperCase() + key.slice(1);
+  const catSlug = slugify(catName);
+  let cat = await Category.findOne({ slug: catSlug });
+  if (!cat) {
+    cat = await Category.create({ name: catName, slug: catSlug, image: '/category_placeholder.png' });
+  }
+  return cat;
+};
+
+// Export Products to Excel per Category
+const exportProductsExcel = async (req, res) => {
+  try {
+    const { category = "all" } = req.query;
+    let query = {};
+    const catIds = await getCategoryIdsByKey(category);
+    if (catIds && catIds.length > 0) {
+      query.category = { $in: catIds };
+    }
+
+    const products = await Product.find(query).populate("category", "name slug").lean();
+
+    const rows = [];
+    products.forEach((p) => {
+      const catName = p.category ? p.category.name : category;
+      if (p.variants && p.variants.length > 0) {
+        p.variants.forEach((v) => {
+          const mrp = Number(v.price || p.price || 0);
+          const discPrice = Number(v.discountPrice ?? p.discountPrice ?? mrp);
+          const discountPercent = mrp > 0 ? Math.round(((mrp - discPrice) / mrp) * 100) : 0;
+          const imgList = (v.images && v.images.length > 0 ? v.images : p.images || []).join(", ");
+
+          rows.push({
+            Title: p.title,
+            "Part Number": v.partNumber || p.partNumber || "",
+            Color: v.color || "",
+            RAM: v.ram || "",
+            Storage: v.storage || "",
+            "MRP (Price)": mrp,
+            "Discount %": discountPercent >= 0 ? discountPercent : 0,
+            "Final Price": discPrice,
+            Stock: Number(v.stock ?? p.stock ?? 0),
+            Category: catName,
+            "Variant Title": v.title || v.displayTitle || "",
+            "Size / Case Size": v.size || "",
+            "Chip / Processor": v.chip || v.processor || "",
+            SKU: v.sku || p.sku || "",
+            "Model Number": v.modelNumber || p.modelNumber || "",
+            Brand: p.brand || "Apple",
+            Description: p.description || "",
+            Images: imgList,
+          });
+        });
+      } else {
+        const mrp = Number(p.price || 0);
+        const discPrice = Number(p.discountPrice ?? mrp);
+        const discountPercent = mrp > 0 ? Math.round(((mrp - discPrice) / mrp) * 100) : 0;
+        const imgList = (p.images || []).join(", ");
+
+        rows.push({
+          Title: p.title,
+          "Part Number": p.partNumber || "",
+          Color: Array.isArray(p.colors) ? p.colors.join(", ") : "",
+          RAM: Array.isArray(p.ram) ? p.ram.join(", ") : "",
+          Storage: Array.isArray(p.storage) ? p.storage.join(", ") : "",
+          "MRP (Price)": mrp,
+          "Discount %": discountPercent >= 0 ? discountPercent : 0,
+          "Final Price": discPrice,
+          Stock: Number(p.stock || 0),
+          Category: catName,
+          "Variant Title": "",
+          "Size / Case Size": Array.isArray(p.sizes) ? p.sizes.join(", ") : "",
+          "Chip / Processor": Array.isArray(p.processors) ? p.processors.join(", ") : "",
+          SKU: p.sku || "",
+          "Model Number": p.modelNumber || "",
+          Brand: p.brand || "Apple",
+          Description: p.description || "",
+          Images: imgList,
+        });
+      }
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(
+      rows.length > 0
+        ? rows
+        : [
+            {
+              Title: "Sample Product Title",
+              "Part Number": "MXNA3HN/A",
+              Color: "Space Grey",
+              RAM: "8GB",
+              Storage: "256GB",
+              "MRP (Price)": 59900,
+              "Discount %": 10,
+              "Final Price": 53910,
+              Stock: 25,
+              Category: category,
+              "Variant Title": "Space Grey / 8GB / 256GB",
+              "Size / Case Size": "8.3-inch",
+              "Chip / Processor": "A17 Pro",
+              SKU: "SKU123",
+              "Model Number": "A2992",
+              Brand: "Apple",
+              Description: "Sample Apple Product description",
+              Images: "/sample_image.png",
+            },
+          ]
+    );
+
+    const workbook = XLSX.utils.book_new();
+    const sheetName = category.toUpperCase().slice(0, 31);
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${category.toLowerCase()}_products.xlsx"`
+    );
+    return res.send(buffer);
+  } catch (error) {
+    console.error("Export Excel error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Preview Products from Excel upload
+const previewImportProductsExcel = async (req, res) => {
+  try {
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({ message: "No Excel file uploaded" });
+    }
+    const { category = "all" } = req.query;
+    const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
+    const sheetName = workbook.SheetNames[0];
+    const rawRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+    if (!rawRows || rawRows.length === 0) {
+      return res.status(400).json({ message: "Excel sheet is empty" });
+    }
+
+    const grouped = {};
+    rawRows.forEach((r) => {
+      const parentTitle = (
+        r["Title"] ||
+        r["Parent Title"] ||
+        r["Product Title"] ||
+        r["Name"] ||
+        ""
+      )
+        .toString()
+        .trim();
+      if (!parentTitle) return;
+      if (!grouped[parentTitle]) {
+        grouped[parentTitle] = {
+          title: parentTitle,
+          category: r["Category"] || category,
+          brand: r["Brand"] || "Apple",
+          rows: [],
+        };
+      }
+      grouped[parentTitle].rows.push(r);
+    });
+
+    const productsPreview = Object.values(grouped).map((g) => ({
+      title: g.title,
+      category: g.category,
+      brand: g.brand,
+      variantCount: g.rows.length,
+      samplePartNumber:
+        g.rows[0]["Part Number"] ||
+        g.rows[0]["Part Number (MPN)"] ||
+        g.rows[0]["Part No"] ||
+        g.rows[0]["MPN"] ||
+        g.rows[0]["SKU"] ||
+        "",
+      mrpRange: g.rows.map((r) =>
+        Number(r["MRP (Price)"] || r["MRP"] || r["Price"] || 0)
+      ),
+    }));
+
+    res.status(200).json({
+      totalRows: rawRows.length,
+      totalProducts: productsPreview.length,
+      products: productsPreview,
+      categoryKey: category,
+    });
+  } catch (error) {
+    console.error("Preview Excel error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Import / Bulk Save Products from Excel per Category
+const importProductsExcel = async (req, res) => {
+  try {
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({ message: "No Excel file uploaded" });
+    }
+    const { category = "all" } = req.query;
+    const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
+    const sheetName = workbook.SheetNames[0];
+    const rawRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+    if (!rawRows || rawRows.length === 0) {
+      return res.status(400).json({ message: "Excel sheet is empty" });
+    }
+
+    const defaultCatDoc = await getCategoryDocByKey(category);
+
+    const grouped = {};
+    rawRows.forEach((r) => {
+      const parentTitle = (
+        r["Title"] ||
+        r["Parent Title"] ||
+        r["Product Title"] ||
+        r["Name"] ||
+        ""
+      )
+        .toString()
+        .trim();
+      if (!parentTitle) return;
+      if (!grouped[parentTitle]) {
+        grouped[parentTitle] = {
+          title: parentTitle,
+          categoryName: r["Category"] || "",
+          brand: (r["Brand"] || "Apple").toString().trim(),
+          description: (r["Description"] || "").toString().trim(),
+          rows: [],
+        };
+      }
+      grouped[parentTitle].rows.push(r);
+    });
+
+    let createdCount = 0;
+    let updatedCount = 0;
+
+    for (const title of Object.keys(grouped)) {
+      const item = grouped[title];
+      let targetCatId = defaultCatDoc._id;
+
+      if (item.categoryName) {
+        const specificCatIds = await getCategoryIdsByKey(item.categoryName);
+        if (specificCatIds && specificCatIds.length > 0) {
+          targetCatId = specificCatIds[0];
+        }
+      }
+
+      const variants = [];
+      const colorsSet = new Set();
+      const sizesSet = new Set();
+      const storageSet = new Set();
+      const ramSet = new Set();
+      const chipSet = new Set();
+
+      item.rows.forEach((r) => {
+        const color = (r["Color"] || r["Colour"] || "").toString().trim();
+        const size = (r["Size / Case Size"] || r["Size"] || "")
+          .toString()
+          .trim();
+        const storage = (r["Storage"] || r["Storga"] || r["Capacity"] || "").toString().trim();
+        const ram = (r["RAM"] || r["Ram"] || "").toString().trim();
+        const chip = (
+          r["Chip / Processor"] ||
+          r["Chip"] ||
+          r["Processor"] ||
+          ""
+        )
+          .toString()
+          .trim();
+        const partNumber = (
+          r["Part Number"] ||
+          r["Part Number (MPN)"] ||
+          r["Part No"] ||
+          r["MPN"] ||
+          ""
+        )
+          .toString()
+          .trim();
+        const modelNumber = (r["Model Number"] || r["Model"] || "")
+          .toString()
+          .trim();
+        const sku = (r["SKU"] || partNumber || "").toString().trim();
+        const variantTitle = (
+          r["Variant Title"] ||
+          [color, ram, storage, size].filter(Boolean).join(" / ") ||
+          title
+        )
+          .toString()
+          .trim();
+
+        const mrp = Math.max(
+          0,
+          parseFloat(r["Price"] || r["MRP (Price)"] || r["MRP"] || 0)
+        );
+        const discPercent = Math.max(
+          0,
+          parseFloat(r["Discount %"] || r["Discount"] || 0)
+        );
+
+        let finalPrice = parseFloat(r["Final Price"] || r["Discount Price"] || 0);
+        if (!finalPrice || finalPrice <= 0 || finalPrice > mrp) {
+          finalPrice =
+            mrp > 0 ? Math.round(mrp - (mrp * discPercent) / 100) : mrp;
+        }
+
+        const stock = Math.max(0, parseInt(r["Stock"] || 0, 10));
+        const rawImgs = (r["Images"] || "").toString().trim();
+        const images = rawImgs
+          ? rawImgs
+              .split(",")
+              .map((i) => i.trim())
+              .filter(Boolean)
+          : [];
+
+        if (color) colorsSet.add(color);
+        if (size) sizesSet.add(size);
+        if (storage) storageSet.add(storage);
+        if (ram) ramSet.add(ram);
+        if (chip) chipSet.add(chip);
+
+        variants.push({
+          title: variantTitle,
+          displayTitle: variantTitle,
+          color,
+          size,
+          storage,
+          ram,
+          chip,
+          processor: chip,
+          price: mrp,
+          discountPrice: finalPrice,
+          stock,
+          partNumber,
+          modelNumber,
+          sku,
+          images,
+        });
+      });
+
+
+      const minMrp =
+        variants.length > 0 ? Math.min(...variants.map((v) => v.price)) : 0;
+      const minFinal =
+        variants.length > 0
+          ? Math.min(...variants.map((v) => v.discountPrice))
+          : 0;
+      const totalStock =
+        variants.length > 0
+          ? variants.reduce((acc, v) => acc + v.stock, 0)
+          : 0;
+      const firstImgs = variants.find(
+        (v) => v.images && v.images.length > 0
+      )?.images || ["/iphone_category_v2.jpg"];
+
+      let existing = await Product.findOne({
+        $or: [
+          { title: item.title, category: targetCatId },
+          { title: item.title },
+          ...variants
+            .map((v) => v.partNumber)
+            .filter(Boolean)
+            .map((pn) => ({ "variants.partNumber": pn })),
+          ...variants
+            .map((v) => v.sku)
+            .filter(Boolean)
+            .map((sk) => ({ "variants.sku": sk })),
+        ],
+      });
+
+      if (existing) {
+        existing.title = item.title;
+        existing.category = targetCatId;
+        existing.brand = item.brand || existing.brand || "Apple";
+        if (item.description) existing.description = item.description;
+        existing.price = minMrp || existing.price;
+        existing.discountPrice = minFinal || existing.discountPrice;
+        existing.stock = totalStock;
+        existing.variants = variants;
+        existing.colors = Array.from(colorsSet);
+        existing.sizes = Array.from(sizesSet);
+        existing.storage = Array.from(storageSet);
+        existing.ram = Array.from(ramSet);
+        existing.processors = Array.from(chipSet);
+        if (firstImgs.length > 0) existing.images = firstImgs;
+
+        await existing.save();
+        updatedCount++;
+      } else {
+        const slug = await generateUniqueSlug(item.title);
+        await Product.create({
+          title: item.title,
+          slug,
+          category: targetCatId,
+          brand: item.brand || "Apple",
+          description: item.description || `${item.title} by Apple.`,
+          price: minMrp,
+          discountPrice: minFinal,
+          stock: totalStock,
+          variants,
+          colors: Array.from(colorsSet),
+          sizes: Array.from(sizesSet),
+          storage: Array.from(storageSet),
+          ram: Array.from(ramSet),
+          processors: Array.from(chipSet),
+          images: firstImgs,
+          displayImage: firstImgs[0] || "",
+        });
+        createdCount++;
+      }
+    }
+
+    res.status(200).json({
+      message: `Excel sheet uploaded successfully! Created ${createdCount} new products, updated ${updatedCount} existing products.`,
+      createdCount,
+      updatedCount,
+      categoryKey: category,
+    });
+  } catch (error) {
+    console.error("Import Excel error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createProduct,
   updateProduct,
@@ -390,4 +903,8 @@ module.exports = {
   getProducts,
   getProductById,
   adminGetStockHistory,
+  exportProductsExcel,
+  previewImportProductsExcel,
+  importProductsExcel,
 };
+
