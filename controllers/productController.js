@@ -201,40 +201,29 @@ const updateProduct = async (req, res) => {
     if (discountPercent !== undefined) product.discountPercent = discountPercent;
     if (discount !== undefined) product.discount = discount;
 
-    // Determine if admin is explicitly removing discount (sent discountPrice = 0)
-    const isRemovingDiscount = discountPrice !== undefined && Number(discountPrice) === 0;
+    const isRemovingDiscount = discountPrice === 0 || discountPrice === "0" || discountPrice === null || (req.body.hasOwnProperty('discountPrice') && req.body.discountPrice === "");
 
     // Auto-sync parent product price & discountPrice with lowest variant price if variants exist
     if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
+      const validVariantPrices = product.variants.map(v => Number(v.price)).filter(p => !isNaN(p) && p > 0);
+      // Only count variant discountPrice as a real discount if strictly less than the variant's own price
+      const validVariantDiscPrices = product.variants
+        .filter(v => Number(v.discountPrice) > 0 && Number(v.discountPrice) < Number(v.price))
+        .map(v => Number(v.discountPrice));
 
-      // If admin removed discount → zero out ALL variant discountPrice/discountPercent too
-      if (isRemovingDiscount) {
-        product.variants = product.variants.map(v => ({
-          ...(v.toObject ? v.toObject() : { ...v }),
-          discountPrice: 0,
-          discountPercent: 0,
-          discountInput: 0
-        }));
+      if (validVariantPrices.length > 0) {
+        product.price = Math.min(...validVariantPrices);
+      } else if (price !== undefined) {
+        product.price = price;
+      }
+
+      if (validVariantDiscPrices.length > 0) {
+        product.discountPrice = Math.min(...validVariantDiscPrices);
+      } else if (isRemovingDiscount) {
         product.discountPrice = 0;
         product.discountPercent = 0;
-      } else {
-        const validVariantPrices = product.variants.map(v => Number(v.price)).filter(p => !isNaN(p) && p > 0);
-        // Only count variant discountPrice as a real discount if strictly less than the variant's own price
-        const validVariantDiscPrices = product.variants
-          .filter(v => Number(v.discountPrice) > 0 && Number(v.discountPrice) < Number(v.price))
-          .map(v => Number(v.discountPrice));
-
-        if (validVariantPrices.length > 0) {
-          product.price = Math.min(...validVariantPrices);
-        } else if (price !== undefined) {
-          product.price = price;
-        }
-
-        if (discountPrice !== undefined && Number(discountPrice) > 0) {
-          product.discountPrice = Number(discountPrice);
-        } else if (validVariantDiscPrices.length > 0) {
-          product.discountPrice = Math.min(...validVariantDiscPrices);
-        }
+      } else if (discountPrice !== undefined) {
+        product.discountPrice = discountPrice;
       }
     } else {
       if (price !== undefined) product.price = price;
